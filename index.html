@@ -2826,6 +2826,8 @@ const crumbs = document.getElementById('crumbs');
 function parseHash(){
   const h = (location.hash || '#home').slice(1);
   if(h==='home' || h==='') return {view:'home'};
+  const mHomeSec = h.match(/^home:(mem|new|curi)$/);
+  if(mHomeSec) return {view:'home', scrollTo:mHomeSec[1]};
   const mDoc = h.match(/^doc:(.+)$/);
   if(mDoc){
     const id = decodeURIComponent(mDoc[1]);
@@ -2852,7 +2854,7 @@ function parseHash(){
   return {view:'home'};
 }
 function stringifyRoute(r){
-  if(r.view==='home') return 'home';
+  if(r.view==='home') return r.scrollTo ? `home:${r.scrollTo}` : 'home';
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
   if(r.view==='voc') return `voc:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
   if(r.view==='mgr') return `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
@@ -3981,7 +3983,12 @@ function renderDoc(){
 
 /* ===== 사이드바 메뉴 ===== */
 const MENU = [
-  { id:'home', label:'🏠 홈', type:'single' },
+  { id:'home', label:'🏠 홈', type:'group', expanded:true, navigable:true,
+    children: () => [
+      {id:'home:mem', label:'실회원 추이'},
+      {id:'home:new', label:'신규회원 추이'},
+      {id:'home:curi', label:'큐리매쓰 현황'}
+    ]},
   { id:'mgr',  label:'👤 매니저', type:'group', expanded:true,
     children: () => DATA.managers.map(m => ({ id:'mgr:'+m.name, label:m.name })) },
   { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
@@ -3997,9 +4004,12 @@ const _sbExpanded = {}; MENU.forEach(m=>{ if(m.type==='group') _sbExpanded[m.id]
 function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
 function closeSidebarMobile(){ document.getElementById('sidebar').classList.remove('open'); }
 function toggleMenuGroup(id){ _sbExpanded[id] = !_sbExpanded[id]; renderSidebar(); }
+// '홈'처럼 헤더 자체도 이동 가능한 그룹: 펼침/접힘 + 이동을 한 번에 처리
+function navigableGroupClicked(id, route){ _sbExpanded[id] = !_sbExpanded[id]; go(route); }
 
 function menuItemRoute(id){
-  // 하위메뉴 id → go() 라우트로 변환 (매니저/VOC/문서 모두 지원)
+  // 하위메뉴 id → go() 라우트로 변환 (홈 섹션/매니저/VOC/문서 모두 지원)
+  if(id.startsWith('home:')) return {view:'home', scrollTo:id.slice(5)};
   if(id.startsWith('mgr:')){
     const name = id.slice(4);
     return {view:'mgr', mgr:DATA.managers.findIndex(m=>m.name===name)};
@@ -4023,10 +4033,15 @@ function renderSidebar(){
     } else {
       const kids = item.children();
       const exp = _sbExpanded[item.id];
-      html += `<div class="menu-item ${exp?'expanded':''}" onclick="toggleMenuGroup('${item.id}')">${item.label}<span class="chev">›</span></div>`;
+      const headerActive = item.navigable && route.view===item.id && !route.scrollTo ? 'active' : '';
+      const headerClick = item.navigable
+        ? `navigableGroupClicked('${item.id}', {view:'${item.id}'})`
+        : `toggleMenuGroup('${item.id}')`;
+      html += `<div class="menu-item ${exp?'expanded':''} ${headerActive}" onclick="${headerClick}">${item.label}<span class="chev">›</span></div>`;
       html += `<div class="submenu" style="max-height:${exp? (kids.length*34+10)+'px':'0'}">`;
       kids.forEach(k=>{
-        const isActive = k.id.startsWith('mgr:') ? (activeMgrName===k.id.slice(4))
+        const isActive = k.id.startsWith('home:') ? (route.view==='home' && route.scrollTo===k.id.slice(5))
+                        : k.id.startsWith('mgr:') ? (activeMgrName===k.id.slice(4))
                         : k.id.startsWith('voc:') ? (activeVocName===k.id.slice(4))
                         : k.id.startsWith('doc:') ? (route.view==='doc' && route.doc===k.id.slice(4))
                         : false;
@@ -4066,7 +4081,14 @@ function renderCrumbs(){
 function render(){
   renderSidebar();
   renderCrumbs();
-  if(route.view==='home') return renderHome();
+  if(route.view==='home'){
+    renderHome();
+    if(route.scrollTo){
+      const el = document.getElementById('sec-'+route.scrollTo);
+      if(el && el.scrollIntoView) setTimeout(()=>el.scrollIntoView({behavior:'smooth', block:'start'}), 30);
+    }
+    return;
+  }
   if(route.view==='doc') return renderDoc();
   if(route.view==='voc') return renderVoc();
   if(route.view==='main') return renderMain();
@@ -4420,21 +4442,21 @@ function renderHome(){
   const curiMem8 = curiAll.mem[7], curiWb8 = curiAll.workbook[7], curiTb8 = curiAll.textbook[7];
 
   app.innerHTML = `
-    <div class="card-box section-gap">
+    <div class="card-box section-gap" id="sec-mem">
       <h4>📈 실회원 추이 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 전국 / 매니저 / 본부 드릴다운</span></h4>
       <div style="margin-bottom:10px">${renderHomeKpiRow()}</div>
       ${renderScopePicker(_homeScope,'home','homeMgrChanged','homeBrChanged',false)}
       <div class="trend-wrap" style="height:280px;margin-top:10px"><canvas id="homeBmChart"></canvas></div>
     </div>
 
-    <div class="card-box section-gap">
+    <div class="card-box section-gap" id="sec-new">
       <h4>🆕 신규회원 추이 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 전국 / 매니저 / 본부 드릴다운</span></h4>
       <div style="margin-bottom:10px">${newKpiRow()}</div>
       ${renderScopePicker(_newScope,'new','newMgrChanged','newBrChanged',false)}
       <div class="trend-wrap" style="height:280px;margin-top:10px"><canvas id="newMemChart"></canvas></div>
     </div>
 
-    <div class="card-box section-gap">
+    <div class="card-box section-gap" id="sec-curi">
       <h4>🧮 큐리매쓰 현황 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 실회원 · 매출(문제은행/교재) · 전국/매니저/본부 드릴다운</span></h4>
       <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;max-width:560px">
         <div class="kpi" style="border-top-color:var(--amber)"><div class="k-label">실회원 (8월)</div><div class="k-val">${fmtNum(curiMem8)}명</div></div>

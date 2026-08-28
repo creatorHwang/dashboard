@@ -304,6 +304,10 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .uni-row-sub td{background:var(--pine-soft);font-weight:400;color:#3d4657;font-size:12px}
 .uni-row-sublabel{padding-left:22px !important;color:var(--muted)}
 .uni-kpi-note{font-size:11px;color:var(--muted);margin-top:6px}
+.uni-delta{font-size:10.5px;font-weight:700;margin-top:1px}
+.uni-delta.up{color:#1f7a52}
+.uni-delta.down{color:var(--alert)}
+.uni-delta.flat{color:var(--muted)}
 .home-scope-bar label{font-size:12px;font-weight:700;color:var(--pine)}
 .home-scope-bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
 .home-scope-label{margin-left:auto;font-size:12.5px;color:#3d4657}
@@ -4405,11 +4409,35 @@ function kpiRowData(scope){
   const na = scope.mgr==='HQ';
   return {
     na,
-    academy:{mem:(bm['숲'][7]||0)+(bm['IGSE'][7]||0), new:(nw['숲'][7]||0)+(nw['IGSE'][7]||0), centers:cnt.academy},
-    op:{mem:bm['우영'][7]||0, new:nw['우영'][7]||0, centers:cnt.op},
-    total:{mem:bm['전체'][7]||0, new:nw['전체'][7]||0, centers:cnt.total},
-    curi:{mem:curi.mem[7]||0, workbook:curi.workbook[7]||0, textbook:curi.textbook[7]||0, centers:curiCnt}
+    academy:{
+      mem:(bm['숲'][7]||0)+(bm['IGSE'][7]||0), memPrev:(bm['숲'][6]||0)+(bm['IGSE'][6]||0),
+      new:(nw['숲'][7]||0)+(nw['IGSE'][7]||0), newPrev:(nw['숲'][6]||0)+(nw['IGSE'][6]||0),
+      centers:cnt.academy
+    },
+    op:{
+      mem:bm['우영'][7]||0, memPrev:bm['우영'][6]||0,
+      new:nw['우영'][7]||0, newPrev:nw['우영'][6]||0,
+      centers:cnt.op
+    },
+    total:{
+      mem:bm['전체'][7]||0, memPrev:bm['전체'][6]||0,
+      new:nw['전체'][7]||0, newPrev:nw['전체'][6]||0,
+      centers:cnt.total
+    },
+    curi:{
+      mem:curi.mem[7]||0, memPrev:curi.mem[6]||0,
+      workbook:curi.workbook[7]||0, workbookPrev:curi.workbook[6]||0,
+      textbook:curi.textbook[7]||0, textbookPrev:curi.textbook[6]||0,
+      centers:curiCnt
+    }
   };
+}
+// 전월대비 작은 표시(숫자 아래) — 센터수는 월별 이력이 없어 대상 아님
+function uniDelta(cur, prev){
+  const d = cur-prev;
+  if(d>0) return `<div class="uni-delta up">▲+${fmtNum(d)}</div>`;
+  if(d<0) return `<div class="uni-delta down">▼${fmtNum(d)}</div>`;
+  return `<div class="uni-delta flat">→0</div>`;
 }
 // 전국/매니저/본부 각 행을 독립적으로 펼치고 접음
 let _kpiExpanded = {nation:false, mgr:false, br:false};
@@ -4431,20 +4459,24 @@ function renderUnifiedKpiGrid(){
     const clickAttr = d.na ? '' : `onclick="toggleKpiExpand('${r.role}')"`;
     body += `<tr class="uni-row-main">
       <td class="uni-row-label" ${clickAttr}>${arrow} ${r.label}</td>
-      <td class="num">${d.na?'—':fmtNum(d.total.mem)+'명'}</td>
-      <td class="num">${d.na?'—':fmtNum(d.total.new)+'명'}</td>
+      <td class="num">${d.na?'—':`${fmtNum(d.total.mem)}명${uniDelta(d.total.mem,d.total.memPrev)}`}</td>
+      <td class="num">${d.na?'—':`${fmtNum(d.total.new)}명${uniDelta(d.total.new,d.total.newPrev)}`}</td>
       <td class="num">${d.na?'—':fmtNum(d.total.centers)+'개'}</td>
-      <td class="num">${fmtNum(d.curi.mem)}명</td>
-      <td class="num">${fmtNum(d.curi.workbook)}</td>
-      <td class="num">${fmtNum(d.curi.textbook)}</td>
+      <td class="num">${fmtNum(d.curi.mem)}명${uniDelta(d.curi.mem,d.curi.memPrev)}</td>
+      <td class="num">${fmtNum(d.curi.workbook)}${uniDelta(d.curi.workbook,d.curi.workbookPrev)}</td>
+      <td class="num">${fmtNum(d.curi.textbook)}${uniDelta(d.curi.textbook,d.curi.textbookPrev)}</td>
       <td class="num">${fmtNum(d.curi.centers)}개</td>
     </tr>`;
     if(exp && !d.na){
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 학원</td>
-        <td class="num">${fmtNum(d.academy.mem)}명</td><td class="num">${fmtNum(d.academy.new)}명</td><td class="num">${fmtNum(d.academy.centers)}개</td>
+        <td class="num">${fmtNum(d.academy.mem)}명${uniDelta(d.academy.mem,d.academy.memPrev)}</td>
+        <td class="num">${fmtNum(d.academy.new)}명${uniDelta(d.academy.new,d.academy.newPrev)}</td>
+        <td class="num">${fmtNum(d.academy.centers)}개</td>
         <td colspan="4"></td></tr>`;
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 우영</td>
-        <td class="num">${fmtNum(d.op.mem)}명</td><td class="num">${fmtNum(d.op.new)}명</td><td class="num">${fmtNum(d.op.centers)}개</td>
+        <td class="num">${fmtNum(d.op.mem)}명${uniDelta(d.op.mem,d.op.memPrev)}</td>
+        <td class="num">${fmtNum(d.op.new)}명${uniDelta(d.op.new,d.op.newPrev)}</td>
+        <td class="num">${fmtNum(d.op.centers)}개</td>
         <td colspan="4"></td></tr>`;
     }
   });
@@ -4457,7 +4489,7 @@ function renderUnifiedKpiGrid(){
       </tr></thead>
       <tbody>${body}</tbody>
     </table>
-    <p class="uni-kpi-note">학원·우영 센터수 = 폐업 처리되지 않은 센터 기준 · 큐리매쓰 센터수 = 센터명에 "(해지)"가 없는 기준(8월 값)</p>
+    <p class="uni-kpi-note">학원·우영 센터수 = 폐업 처리되지 않은 센터 기준 · 큐리매쓰 센터수 = 센터명에 "(해지)"가 없는 기준(8월 값) · 색 숫자는 전월(7월) 대비 증감</p>
   </div>`;
 }
 

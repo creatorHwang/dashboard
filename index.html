@@ -275,6 +275,17 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 
 /* ===== 홈 화면(매니저별 주간 요약) ===== */
 .home-week-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.home-quicknav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.qn-pill{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s}
+.qn-pill:hover{background:var(--pine-soft);border-color:var(--pine);color:var(--pine)}
+.hq-tabs{display:flex;gap:8px;margin-bottom:6px}
+.hq-tab{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:7px 18px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+.hq-tab.active{background:var(--pine);color:#fff;border-color:var(--pine)}
+.curi-merged-table td, .curi-merged-table th{font-size:12.5px}
+.curi-center-cell{vertical-align:middle;background:var(--pine-soft);border-right:2px solid var(--line)}
+.curi-metric{color:var(--muted);font-weight:700;font-size:11.5px;white-space:nowrap}
+.curi-group-start td{border-top:2px solid var(--line)}
+.curi-merged-table thead th{position:sticky;top:0;z-index:5;background:#eef0ea;box-shadow:0 1px 0 var(--line)}
 .home-scope-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--pine-soft);border-radius:8px;padding:9px 12px}
 .home-scope-bar label{font-size:12px;font-weight:700;color:var(--pine)}
 .home-scope-bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
@@ -2828,6 +2839,10 @@ function parseHash(){
   if(h==='home' || h==='') return {view:'home'};
   const mHomeSec = h.match(/^home:(mem|new|curi)$/);
   if(mHomeSec) return {view:'home', scrollTo:mHomeSec[1]};
+  const mHq = h.match(/^hq:(eng|curi)$/);
+  if(mHq) return {view:'hq', section:mHq[1]};
+  const mHqCuri = h.match(/^hqcuri:([^/]+)\/(.+)$/);
+  if(mHqCuri) return {view:'hqcuri', mgr:decodeURIComponent(mHqCuri[1]), region:decodeURIComponent(mHqCuri[2])};
   const mDoc = h.match(/^doc:(.+)$/);
   if(mDoc){
     const id = decodeURIComponent(mDoc[1]);
@@ -2855,6 +2870,8 @@ function parseHash(){
 }
 function stringifyRoute(r){
   if(r.view==='home') return r.scrollTo ? `home:${r.scrollTo}` : 'home';
+  if(r.view==='hq') return `hq:${r.section}`;
+  if(r.view==='hqcuri') return `hqcuri:${encodeURIComponent(r.mgr)}/${encodeURIComponent(r.region)}`;
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
   if(r.view==='voc') return `voc:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
   if(r.view==='mgr') return `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
@@ -3991,6 +4008,11 @@ const MENU = [
     ]},
   { id:'mgr',  label:'👤 매니저', type:'group', expanded:true,
     children: () => DATA.managers.map(m => ({ id:'mgr:'+m.name, label:m.name })) },
+  { id:'hq',   label:'🏢 본사 직영', type:'group', expanded:false,
+    children: () => [
+      {id:'hq:eng', label:'영어'},
+      {id:'hq:curi', label:'큐리매쓰'}
+    ]},
   { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
     children: () => DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name })) },
   { id:'doc',  label:'🔗 외부 문서', type:'group', expanded:true,
@@ -4008,8 +4030,9 @@ function toggleMenuGroup(id){ _sbExpanded[id] = !_sbExpanded[id]; renderSidebar(
 function navigableGroupClicked(id, route){ _sbExpanded[id] = !_sbExpanded[id]; go(route); }
 
 function menuItemRoute(id){
-  // 하위메뉴 id → go() 라우트로 변환 (홈 섹션/매니저/VOC/문서 모두 지원)
+  // 하위메뉴 id → go() 라우트로 변환 (홈 섹션/매니저/본사직영/VOC/문서 모두 지원)
   if(id.startsWith('home:')) return {view:'home', scrollTo:id.slice(5)};
+  if(id.startsWith('hq:')) return {view:'hq', section:id.slice(3)};
   if(id.startsWith('mgr:')){
     const name = id.slice(4);
     return {view:'mgr', mgr:DATA.managers.findIndex(m=>m.name===name)};
@@ -4041,6 +4064,7 @@ function renderSidebar(){
       html += `<div class="submenu" style="max-height:${exp? (kids.length*34+10)+'px':'0'}">`;
       kids.forEach(k=>{
         const isActive = k.id.startsWith('home:') ? (route.view==='home' && route.scrollTo===k.id.slice(5))
+                        : k.id.startsWith('hq:') ? (route.view==='hq' && route.section===k.id.slice(3))
                         : k.id.startsWith('mgr:') ? (activeMgrName===k.id.slice(4))
                         : k.id.startsWith('voc:') ? (activeVocName===k.id.slice(4))
                         : k.id.startsWith('doc:') ? (route.view==='doc' && route.doc===k.id.slice(4))
@@ -4054,6 +4078,7 @@ function renderSidebar(){
 }
 
 function renderCrumbs(){
+  if(route.view==='home'){ crumbs.innerHTML=''; return; }
   let h = '<a onclick="go({view:\'home\'})">홈</a>';
   if(route.view==='doc'){
     const d = DOC_LINKS.find(x=>x.id===route.doc);
@@ -4065,9 +4090,16 @@ function renderCrumbs(){
     crumbs.innerHTML = h + `<span class="sep">›</span>📞 VOC<span class="sep">›</span><b style="color:var(--ink)">${m.name}</b>`;
     return;
   }
-  if(route.view!=='home'){
-    h += `<span class="sep">›</span><a onclick='go({view:"main"})'>매니저 목록</a>`;
+  if(route.view==='hq'){
+    crumbs.innerHTML = h + `<span class="sep">›</span>🏢 본사 직영<span class="sep">›</span><b style="color:var(--ink)">${route.section==='eng'?'영어':'큐리매쓰'}</b>`;
+    return;
   }
+  if(route.view==='hqcuri'){
+    const mgrLabel = route.mgr==='본사' ? '본사 직영' : route.mgr;
+    crumbs.innerHTML = h + `<span class="sep">›</span><a onclick="go({view:'hq',section:'curi'})">🏢 본사 직영 · 큐리매쓰</a><span class="sep">›</span><a onclick="go({view:'hq',section:'curi'})">${mgrLabel}</a><span class="sep">›</span><b style="color:var(--ink)">${route.region}</b>`;
+    return;
+  }
+  h += `<span class="sep">›</span><a onclick='go({view:"main"})'>매니저 목록</a>`;
   if(route.mgr!=null){
     const m = DATA.managers[route.mgr];
     h += `<span class="sep">›</span><a onclick='go({view:"mgr",mgr:${route.mgr}})'>${m.name}</a>`;
@@ -4089,6 +4121,8 @@ function render(){
     }
     return;
   }
+  if(route.view==='hq') return renderHq();
+  if(route.view==='hqcuri') return renderHqCuri();
   if(route.view==='doc') return renderDoc();
   if(route.view==='voc') return renderVoc();
   if(route.view==='main') return renderMain();
@@ -4412,6 +4446,206 @@ function curiBrChanged(v){
 }
 
 /* ===== 홈 화면: 매니저별 주간 활동 요약 ===== */
+// 사이드바 메뉴를 홈 화면 상단에도 동일하게 노출(빠른 이동용)
+function renderHomeQuickNav(){
+  const items = [
+    {label:'실회원 추이', action:"go({view:'home',scrollTo:'mem'})"},
+    {label:'신규회원 추이', action:"go({view:'home',scrollTo:'new'})"},
+    {label:'큐리매쓰 현황', action:"go({view:'home',scrollTo:'curi'})"},
+  ].concat(DATA.managers.map((m,i)=>({label:m.name, action:`go({view:'mgr',mgr:${i}})`})))
+   .concat([{label:'본사 직영', action:"go({view:'hq',section:'curi'})"}]);
+  return `<div class="home-quicknav">${items.map(it=>`<button class="qn-pill" onclick="${it.action}">${it.label}</button>`).join('')}</div>`;
+}
+
+/* ============================================================
+   본사 직영 — 매니저 카테고리와 동일하게 "클릭 시 내부 진입"
+   - 영어: 실제 DATA 브랜치를 그대로 참조(데이터 이동 없음). 보고서가
+     있으면 기존 대시보드가, 없으면 기존 placeholder(메모 기반) 화면이
+     자동으로 뜬다 — 별도 렌더링 로직 불필요.
+   - 큐리매쓰: 매니저별 본부 + 본사 직영 5개 하위그룹을 나열하고,
+     클릭하면 센터별 실적(월별 실회원/매출) 테이블을 보여준다.
+   ============================================================ */
+const HQ_ENG_REGIONS = [
+  {mgr:'김혜림', br:'서울양천', label:'서울양천(김혜림)'},
+  {mgr:'윤길한', br:'수원영통', label:'수원영통(윤길한)'},
+  {mgr:'황성연', br:'전남순천', label:'전남순천(황성연)'},
+  {mgr:'황지애', br:'직영학원', label:'직영학원(황지애)'},
+  {mgr:'황지애', br:'우영직영본부', label:'우영직영본부(황지애)'},
+  {mgr:'황지애', br:'울산(직영우본)', label:'울산(직영우본-황지애)'}
+];
+function curiRegionsByManager(){
+  const map = {};
+  CURI_DATA.forEach(r=>{
+    if(r.mgr==='본사') return;
+    map[r.mgr] = map[r.mgr] || new Set();
+    map[r.mgr].add(r.region);
+  });
+  const out = {};
+  Object.keys(map).forEach(k=> out[k] = Array.from(map[k]).sort((a,b)=>a.localeCompare(b,'ko')));
+  return out;
+}
+function curiHqSubGroupsSorted(){
+  return Array.from(new Set(CURI_DATA.filter(r=>r.mgr==='본사').map(r=>r.sub))).sort((a,b)=>a.localeCompare(b,'ko'));
+}
+function hqTabsHtml(section){
+  return `<div class="hq-tabs">
+    <button class="hq-tab ${section==='eng'?'active':''}" onclick="go({view:'hq',section:'eng'})">🔤 영어</button>
+    <button class="hq-tab ${section==='curi'?'active':''}" onclick="go({view:'hq',section:'curi'})">🧮 큐리매쓰</button>
+  </div>`;
+}
+function renderHq(){
+  const section = route.section || 'eng';
+  if(section==='curi') return renderHqCuriList();
+  return renderHqEng();
+}
+function renderHqEng(){
+  const cards = HQ_ENG_REGIONS.map(item=>{
+    const mi = DATA.managers.findIndex(m=>m.name===item.mgr);
+    const b = DATA.managers[mi].branches.find(x=>x.name===item.br);
+    const bi = DATA.managers[mi].branches.indexOf(b);
+    const low = b.centers.filter(isLowCenter).length;
+    const mngd = b.centers.filter(c=>c.mng.months.length>0).length;
+    const cov = b.centers.length? (mngd/b.centers.length*100).toFixed(0) : 0;
+    const badge = b.placeholder ? '<span class="pill">메모 기반</span>' : '<span class="pill" style="background:#e4f3ec;color:#1f7a52">보고서 있음</span>';
+    return `<div class="br-card" onclick='go(${JSON.stringify({view:'br',mgr:mi,br:bi})})'>
+      <div class="bc-name">🏢 ${item.label} ${badge}</div>
+      <div class="bc-meta">센터 ${b.centers.length}개 · 커버리지 ${cov}% · 저실적 <b class="warn">${low}개</b></div>
+    </div>`;
+  }).join('');
+  app.innerHTML = `
+    <h2 class="mgr">🏢 본사 직영</h2>
+    ${hqTabsHtml('eng')}
+    <p class="hint" style="margin:14px 0">각 매니저가 관리하는 직영 지역입니다. 대부분 활동보고서를 제출하지 않아 활동 KPI·건강도·SWOT·면담가이드 대신 <b>매니저 메모·센터별 메모</b>로 현황을 확인합니다. (보고서가 있는 지역은 기존과 동일하게 전체 대시보드가 표시됩니다.)</p>
+    <div class="br-grid">${cards}</div>`;
+}
+function renderHqCuriList(){
+  const byMgr = curiRegionsByManager();
+  const mgrBlocks = DATA.managers.filter(m=>byMgr[m.name]).map(m=>{
+    const cards = byMgr[m.name].map(rg=>`<div class="br-card" onclick='go(${JSON.stringify({view:'hqcuri',mgr:m.name,region:rg})})'>
+      <div class="bc-name">🧮 ${rg}</div><div class="bc-meta">${m.name} 담당</div>
+    </div>`).join('');
+    return `<div class="voc-branch"><div class="voc-branch-t">▸ ${m.name}</div><div class="br-grid">${cards}</div></div>`;
+  }).join('');
+  const hqCards = curiHqSubGroupsSorted().map(sub=>`<div class="br-card placeholder" onclick='go(${JSON.stringify({view:'hqcuri',mgr:'본사',region:sub})})'>
+    <div class="bc-name">🏢 ${sub}</div><div class="bc-meta">본사 직영</div>
+  </div>`).join('');
+  app.innerHTML = `
+    <h2 class="mgr">🏢 본사 직영</h2>
+    ${hqTabsHtml('curi')}
+    <h3 class="hb" style="margin-top:16px">매니저별 큐리매쓰 본부</h3>
+    ${mgrBlocks}
+    <h3 class="hb" style="margin-top:22px">본사 직영</h3>
+    <div class="br-grid">${hqCards}</div>`;
+}
+/* ===== 큐리매쓰 센터 메모 (기존 메모 저장소·모달을 그대로 재사용, 별도 네임스페이스) =====
+   key 규칙: 매니저='황지애'|'본사', 본부='큐리매쓰:<지역명>' → 실제 DATA 센터와 절대 겹치지 않음 */
+function jsq(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+let _curiModalCtx = null;
+function openCuriMemo(mgrLabel, region, center, idx){
+  _curiModalCtx = {mgr:mgrLabel, region, center, idx};
+  const ov = document.getElementById('centerModal');
+  document.getElementById('modalBody').innerHTML = renderCuriMemoBody(mgrLabel, region, center);
+  ov.classList.add('show');
+  renderCuriMemoLog();
+}
+function renderCuriMemoBody(mgrLabel, region, center){
+  return `
+    <div class="dm-head">
+      <div><div class="dm-name">${center}</div>
+      <div class="dm-sub">큐리매쓰 · ${region} · 담당 ${mgrLabel}</div></div>
+    </div>
+    <div class="dm-memo" style="border-top:none;padding-top:0">
+      <div class="dm-memo-title">📝 매니저 메모 <span id="curiMemoCnt"></span></div>
+      <div class="dm-memo-form">
+        <input type="date" id="curiMemoDate" class="memo-date" value="${todayStr()}">
+        <input type="text" id="curiMemoText" class="memo-text" placeholder="메모 내용 입력 후 Enter 또는 추가"
+          onkeydown="if(event.key==='Enter')submitCuriMemo()">
+        <button class="memo-add" onclick="submitCuriMemo()">＋ 추가</button>
+      </div>
+      <div id="curiMemoLog" class="dm-memo-log"></div>
+    </div>`;
+}
+function submitCuriMemo(){
+  if(!_curiModalCtx) return;
+  const dEl=document.getElementById('curiMemoDate'), tEl=document.getElementById('curiMemoText');
+  const br = '큐리매쓰:'+_curiModalCtx.region;
+  if(addMemoLog(_curiModalCtx.mgr, br, _curiModalCtx.center, dEl.value, tEl.value)){
+    tEl.value=''; renderCuriMemoLog(); tEl.focus();
+    const badge = document.getElementById('curimemobadge-'+_curiModalCtx.idx);
+    if(badge){ const n=memoCount(_curiModalCtx.mgr, br, _curiModalCtx.center); badge.textContent = n?`📝${n}`:''; }
+  }
+}
+function renderCuriMemoLog(){
+  if(!_curiModalCtx) return;
+  const br = '큐리매쓰:'+_curiModalCtx.region;
+  const log = getMemoLog(_curiModalCtx.mgr, br, _curiModalCtx.center)
+    .slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ts-b.ts);
+  const el = document.getElementById('curiMemoLog');
+  const cnt = document.getElementById('curiMemoCnt');
+  if(cnt) cnt.textContent = log.length?`(${log.length}건)`:'(0건)';
+  if(!log.length){ el.innerHTML = '<div class="memo-empty">아직 메모가 없습니다. 날짜와 내용을 입력해 추가하세요.</div>'; return; }
+  el.innerHTML = log.map(x=>`<div class="memo-item">
+    <div class="memo-item-date">${x.date||'-'}</div>
+    <div class="memo-item-text">${eschtml(x.text)}</div>
+    <button class="memo-del" title="삭제" onclick="removeCuriMemo(${x.ts})">✕</button>
+  </div>`).join('');
+}
+function removeCuriMemo(ts){
+  if(!_curiModalCtx) return;
+  const br = '큐리매쓰:'+_curiModalCtx.region;
+  deleteMemoLog(_curiModalCtx.mgr, br, _curiModalCtx.center, ts);
+  renderCuriMemoLog();
+  const badge = document.getElementById('curimemobadge-'+_curiModalCtx.idx);
+  if(badge){ const n=memoCount(_curiModalCtx.mgr, br, _curiModalCtx.center); badge.textContent = n?`📝${n}`:''; }
+}
+
+function renderHqCuri(){
+  const mgr = route.mgr, region = route.region;
+  let rows = CURI_DATA.filter(r => mgr==='본사' ? (r.mgr==='본사' && r.sub===region) : (r.mgr===mgr && r.region===region));
+  rows = rows.filter(r => !r.center.includes('(해지)'));   // ① 해지 센터는 표시하지 않음
+  rows = rows.map((r,idx)=>({...r, idx}));
+
+  const mgrLabel = mgr==='본사' ? '본사' : mgr;
+  const br = '큐리매쓰:'+region;
+
+  const totalMem8 = rows.reduce((s,r)=>s+(r.mem[7]||0),0);
+  const totalWb8 = rows.reduce((s,r)=>s+(r.workbook[7]||0),0);
+  const totalTb8 = rows.reduce((s,r)=>s+(r.textbook[7]||0),0);
+  const noData = `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">등록된 센터가 없습니다.</td></tr>`;
+
+  // 센터 1개당 3행(실회원·문제은행·교재매출)을 하나의 표로 묶고, 센터명 칸은 rowspan으로 병합
+  const metricRows = rows.map(r=>{
+    const cnt = memoCount(mgrLabel, br, r.center);
+    const nameCell = `<td rowspan="3" class="curi-center-cell">
+        <a class="center-link" onclick="openCuriMemo('${jsq(mgrLabel)}','${jsq(region)}','${jsq(r.center)}',${r.idx})">${r.center}<span class="memo-badge" id="curimemobadge-${r.idx}">${cnt?`📝${cnt}`:''}</span></a>
+      </td>`;
+    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.mem[i]===null?'-':r.mem[i]}</td>`).join('');
+    const wbCells  = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.workbook[i]===null?'-':fmtNum(r.workbook[i])}</td>`).join('');
+    const tbCells  = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.textbook[i]===null?'-':fmtNum(r.textbook[i])}</td>`).join('');
+    return `<tr class="curi-group-start">${nameCell}<td class="curi-metric">실회원</td>${memCells}</tr>
+      <tr><td class="curi-metric">문제은행</td>${wbCells}</tr>
+      <tr class="curi-group-end"><td class="curi-metric">교재매출</td>${tbCells}</tr>`;
+  }).join('');
+
+  app.innerHTML = `
+    <button class="back-btn" style="margin:0 0 14px" onclick="go({view:'hq',section:'curi'})">‹ 큐리매쓰 목록으로</button>
+    <h2 class="mgr">🧮 큐리매쓰 · ${mgr==='본사'?'본사 직영':mgr}</h2>
+    <h3 class="hb">${region} — 센터별 실적 <span style="font-size:12px;font-weight:400;color:var(--muted)">(해지 센터 제외 · 센터명 클릭 시 메모)</span></h3>
+    <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr;max-width:520px;margin:12px 0">
+      <div class="kpi" style="border-top-color:var(--amber)"><div class="k-label">실회원(8월)</div><div class="k-val">${fmtNum(totalMem8)}명</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">문제은행(8월)</div><div class="k-val">${fmtNum(totalWb8)}</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재매출(8월)</div><div class="k-val">${fmtNum(totalTb8)}</div></div>
+    </div>
+
+    <div class="track">
+      <div class="t-head"><span class="badge">실적</span><h4>센터별 월별 실적 — 실회원 · 문제은행 · 교재매출</h4></div>
+      <table class="curi-merged-table">
+        <thead><tr><th>센터명</th><th>구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
+        <tbody>${metricRows || noData}</tbody>
+      </table>
+    </div>`;
+}
+
 let _homeRange = null;
 function renderHome(){
   if(!_homeRange) _homeRange = weekRange();
@@ -4437,11 +4671,21 @@ function renderHome(){
     </div>`;
   }).join('');
 
+  // 본사 직영 카드(큐리매쓰 전용 — 학원/우영 실적이 없어 별도 지표로 표시)
+  const hqCuri = curiSeriesForScope({mgr:'HQ', br:null});
+  const hqMem8 = hqCuri.mem[7], hqRev8 = (hqCuri.workbook[7]||0)+(hqCuri.textbook[7]||0);
+  const hqCard = `<div class="home-card" onclick="go({view:'hq',section:'curi'})">
+    <div class="hc-name">본사 직영 <span class="hc-score" style="background:#f1eafc;color:#7c3aed">🧮 큐리매쓰</span></div>
+    <div class="hc-meta">큐리매쓰 실회원(8월) <b>${fmtNum(hqMem8)}명</b> · 매출 합계(8월) <b>${fmtNum(hqRev8)}</b></div>
+    <div class="hc-empty">직영·경남·부산연제·창원지사·김해양산지사 통합 — 클릭 시 큐리매쓰 현황으로 이동</div>
+  </div>`;
+
   // 큐리매쓰 전사 요약(8월 기준 KPI)
   const curiAll = curiSeriesForScope({mgr:null,br:null});
   const curiMem8 = curiAll.mem[7], curiWb8 = curiAll.workbook[7], curiTb8 = curiAll.textbook[7];
 
   app.innerHTML = `
+    ${renderHomeQuickNav()}
     <div class="card-box section-gap" id="sec-mem">
       <h4>📈 실회원 추이 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 전국 / 매니저 / 본부 드릴다운</span></h4>
       <div style="margin-bottom:10px">${renderHomeKpiRow()}</div>
@@ -4476,7 +4720,7 @@ function renderHome(){
       </div>
     </div>
 
-    <div class="home-week-bar">
+    <div class="home-week-bar" id="sec-weekly">
       <button class="rp-nav" onclick="homeShiftWeek(-1)">‹ 이전주</button>
       <span class="wk-label">${r.from} ~ ${r.to}</span>
       <button class="rp-nav" onclick="homeShiftWeek(1)">다음주 ›</button>
@@ -4487,7 +4731,7 @@ function renderHome(){
       <span>조치 필요 <b style="color:var(--alert)">${sAction}건</b></span>
       <span>🔴 위험 센터 <b>${sRisk}개</b></span>
     </div>
-    <div class="home-grid">${cards}</div>
+    <div class="home-grid">${cards}${hqCard}</div>
     <p class="hint" style="margin-top:16px">매니저 카드를 클릭하면 해당 매니저의 본부 목록으로 이동합니다. 왼쪽 사이드바에서 특정 매니저로 바로 이동할 수도 있습니다.</p>`;
 
   drawHomeBmChart();

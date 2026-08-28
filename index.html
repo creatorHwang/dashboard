@@ -275,7 +275,7 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 
 /* ===== 홈 화면(매니저별 주간 요약) ===== */
 .home-week-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.home-quicknav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.home-quicknav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;position:sticky;top:0;z-index:40;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--line)}
 .qn-pill{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s}
 .qn-pill:hover{background:var(--pine-soft);border-color:var(--pine);color:var(--pine)}
 .hq-tabs{display:flex;gap:8px;margin-bottom:6px}
@@ -2135,37 +2135,16 @@ async function cloudPush(action,key,item){
 }
 
 /* ============================================================
-   민감정보(원장명·연락처·주소·개설일) 인증 조회
-   - 비밀번호는 공용 1개. 인증 성공 시 서버가 토큰 발급.
-   - 토큰은 sessionStorage에 저장 → 탭을 닫으면 자동 해제.
-   - 같은 탭 안에서는 화면 전환·뒤로가기와 무관하게 유지됨.
-   - 인증 전에는 원장명/연락처/주소가 브라우저 어디에도 존재하지 않음.
+   센터 정보(원장명·연락처·주소·개설일) 조회
+   - 인증 없이 바로 조회(요청에 따라 비밀번호 절차 제거).
    ============================================================ */
-const AUTH_TOKEN_KEY = 'fc_auth_token';
-function getAuthToken(){ try{ return sessionStorage.getItem(AUTH_TOKEN_KEY); }catch(e){ return null; } }
-function setAuthToken(t){ try{ sessionStorage.setItem(AUTH_TOKEN_KEY, t); }catch(e){} }
-function clearAuthToken(){ try{ sessionStorage.removeItem(AUTH_TOKEN_KEY); }catch(e){} }
-
-async function authLogin(password){
-  if(!CLOUD_URL) return {ok:false, error:'클라우드 연동이 설정되지 않았습니다.'};
-  try{
-    const res = await fetch(CLOUD_URL, {method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action:'login', password})});
-    const data = await res.json();
-    if(data.ok){ setAuthToken(data.token); return {ok:true}; }
-    return {ok:false, error: data.error || '비밀번호가 일치하지 않습니다.'};
-  }catch(e){ return {ok:false, error:'서버에 연결할 수 없습니다.'}; }
-}
 async function fetchDirectorInfo(centerName){
-  const token = getAuthToken();
-  if(!token) return {ok:false, needAuth:true};
   try{
     const res = await fetch(CLOUD_URL, {method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action:'getDirectorInfo', centerName, token})});
+      body: JSON.stringify({action:'getDirectorInfo', centerName})});
     const data = await res.json();
-    if(!data.ok){ clearAuthToken(); return {ok:false, needAuth:true, error:data.error}; }
+    if(!data.ok){ return {ok:false, error:data.error}; }
     return {ok:true, info:data.info};
   }catch(e){ return {ok:false, error:'서버에 연결할 수 없습니다.'}; }
 }
@@ -2185,35 +2164,10 @@ function calcBizDuration(dateStr){
 }
 
 function directorInfoHtml(centerName){
-  const token = getAuthToken();
-  if(!token){
-    return `<div class="dir-info">
-      <div class="dir-title">🔒 센터 정보</div>
-      <div class="dir-locked">
-        <input type="password" id="dirPw" class="memo-text" placeholder="비밀번호 입력" style="max-width:200px"
-          onkeydown="if(event.key==='Enter')submitDirAuth()">
-        <button class="memo-add" onclick="submitDirAuth()">확인</button>
-      </div>
-      <div id="dirAuthErr" class="dir-err"></div>
-    </div>`;
-  }
   return `<div class="dir-info">
     <div class="dir-title">🔒 센터 정보 <span id="dirRefresh" class="dir-refresh" onclick="loadDirectorInfo()">↻ 새로고침</span></div>
     <div id="dirBody" class="dir-body">불러오는 중…</div>
   </div>`;
-}
-async function submitDirAuth(){
-  const pwEl = document.getElementById('dirPw');
-  const errEl = document.getElementById('dirAuthErr');
-  const pw = pwEl ? pwEl.value : '';
-  if(!pw) return;
-  errEl.textContent = '확인 중…';
-  const r = await authLogin(pw);
-  if(!r.ok){ errEl.textContent = r.error; return; }
-  // 인증 성공 → 담당자 정보 블록으로 전환
-  const box = document.querySelector('.dir-info');
-  if(box && _modalCtx) box.outerHTML = directorInfoHtml(_modalCtx.c);
-  loadDirectorInfo();
 }
 // 빈 값으로 간주할 값들 (공백, 대시, "없음" 등 시트에 흔히 들어가는 표기)
 function isBlankVal(v){
@@ -2227,12 +2181,7 @@ async function loadDirectorInfo(){
   if(body) body.innerHTML = '불러오는 중…';
   const r = await fetchDirectorInfo(_modalCtx.c);
   if(!r.ok){
-    if(r.needAuth){
-      const box = document.querySelector('.dir-info');
-      if(box) box.outerHTML = directorInfoHtml(_modalCtx.c);
-    } else if(body){
-      body.innerHTML = `<span class="dir-err">${eschtml(r.error||'조회 실패')}</span>`;
-    }
+    if(body) body.innerHTML = `<span class="dir-err">${eschtml(r.error||'조회 실패')}</span>`;
     return;
   }
   const info = r.info || {};
@@ -2515,7 +2464,7 @@ function openCenterDetail(mgrIdx,brIdx,cIdx){
   ov.classList.add('show');
   drawDetailChart(c);
   renderMemoLog();
-  if(getAuthToken()) loadDirectorInfo();   // 이미 인증된 세션이면 바로 조회
+  loadDirectorInfo();   // 인증 없이 항상 바로 조회
 }
 function closeCenterDetail(){
   const ov=document.getElementById('centerModal');

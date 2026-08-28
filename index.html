@@ -287,6 +287,22 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .curi-group-start td{border-top:2px solid var(--line)}
 .curi-merged-table thead th{position:sticky;top:0;z-index:5;background:#eef0ea;box-shadow:0 1px 0 var(--line)}
 .home-scope-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--pine-soft);border-radius:8px;padding:9px 12px}
+.uni-scope-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--pine-soft);border-radius:8px;padding:9px 12px;
+  position:sticky;top:54px;z-index:39;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:14px}
+.uni-scope-bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+.uni-scope-bar label{font-size:12px;font-weight:700;color:var(--pine)}
+.uni-kpi-grid{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:22px;width:fit-content;max-width:100%}
+.uni-reset-btn{background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+.uni-reset-btn:hover{background:var(--alert-bg);border-color:var(--alert);color:var(--alert)}
+.uni-kpi-corner{background:var(--card)}
+.uni-kpi-colhead{background:var(--pine);color:#fff;font-weight:800;font-size:13px;padding:9px 8px;text-align:center}
+.uni-kpi-rowhead{background:var(--card);font-weight:700;font-size:12.5px;padding:10px 8px;display:flex;align-items:center}
+.uni-kpi-cell{background:#fff;padding:10px 8px;text-align:center}
+.uni-kpi-cell b{font-size:16px;color:var(--ink)}
+.uni-kpi-sub{font-size:11px;margin-top:2px}
+.uni-kpi-cell.na{color:var(--muted)}
+.uni-kpi-cell.na .na-dash{font-size:18px;font-weight:800;color:#c4c9be}
+.uni-kpi-cell.na .uni-kpi-sub{color:var(--muted)}
 .home-scope-bar label{font-size:12px;font-weight:700;color:var(--pine)}
 .home-scope-bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
 .home-scope-label{margin-left:auto;font-size:12.5px;color:#3d4657}
@@ -4183,10 +4199,17 @@ function renderScopePicker(scope, idPrefix, mgrChangeFn, brChangeFn, includeHQ){
     </div>`;
 }
 
-/* ── ① 실회원(숲/IGSE/우영) 드릴다운 ── */
-let _homeScope = {mgr:null, br:null};
+/* ============================================================
+   실회원 · 신규회원 · 큐리매쓰 — 통합 드릴다운
+   선택 상태(_scope) 하나를 세 지표가 함께 읽는다.
+   전국(항상) → 매니저(선택 시) → 본부(선택 시) 순으로 KPI 열이 늘어난다.
+   본사(HQ) 선택 시 실회원·신규회원은 해당 없음("—")으로 표시.
+   ============================================================ */
+let _scope = {mgr:null, br:null};
+
 function homeSeriesForScope(scope){
   const cats = {'전체':new Array(8).fill(0), '숲':new Array(8).fill(0), 'IGSE':new Array(8).fill(0), '우영':new Array(8).fill(0)};
+  if(scope.mgr==='HQ') return cats; // 본사는 학원/우영 실회원 데이터 없음
   let branchesToSum = [];
   if(scope.mgr===null){ DATA.managers.forEach(m=>branchesToSum.push(...m.branches)); }
   else {
@@ -4202,7 +4225,43 @@ function homeSeriesForScope(scope){
   }));
   return cats;
 }
-let _homeChart2=null;
+function newSeriesForScope(scope){
+  const cats = {'전체':new Array(8).fill(0), '숲':new Array(8).fill(0), 'IGSE':new Array(8).fill(0), '우영':new Array(8).fill(0)};
+  if(scope.mgr==='HQ') return cats; // 본사는 학원/우영 신규회원 데이터 없음
+  let branchesToSum = [];
+  if(scope.mgr===null){ DATA.managers.forEach(m=>branchesToSum.push(...m.branches)); }
+  else {
+    const m = DATA.managers.find(x=>x.name===scope.mgr);
+    if(m){
+      if(!scope.br || scope.br==='합산') branchesToSum = m.branches;
+      else { const b=m.branches.find(x=>x.name===scope.br); if(b) branchesToSum=[b]; }
+    }
+  }
+  branchesToSum.forEach(b=>b.centers.forEach(c=>{
+    const arr = NEWMEM_DATA[normCenterName(c.name)];
+    if(!arr) return;
+    const cat=bmCategory(c.form);
+    for(let i=0;i<8;i++){ const v=arr[i]||0; cats['전체'][i]+=v; cats[cat][i]+=v; }
+  }));
+  return cats;
+}
+function curiSeriesForScope(scope){
+  const out = {mem:new Array(8).fill(0), workbook:new Array(8).fill(0), textbook:new Array(8).fill(0)};
+  CURI_DATA.forEach(r=>{
+    let include=false;
+    if(scope.mgr===null) include=true;
+    else if(scope.mgr==='HQ'){
+      if(r.mgr==='본사'){ include = (!scope.br||scope.br==='합산') ? true : r.sub===scope.br; }
+    } else {
+      if(r.mgr===scope.mgr){ include = (!scope.br||scope.br==='합산') ? true : r.region===scope.br; }
+    }
+    if(include) for(let i=0;i<8;i++){
+      out.mem[i]+=(r.mem[i]||0); out.workbook[i]+=(r.workbook[i]||0); out.textbook[i]+=(r.textbook[i]||0);
+    }
+  });
+  return out;
+}
+
 /* 막대 끝에 값 표시(툴팁 대신) — 차트별로 plugins:[barValueLabelPlugin] 로 등록 */
 const barValueLabelPlugin = {
   id: 'barValueLabel',
@@ -4226,11 +4285,12 @@ const barValueLabelPlugin = {
     });
   }
 };
+let _homeChart2=null;
 function drawHomeBmChart(){
   if(typeof Chart==='undefined')return;
   const el=document.getElementById('homeBmChart'); if(!el)return;
   if(_homeChart2)_homeChart2.destroy();
-  const cats = homeSeriesForScope(_homeScope);
+  const cats = homeSeriesForScope(_scope);
   _homeChart2 = new Chart(el,{
     data:{labels:MONTH_LABELS.slice(0,8), datasets:[
       {type:'bar', label:'숲', data:cats['숲'], backgroundColor:'#2f7a58'},
@@ -4249,74 +4309,12 @@ function drawHomeBmChart(){
         tooltip:{enabled:false}}
     }});
 }
-// 스코프별 8월/전월 실회원 합계 (드릴다운 요약 카드용)
-function homeKpiFor(scope){
-  const cats = homeSeriesForScope(scope);
-  return {total8:cats['전체'][7], total7:cats['전체'][6]};
-}
-function homeKpiCardHtml(label, kpi, colorVar){
-  const d = kpi.total8 - kpi.total7;
-  const dHtml = d>0?`<span class="delta-up">▲+${fmtNum(d)}</span>`:d<0?`<span class="delta-down">▼${fmtNum(d)}</span>`:`<span class="delta-flat">→0</span>`;
-  return `<div class="kpi" style="border-top-color:${colorVar}">
-    <div class="k-label">${label}</div>
-    <div class="k-val">${fmtNum(kpi.total8)}명</div>
-    <div class="k-delta">${dHtml} <span style="font-size:11px;color:var(--muted)">전월대비</span></div>
-  </div>`;
-}
-function renderHomeKpiRow(){
-  const cards = [homeKpiCardHtml('전국 실회원 (8월)', homeKpiFor({mgr:null,br:null}), 'var(--pine)')];
-  if(_homeScope.mgr!==null){
-    cards.push(homeKpiCardHtml(`${_homeScope.mgr} 실회원 (8월)`, homeKpiFor({mgr:_homeScope.mgr,br:null}), 'var(--amber)'));
-  }
-  if(_homeScope.br){
-    cards.push(homeKpiCardHtml(`${_homeScope.br} 실회원 (8월)`, homeKpiFor({mgr:_homeScope.mgr,br:_homeScope.br}), '#7c3aed'));
-  }
-  return `<div class="kpi-row" id="homeKpiRow" style="grid-template-columns:repeat(${cards.length},minmax(200px,1fr));max-width:${cards.length*230}px">${cards.join('')}</div>`;
-}
-function homeMgrChanged(v){
-  _homeScope = {mgr: v===''? null : v, br:null};
-  const bar = document.querySelector('[data-prefix="home"]');
-  if(bar) bar.outerHTML = renderScopePicker(_homeScope,'home','homeMgrChanged','homeBrChanged',false);
-  const kpi = document.getElementById('homeKpiRow');
-  if(kpi) kpi.outerHTML = renderHomeKpiRow();
-  drawHomeBmChart();
-}
-function homeBrChanged(v){
-  _homeScope.br = v===''? null : v;
-  const lbl = document.querySelector('[data-prefix="home"] .home-scope-label');
-  if(lbl) lbl.innerHTML = `현재 보기: <b>${scopeLabel(_homeScope)}</b>`;
-  const kpi = document.getElementById('homeKpiRow');
-  if(kpi) kpi.outerHTML = renderHomeKpiRow();
-  drawHomeBmChart();
-}
-
-/* ── ①-2 신규회원 드릴다운 (실회원과 완전히 동일한 방식) ── */
-let _newScope = {mgr:null, br:null};
-function newSeriesForScope(scope){
-  const cats = {'전체':new Array(8).fill(0), '숲':new Array(8).fill(0), 'IGSE':new Array(8).fill(0), '우영':new Array(8).fill(0)};
-  let branchesToSum = [];
-  if(scope.mgr===null){ DATA.managers.forEach(m=>branchesToSum.push(...m.branches)); }
-  else {
-    const m = DATA.managers.find(x=>x.name===scope.mgr);
-    if(m){
-      if(!scope.br || scope.br==='합산') branchesToSum = m.branches;
-      else { const b=m.branches.find(x=>x.name===scope.br); if(b) branchesToSum=[b]; }
-    }
-  }
-  branchesToSum.forEach(b=>b.centers.forEach(c=>{
-    const arr = NEWMEM_DATA[normCenterName(c.name)];
-    if(!arr) return;
-    const cat=bmCategory(c.form);
-    for(let i=0;i<8;i++){ const v=arr[i]||0; cats['전체'][i]+=v; cats[cat][i]+=v; }
-  }));
-  return cats;
-}
 let _newChart=null;
 function drawNewMemChart(){
   if(typeof Chart==='undefined')return;
   const el=document.getElementById('newMemChart'); if(!el)return;
   if(_newChart)_newChart.destroy();
-  const cats = newSeriesForScope(_newScope);
+  const cats = newSeriesForScope(_scope);
   _newChart = new Chart(el,{
     data:{labels:MONTH_LABELS.slice(0,8), datasets:[
       {type:'bar', label:'숲', data:cats['숲'], backgroundColor:'#2f7a58'},
@@ -4335,59 +4333,10 @@ function drawNewMemChart(){
         tooltip:{enabled:false}}
     }});
 }
-function newKpiFor(scope){
-  const cats = newSeriesForScope(scope);
-  return {total8:cats['전체'][7], total7:cats['전체'][6]};
-}
-function newKpiRow(){
-  const cards = [homeKpiCardHtml('전국 신규회원 (8월)', newKpiFor({mgr:null,br:null}), 'var(--pine)')];
-  if(_newScope.mgr!==null){
-    cards.push(homeKpiCardHtml(`${_newScope.mgr} 신규회원 (8월)`, newKpiFor({mgr:_newScope.mgr,br:null}), 'var(--amber)'));
-  }
-  if(_newScope.br){
-    cards.push(homeKpiCardHtml(`${_newScope.br} 신규회원 (8월)`, newKpiFor({mgr:_newScope.mgr,br:_newScope.br}), '#7c3aed'));
-  }
-  return `<div class="kpi-row" id="newKpiRow" style="grid-template-columns:repeat(${cards.length},minmax(200px,1fr));max-width:${cards.length*230}px">${cards.join('')}</div>`;
-}
-function newMgrChanged(v){
-  _newScope = {mgr: v===''? null : v, br:null};
-  const bar = document.querySelector('[data-prefix="new"]');
-  if(bar) bar.outerHTML = renderScopePicker(_newScope,'new','newMgrChanged','newBrChanged',false);
-  const kpi = document.getElementById('newKpiRow');
-  if(kpi) kpi.outerHTML = newKpiRow();
-  drawNewMemChart();
-}
-function newBrChanged(v){
-  _newScope.br = v===''? null : v;
-  const lbl = document.querySelector('[data-prefix="new"] .home-scope-label');
-  if(lbl) lbl.innerHTML = `현재 보기: <b>${scopeLabel(_newScope)}</b>`;
-  const kpi = document.getElementById('newKpiRow');
-  if(kpi) kpi.outerHTML = newKpiRow();
-  drawNewMemChart();
-}
-
-/* ── ② 큐리매쓰 (실회원/매출) 드릴다운 — 전국·매니저·본사 하위그룹까지 ── */
-let _curiScope = {mgr:null, br:null};
-function curiSeriesForScope(scope){
-  const out = {mem:new Array(8).fill(0), workbook:new Array(8).fill(0), textbook:new Array(8).fill(0)};
-  CURI_DATA.forEach(r=>{
-    let include=false;
-    if(scope.mgr===null) include=true;
-    else if(scope.mgr==='HQ'){
-      if(r.mgr==='본사'){ include = (!scope.br||scope.br==='합산') ? true : r.sub===scope.br; }
-    } else {
-      if(r.mgr===scope.mgr){ include = (!scope.br||scope.br==='합산') ? true : r.region===scope.br; }
-    }
-    if(include) for(let i=0;i<8;i++){
-      out.mem[i]+=(r.mem[i]||0); out.workbook[i]+=(r.workbook[i]||0); out.textbook[i]+=(r.textbook[i]||0);
-    }
-  });
-  return out;
-}
 let _curiChartMem=null, _curiChartRev=null;
 function drawCuriCharts(){
   if(typeof Chart==='undefined')return;
-  const s = curiSeriesForScope(_curiScope);
+  const s = curiSeriesForScope(_scope);
   const elM=document.getElementById('curiMemberChart');
   if(elM){
     if(_curiChartMem)_curiChartMem.destroy();
@@ -4414,17 +4363,83 @@ function drawCuriCharts(){
         plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
   }
 }
-function curiMgrChanged(v){
-  _curiScope = {mgr: v===''? null : v, br:null};
-  const bar = document.querySelector('[data-prefix="curi"]');
-  if(bar) bar.outerHTML = renderScopePicker(_curiScope,'curi','curiMgrChanged','curiBrChanged',true);
+
+// ── 통합 KPI 격자: 열=전국/매니저/본부, 행=실회원/신규회원/큐리매쓰 ──
+function kpiColumnsFor(scope){
+  const cols = [{label:'전국', s:{mgr:null, br:null}}];
+  if(scope.mgr!==null){
+    cols.push({label: scope.mgr==='HQ' ? '본사' : scope.mgr, s:{mgr:scope.mgr, br:null}});
+  }
+  if(scope.br){
+    cols.push({label:scope.br, s:{mgr:scope.mgr, br:scope.br}});
+  }
+  return cols;
+}
+function kpiCellHtml(total8, total7, na){
+  if(na) return `<div class="uni-kpi-cell na"><span class="na-dash">—</span><div class="uni-kpi-sub">해당 없음</div></div>`;
+  const d = total8-total7;
+  const dHtml = d>0?`<span class="delta-up">▲+${fmtNum(d)}</span>`:d<0?`<span class="delta-down">▼${fmtNum(d)}</span>`:`<span class="delta-flat">→0</span>`;
+  return `<div class="uni-kpi-cell"><b>${fmtNum(total8)}명</b><div class="uni-kpi-sub">${dHtml}</div></div>`;
+}
+function renderUnifiedKpiGrid(){
+  const cols = kpiColumnsFor(_scope);
+  const rows = [
+    {label:'📈 실회원', fn:(s)=>{ const c=homeSeriesForScope(s); return {v8:c['전체'][7], v7:c['전체'][6], na:s.mgr==='HQ'}; }},
+    {label:'🆕 신규회원', fn:(s)=>{ const c=newSeriesForScope(s); return {v8:c['전체'][7], v7:c['전체'][6], na:s.mgr==='HQ'}; }},
+    {label:'🧮 큐리매쓰', fn:(s)=>{ const c=curiSeriesForScope(s); return {v8:c.mem[7], v7:c.mem[6], na:false}; }},
+  ];
+  let html = `<div class="uni-kpi-grid" id="uniKpiGrid" style="grid-template-columns:88px repeat(${cols.length},minmax(150px,220px))">`;
+  html += `<div class="uni-kpi-corner"></div>`;
+  cols.forEach(c=>html += `<div class="uni-kpi-colhead">${c.label}</div>`);
+  rows.forEach(r=>{
+    html += `<div class="uni-kpi-rowhead">${r.label}</div>`;
+    cols.forEach(c=>{
+      const {v8,v7,na} = r.fn(c.s);
+      html += kpiCellHtml(v8,v7,na);
+    });
+  });
+  html += `</div>`;
+  return html;
+}
+
+// ── 통합 선택기(스크롤 고정) ──
+function renderUnifiedScopePicker(){
+  const mgrOpts = ['<option value="">전국</option>']
+    .concat(DATA.managers.map(m=>`<option value="${m.name}" ${_scope.mgr===m.name?'selected':''}>${m.name}</option>`))
+    .concat([`<option value="HQ" ${_scope.mgr==='HQ'?'selected':''}>본사(큐리매쓰)</option>`]);
+  const brList = scopeBranchOptions(_scope.mgr);
+  const brOpts = ['<option value="">합산</option>'].concat(
+    brList.map(n=>`<option value="${n}" ${_scope.br===n?'selected':''}>${n}</option>`));
+  return `
+    <div class="uni-scope-bar" id="uniScopeBar">
+      <label>매니저</label>
+      <select onchange="uniMgrChanged(this.value)">${mgrOpts.join('')}</select>
+      ${_scope.mgr!==null ? `<label>본부</label>
+      <select onchange="uniBrChanged(this.value)">${brOpts.join('')}</select>
+      <button class="uni-reset-btn" onclick="uniReset()" title="전국으로 초기화">↺ 초기화</button>` : ''}
+      <span class="home-scope-label">현재 보기: <b>${scopeLabel(_scope)}</b></span>
+    </div>`;
+}
+function refreshUnifiedPanel(){
+  const bar = document.getElementById('uniScopeBar');
+  if(bar) bar.outerHTML = renderUnifiedScopePicker();
+  const grid = document.getElementById('uniKpiGrid');
+  if(grid) grid.outerHTML = renderUnifiedKpiGrid();
+  drawHomeBmChart();
+  drawNewMemChart();
   drawCuriCharts();
 }
-function curiBrChanged(v){
-  _curiScope.br = v===''? null : v;
-  const lbl = document.querySelector('[data-prefix="curi"] .home-scope-label');
-  if(lbl) lbl.innerHTML = `현재 보기: <b>${scopeLabel(_curiScope)}</b>`;
-  drawCuriCharts();
+function uniMgrChanged(v){
+  _scope = {mgr: v===''? null : v, br:null};
+  refreshUnifiedPanel();
+}
+function uniBrChanged(v){
+  _scope.br = v===''? null : v;
+  refreshUnifiedPanel();
+}
+function uniReset(){
+  _scope = {mgr:null, br:null};
+  refreshUnifiedPanel();
 }
 
 /* ===== 홈 화면: 매니저별 주간 활동 요약 ===== */
@@ -4662,41 +4677,33 @@ function renderHome(){
     <div class="hc-empty">직영·경남·부산연제·창원지사·김해양산지사 통합 — 클릭 시 큐리매쓰 현황으로 이동</div>
   </div>`;
 
-  // 큐리매쓰 전사 요약(8월 기준 KPI)
   const curiAll = curiSeriesForScope({mgr:null,br:null});
   const curiMem8 = curiAll.mem[7], curiWb8 = curiAll.workbook[7], curiTb8 = curiAll.textbook[7];
 
   app.innerHTML = `
     ${renderHomeQuickNav()}
+    ${renderUnifiedScopePicker()}
+    ${renderUnifiedKpiGrid()}
+
     <div class="card-box section-gap" id="sec-mem">
-      <h4>📈 실회원 추이 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 전국 / 매니저 / 본부 드릴다운</span></h4>
-      <div style="margin-bottom:10px">${renderHomeKpiRow()}</div>
-      ${renderScopePicker(_homeScope,'home','homeMgrChanged','homeBrChanged',false)}
-      <div class="trend-wrap" style="height:280px;margin-top:10px"><canvas id="homeBmChart"></canvas></div>
+      <h4>📈 실회원 추이</h4>
+      <div class="trend-wrap" style="height:280px"><canvas id="homeBmChart"></canvas></div>
     </div>
 
     <div class="card-box section-gap" id="sec-new">
-      <h4>🆕 신규회원 추이 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 전국 / 매니저 / 본부 드릴다운</span></h4>
-      <div style="margin-bottom:10px">${newKpiRow()}</div>
-      ${renderScopePicker(_newScope,'new','newMgrChanged','newBrChanged',false)}
-      <div class="trend-wrap" style="height:280px;margin-top:10px"><canvas id="newMemChart"></canvas></div>
+      <h4>🆕 신규회원 추이</h4>
+      <div class="trend-wrap" style="height:280px"><canvas id="newMemChart"></canvas></div>
     </div>
 
     <div class="card-box section-gap" id="sec-curi">
-      <h4>🧮 큐리매쓰 현황 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 실회원 · 매출(문제은행/교재) · 전국/매니저/본부 드릴다운</span></h4>
-      <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;max-width:560px">
-        <div class="kpi" style="border-top-color:var(--amber)"><div class="k-label">실회원 (8월)</div><div class="k-val">${fmtNum(curiMem8)}명</div></div>
-        <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">문제은행 (8월)</div><div class="k-val">${fmtNum(curiWb8)}</div></div>
-        <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재매출 (8월)</div><div class="k-val">${fmtNum(curiTb8)}</div></div>
-      </div>
-      ${renderScopePicker(_curiScope,'curi','curiMgrChanged','curiBrChanged',true)}
+      <h4>🧮 큐리매쓰 현황 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 실회원(선그래프) · 매출(막대그래프)</span></h4>
       <div class="dash-grid2b" style="margin-top:10px">
         <div>
-          <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">실회원 추이(선그래프)</div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">실회원 추이</div>
           <div class="trend-wrap" style="height:220px"><canvas id="curiMemberChart"></canvas></div>
         </div>
         <div>
-          <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">매출 추이(막대그래프) — 문제은행 / 교재매출</div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">매출 추이 — 문제은행 / 교재매출</div>
           <div class="trend-wrap" style="height:220px"><canvas id="curiRevenueChart"></canvas></div>
         </div>
       </div>

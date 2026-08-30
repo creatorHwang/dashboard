@@ -353,6 +353,16 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 
 /* ===== 본부 상세: 매니저명·가맹본부명 스크롤 고정 ===== */
 .branch-head-sticky{position:sticky;top:0;z-index:30;background:var(--paper);padding-top:4px;margin:0 0 14px;border-bottom:1px solid var(--line)}
+.center-quick-pick{display:flex;align-items:center;gap:8px;padding:8px 0 12px;font-size:12.5px}
+.center-quick-pick label{font-weight:700;color:var(--amber)}
+.center-quick-pick select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+.t2-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px}
+.t2-filter-bar label{font-weight:700;color:var(--pine)}
+.t2-filter-bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+.ac-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;background:var(--pine-soft);border-radius:8px;padding:9px 12px}
+.ac-filter-bar label{font-size:12px;font-weight:700;color:var(--pine)}
+.ac-filter-bar select,.ac-filter-bar input{border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+.ac-filter-bar input{flex:1;min-width:140px}
 .branch-head-sticky .back-btn{margin:0 0 10px !important}
 .branch-head-sticky h3.hb{padding-bottom:10px}
 </style>
@@ -2706,6 +2716,64 @@ function priorityTier(c){
   if(t.diff<0) return 3;
   return 4;
 }
+// Track2 정렬 모드 (본부별 키로 상태 유지)
+let _t2SortMode = {};
+const T2_BM_ORDER = {'학원(숲)':0, '학원(IGSE)':1, '학원(상가형)':2, '교습소':3, '공부방':4};
+function t2Key(brName){ return brName.replace(/[^a-zA-Z0-9가-힣]/g,''); }
+function t2SortComparator(mode){
+  if(mode==='mem_desc') return (a,b)=> (b.c.mem[7]??-Infinity) - (a.c.mem[7]??-Infinity);
+  if(mode==='mem_asc')  return (a,b)=> (a.c.mem[7]??Infinity) - (b.c.mem[7]??Infinity);
+  if(mode==='bm') return (a,b)=> (T2_BM_ORDER[a.c.form]??9)-(T2_BM_ORDER[b.c.form]??9) || a.tier-b.tier;
+  return (a,b)=> a.tier-b.tier || b.u-a.u; // priority(기본)
+}
+function t2FilterBarHtml(brName){
+  const key = t2Key(brName);
+  const mode = _t2SortMode[key] || 'priority';
+  const opts = [['priority','우선순위'],['mem_desc','실회원 많은순'],['mem_asc','실회원 적은순'],['bm','BM별(숲→IGSE→상가형→교습소→공부방)']];
+  return `<div class="t2-filter-bar">
+    <label>정렬</label>
+    <select onchange="changeT2Sort('${key}', this.value)">
+      ${opts.map(([v,l])=>`<option value="${v}" ${mode===v?'selected':''}>${l}</option>`).join('')}
+    </select>
+  </div>`;
+}
+function changeT2Sort(key, mode){
+  _t2SortMode[key] = mode;
+  const tbody = document.getElementById('t2body-'+key);
+  if(tbody && typeof route!=='undefined' && route.view==='br'){
+    const m = DATA.managers[route.mgr], b = m.branches[route.br];
+    tbody.innerHTML = buildTrack2Rows(m, b, route.mgr, route.br);
+  }
+}
+// Track2 행 생성(정렬 모드 반영) — 초기 렌더와 필터 변경 시 재사용
+function buildTrack2Rows(m, b, mgrIdx, brIdx){
+  const mode = _t2SortMode[t2Key(b.name)] || 'priority';
+  const ordered = b.centers.map((c,idx)=>({c,idx,tier:priorityTier(c),u:urgencyScore(c)}))
+    .sort(t2SortComparator(mode));
+  return ordered.map(({c,idx})=>{
+    const low = isLowCenter(c);
+    const cells = MONTH_LABELS.map((_,i)=>{
+      const v = c.mem[i]; const flag = isLowMonth(c,i);
+      return `<td class="num ${flag?'warn':''}">${v===null?'-':v}${flag?' 🚨':''}</td>`;
+    }).join('');
+    const heat = `<span class="heat">${MONTH_LABELS.map((_,i)=>{
+      const on=c.mng.months.includes(i+1); return `<span class="${on?'on':'off'}" title="${i+1}월 ${on?'면담':'미면담'}"></span>`;
+    }).join('')}</span>`;
+    const t=memTrend(c);
+    const trendTxt = `${t.first??'-'}→${t.last??'-'} <b class="${t.diff>0?'delta-up':t.diff<0?'delta-down':'delta-flat'}">${t.diff>0?'+':''}${t.diff}</b>`;
+    const risk=riskLevel(c);
+    const tier=priorityTier(c);
+    const prioLabel={1:'1순위',2:'2순위',3:'3순위',4:'4순위'}[tier];
+    const mc=memoCount(m.name,b.name,c.name);
+    return `<tr class="${low?'low-row':''}">
+      <td><span class="prio-tag prio-${tier}">${prioLabel}</span></td>
+      <td><a class="center-link" onclick="openCenterDetail(${mgrIdx},${brIdx},${idx})">${c.name}<span class="memo-badge" id="memobadge-${idx}">${mc?`📝${mc}`:''}</span></a></td>
+      <td class="num">${c.form}</td>${cells}
+      <td class="num">${heat}</td>
+      <td class="num trend-cell">${trendTxt}</td>
+      <td class="num risk-dot risk-${risk.k}">${risk.t}</td></tr>`;
+  }).join('');
+}
 // 면담 TOP5 점수 (높을수록 시급)
 function urgencyScore(c){
   const t=memTrend(c), rec=recentDrop(c), noMng=c.mng.months.length===0;
@@ -2846,6 +2914,9 @@ function parseHash(){
   if(mHq) return {view:'hq', section:mHq[1]};
   const mHqCuri = h.match(/^hqcuri:([^/]+)\/(.+)$/);
   if(mHqCuri) return {view:'hqcuri', mgr:decodeURIComponent(mHqCuri[1]), region:decodeURIComponent(mHqCuri[2])};
+  if(h==='allcenters') return {view:'allcenters'};
+  const mAllList = h.match(/^allcenters:(eng|math)$/);
+  if(mAllList) return {view:'allcenterslist', brand:mAllList[1]};
   const mDoc = h.match(/^doc:(.+)$/);
   if(mDoc){
     const id = decodeURIComponent(mDoc[1]);
@@ -2875,6 +2946,8 @@ function stringifyRoute(r){
   if(r.view==='home') return r.scrollTo ? `home:${r.scrollTo}` : 'home';
   if(r.view==='hq') return `hq:${r.section}`;
   if(r.view==='hqcuri') return `hqcuri:${encodeURIComponent(r.mgr)}/${encodeURIComponent(r.region)}`;
+  if(r.view==='allcenters') return 'allcenters';
+  if(r.view==='allcenterslist') return `allcenters:${r.brand}`;
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
   if(r.view==='voc') return `voc:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
   if(r.view==='mgr') return `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
@@ -2893,9 +2966,9 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeCenterDetail()
 
 /* ===== 외부 문서 링크 (사이드바 내 인라인 열람/작성) ===== */
 const CURI_DATA = [
-  {region:'경남', mgr:'본사', sub:'경남', center:'큐리매쓰 경남 직영', mem:[90,90,90,90,90,90,90,90], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[306000,333000,206000,566000,189000,387000,207000,252000]},
-  {region:'경남', mgr:'본사', sub:'경남', center:'큐리매쓰 에이블 영수전문학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'경남', mgr:'본사', sub:'경남', center:'윤선생 큐리매쓰 수학교실 창원안민학원', mem:[7,5,5,5,5,5,5,5], workbook:[150000,90000,90000,150000,150000,150000,90000,90000], textbook:[52000,110000,null,null,null,121000,121000,121000]},
+  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 경남 직영', mem:[90,90,90,90,90,90,90,90], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[306000,333000,206000,566000,189000,387000,207000,252000]},
+  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 에이블 영수전문학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'경남', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 수학교실 창원안민학원', mem:[7,5,5,5,5,5,5,5], workbook:[150000,90000,90000,150000,150000,150000,90000,90000], textbook:[52000,110000,null,null,null,121000,121000,121000]},
   {region:'경남김해', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 숲의령', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,120000,null]},
   {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 대구경북 직영', mem:[1,1,1,1,1,1,1,1], workbook:[150000,150000,150000,150000,90000,150000,150000,150000], textbook:[null,null,117000,104000,null,null,null,null]},
   {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 신암교육원', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,150000,150000,150000,150000], textbook:[null,null,null,null,null,null,null,null]},
@@ -2919,10 +2992,10 @@ const CURI_DATA = [
   {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산장림', mem:[null,null,null,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,27000,69000,null,null,null]},
   {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE대연경성', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
   {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산모라', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 부산당리교육원', mem:[4,2,2,2,2,2,2,2], workbook:[90000,90000,150000,150000,90000,150000,90000,90000], textbook:[78000,null,null,52000,null,39000,13000,52000]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 부산연제 직영', mem:[15,15,15,15,15,15,15,15], workbook:[90000,90000,90000,90000,150000,90000,90000,90000], textbook:[236000,132000,91000,null,110000,65000,889000,null]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 만덕교육원', mem:[null,null,1,1,1,1,1,1], workbook:[null,null,150000,90000,90000,90000,90000,150000], textbook:[null,null,13000,13000,13000,26000,null,null]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 사직교육원', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,90000,90000,null,90000], textbook:[null,null,null,13000,13000,13000,13000,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산당리교육원', mem:[4,2,2,2,2,2,2,2], workbook:[90000,90000,150000,150000,90000,150000,90000,90000], textbook:[78000,null,null,52000,null,39000,13000,52000]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산연제 직영', mem:[15,15,15,15,15,15,15,15], workbook:[90000,90000,90000,90000,150000,90000,90000,90000], textbook:[236000,132000,91000,null,110000,65000,889000,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 만덕교육원', mem:[null,null,1,1,1,1,1,1], workbook:[null,null,150000,90000,90000,90000,90000,150000], textbook:[null,null,13000,13000,13000,26000,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 사직교육원', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,90000,90000,null,90000], textbook:[null,null,null,13000,13000,13000,13000,null]},
   {region:'부산해운대', mgr:'황지애', sub:null, center:'큐리매쓰 윤선생IGSE동삼학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,90000,90000,90000,90000], textbook:[null,null,null,null,9000,12500,null,14500]},
   {region:'부산해운대', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 숲좌동중앙어학원', mem:[null,null,null,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
   {region:'부산해운대', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산개금', mem:[null,null,null,12,12,12,12,12], workbook:[null,null,null,null,null,null,90000,150000], textbook:[null,null,null,81000,null,81000,null,null]},
@@ -2960,47 +3033,47 @@ const CURI_DATA = [
   {region:'충남세종', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 내포에듀시티학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,27000,null,null,25000,null]},
   {region:'충남세종', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 IGSE홍성홍남', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,66000,null]},
   {region:'충남세종', mgr:'황성연', sub:null, center:'큐리매쓰 세종산울 리첸시아', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,63000,null,null,24000,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 아소비탑에듀', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'윤선생 큐리매쓰 숲광명광문', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 용인동백', mem:[null,null,null,null,null,null,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,54000,108000]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'윤선생 큐리매쓰 사고력 덕의수학교습소', mem:[null,null,null,null,null,15,15,16], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,313000,153000]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 옥빛초점', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 딱풀리는수학평내1호', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 메타인지교습소', mem:[null,null,null,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,108000,null,36000,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 예스수학학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 광주,전남서부', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,90000,90000,90000,90000,90000,90000], textbook:[null,13000,13000,13000,13000,13000,13000,13000]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 마곡교육원', mem:[null,null,null,null,null,null,null,null], workbook:[90000,90000,90000,null,null,null,null,null], textbook:[13000,null,26000,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'새솔동 위드유수학 큐리매쓰 교육원', mem:[null,null,null,null,null,null,null,null], workbook:[90000,90000,90000,90000,90000,null,null,null], textbook:[13000,null,26000,26000,78000,26000,null,39000]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 서초교육원', mem:[9,10,10,10,10,10,10,10], workbook:[90000,90000,150000,90000,90000,90000,90000,90000], textbook:[52000,null,52000,null,37000,26000,26000,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 용인역북교육원', mem:[10,8,9,9,6,6,8,7], workbook:[90000,150000,90000,90000,90000,90000,90000,90000], textbook:[null,65000,null,65000,65000,110000,110000,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 제주연동교육원', mem:[6,6,6,6,6,6,6,6], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,26000,16000,13000,13000,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 신철원교육원', mem:[2,3,3,2,2,2,3,3], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,13000,13000,13000,13000,26000]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'꼬마알 큐리매쓰 시흥교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'최강 큐리매쓰 갈매점', mem:[3,3,3,3,3,3,3,3], workbook:[null,null,null,null,null,null,null,null], textbook:[null,110000,null,26000,null,50000,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 배곧윤선생IGSE아카데미', mem:[2,2,3,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,26000]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 옥천교육원', mem:[19,18,18,16,14,15,19,19], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[91000,208000,130000,26000,215000,65000,221000,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 초월학원', mem:[1,1,1,1,1,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[13000,13000,13000,13000,13000,null,null,null]},
-  {region:'경남', mgr:'본사', sub:'경남', center:'큐리매쓰 주촌교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'윤선생 큐리매쓰 평화꽃밭학원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 이촌용강교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 연산교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 부산부곡교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 북부산교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 화명중앙교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 아소비탑에듀', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 숲광명광문', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 용인동백', mem:[null,null,null,null,null,null,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,54000,108000]},
+  {region:'본사', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 사고력 덕의수학교습소', mem:[null,null,null,null,null,15,15,16], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,313000,153000]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 옥빛초점', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 딱풀리는수학평내1호', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 메타인지교습소', mem:[null,null,null,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,108000,null,36000,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 예스수학학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 광주,전남서부', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,90000,90000,90000,90000,90000,90000], textbook:[null,13000,13000,13000,13000,13000,13000,13000]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 마곡교육원', mem:[null,null,null,null,null,null,null,null], workbook:[90000,90000,90000,null,null,null,null,null], textbook:[13000,null,26000,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'새솔동 위드유수학 큐리매쓰 교육원', mem:[null,null,null,null,null,null,null,null], workbook:[90000,90000,90000,90000,90000,null,null,null], textbook:[13000,null,26000,26000,78000,26000,null,39000]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 서초교육원', mem:[9,10,10,10,10,10,10,10], workbook:[90000,90000,150000,90000,90000,90000,90000,90000], textbook:[52000,null,52000,null,37000,26000,26000,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 용인역북교육원', mem:[10,8,9,9,6,6,8,7], workbook:[90000,150000,90000,90000,90000,90000,90000,90000], textbook:[null,65000,null,65000,65000,110000,110000,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 제주연동교육원', mem:[6,6,6,6,6,6,6,6], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,26000,16000,13000,13000,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 신철원교육원', mem:[2,3,3,2,2,2,3,3], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,13000,13000,13000,13000,26000]},
+  {region:'본사', mgr:'정은희', sub:null, center:'꼬마알 큐리매쓰 시흥교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'최강 큐리매쓰 갈매점', mem:[3,3,3,3,3,3,3,3], workbook:[null,null,null,null,null,null,null,null], textbook:[null,110000,null,26000,null,50000,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 배곧윤선생IGSE아카데미', mem:[2,2,3,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,26000]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 옥천교육원', mem:[19,18,18,16,14,15,19,19], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[91000,208000,130000,26000,215000,65000,221000,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 초월학원', mem:[1,1,1,1,1,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[13000,13000,13000,13000,13000,null,null,null]},
+  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 주촌교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 평화꽃밭학원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 이촌용강교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 연산교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산부곡교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 북부산교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 화명중앙교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
   {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 해운좌동교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'본사', sub:'부산연제', center:'큐리매쓰 부산동래교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산동래교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
   {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 부산당감동교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'큐리매쓰 창원지사', mgr:'본사', sub:'큐리매쓰 창원지사', center:'큐리매쓰 창원반림교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'큐리매쓰 창원지사', mgr:'본사', sub:'큐리매쓰 창원지사', center:'큐리매쓰 삼계광려교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'큐리매쓰 김해,양산지사', mgr:'본사', sub:'큐리매쓰 김해,양산지사', center:'큐리매쓰 양산물금교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 동대문교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 송파위례교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+
+  ,
+
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 동대문교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 송파위례교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
   {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 구월교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
   {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 대천교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
   {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 복현중앙교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
   {region:'대구경북', mgr:'윤길한', sub:null, center:'(해지)큐리매쓰 송정교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'큐리매쓰 강동중앙 교육원(해지)', mem:[5,5,5,null,null,null,null,null], workbook:[90000,90000,90000,null,null,null,null,null], textbook:[13000,13000,null,null,null,null,null,null]},
-  {region:'본사', mgr:'본사', sub:'직영', center:'윤선생 큐리매쓰 IGSE의정부가능(해지)', mem:[null,null,1,1,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]}
+  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 강동중앙 교육원(해지)', mem:[5,5,5,null,null,null,null,null], workbook:[90000,90000,90000,null,null,null,null,null], textbook:[13000,13000,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 IGSE의정부가능(해지)', mem:[null,null,1,1,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]}
 ];
 const CURI_MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월'];
 
@@ -4016,6 +4089,7 @@ const MENU = [
       {id:'hq:eng', label:'영어'},
       {id:'hq:curi', label:'큐리매쓰'}
     ]},
+  { id:'allcenters', label:'📋 전체 센터 현황', type:'single' },
   { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
     children: () => DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name })) },
   { id:'doc',  label:'🔗 외부 문서', type:'group', expanded:true,
@@ -4102,6 +4176,14 @@ function renderCrumbs(){
     crumbs.innerHTML = h + `<span class="sep">›</span><a onclick="go({view:'hq',section:'curi'})">🏢 본사 직영 · 큐리매쓰</a><span class="sep">›</span><a onclick="go({view:'hq',section:'curi'})">${mgrLabel}</a><span class="sep">›</span><b style="color:var(--ink)">${route.region}</b>`;
     return;
   }
+  if(route.view==='allcenters'){
+    crumbs.innerHTML = h + `<span class="sep">›</span><b style="color:var(--ink)">📋 전체 센터 현황</b>`;
+    return;
+  }
+  if(route.view==='allcenterslist'){
+    crumbs.innerHTML = h + `<span class="sep">›</span><a onclick="go({view:'allcenters'})">📋 전체 센터 현황</a><span class="sep">›</span><b style="color:var(--ink)">${route.brand==='eng'?'영어':'수학'}</b>`;
+    return;
+  }
   h += `<span class="sep">›</span><a onclick='go({view:"main"})'>매니저 목록</a>`;
   if(route.mgr!=null){
     const m = DATA.managers[route.mgr];
@@ -4126,6 +4208,8 @@ function render(){
   }
   if(route.view==='hq') return renderHq();
   if(route.view==='hqcuri') return renderHqCuri();
+  if(route.view==='allcenters') return renderAllCenters();
+  if(route.view==='allcenterslist') return renderAllCentersList();
   if(route.view==='doc') return renderDoc();
   if(route.view==='voc') return renderVoc();
   if(route.view==='main') return renderMain();
@@ -4179,7 +4263,10 @@ function scopeBranchOptions(mgrName, forCuri){
   if(mgrName===null) return [];
   if(mgrName==='HQ') return curiSubGroups();
   const m = DATA.managers.find(x=>x.name===mgrName);
-  return m ? m.branches.map(b=>b.name) : [];
+  if(m) return m.branches.map(b=>b.name);
+  // 실제 매니저(학원·우영)가 아닌 큐리매쓰 전용 담당자(예: 정은희) — 담당 지역 목록
+  const regions = new Set(CURI_DATA.filter(r=>r.mgr===mgrName).map(r=>r.region));
+  return Array.from(regions).sort((a,b)=>a.localeCompare(b,'ko'));
 }
 function scopeLabel(scope){
   if(scope.mgr===null) return '전국';
@@ -4298,11 +4385,11 @@ function drawHomeBmChart(){
   const cats = homeSeriesForScope(_scope);
   _homeChart2 = new Chart(el,{
     data:{labels:MONTH_LABELS.slice(0,8), datasets:[
-      {type:'bar', label:'숲', data:cats['숲'], backgroundColor:'#2f7a58'},
-      {type:'bar', label:'IGSE', data:cats['IGSE'], backgroundColor:'#1a2a6c'},
-      {type:'bar', label:'우영', data:cats['우영'], backgroundColor:'#7c3aed'},
-      {type:'line', label:'합계', data:cats['전체'], borderColor:'#c0392b', backgroundColor:'#c0392b',
-        tension:.3, borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#c0392b', fill:false, order:0}
+      {type:'bar', label:'숲', data:cats['숲'], backgroundColor:'#0891b2'},
+      {type:'bar', label:'IGSE', data:cats['IGSE'], backgroundColor:'#1e40af'},
+      {type:'bar', label:'우영', data:cats['우영'], backgroundColor:'#60a5fa'},
+      {type:'line', label:'합계', data:cats['전체'], borderColor:'#0c2d6b', backgroundColor:'#0c2d6b',
+        tension:.3, borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#0c2d6b', fill:false, order:0}
     ]},
     plugins:[barValueLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,
@@ -4322,11 +4409,11 @@ function drawNewMemChart(){
   const cats = newSeriesForScope(_scope);
   _newChart = new Chart(el,{
     data:{labels:MONTH_LABELS.slice(0,8), datasets:[
-      {type:'bar', label:'숲', data:cats['숲'], backgroundColor:'#2f7a58'},
-      {type:'bar', label:'IGSE', data:cats['IGSE'], backgroundColor:'#1a2a6c'},
-      {type:'bar', label:'우영', data:cats['우영'], backgroundColor:'#7c3aed'},
-      {type:'line', label:'합계', data:cats['전체'], borderColor:'#c0392b', backgroundColor:'#c0392b',
-        tension:.3, borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#c0392b', fill:false, order:0}
+      {type:'bar', label:'숲', data:cats['숲'], backgroundColor:'#0891b2'},
+      {type:'bar', label:'IGSE', data:cats['IGSE'], backgroundColor:'#1e40af'},
+      {type:'bar', label:'우영', data:cats['우영'], backgroundColor:'#60a5fa'},
+      {type:'line', label:'합계', data:cats['전체'], borderColor:'#0c2d6b', backgroundColor:'#0c2d6b',
+        tension:.3, borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#0c2d6b', fill:false, order:0}
     ]},
     plugins:[barValueLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,
@@ -4347,25 +4434,28 @@ function drawCuriCharts(){
     if(_curiChartMem)_curiChartMem.destroy();
     _curiChartMem = new Chart(elM,{type:'line',
       data:{labels:MONTH_LABELS.slice(0,8), datasets:[
-        {label:'실회원', data:s.mem, borderColor:'#e67e22', backgroundColor:'#e67e22', tension:.3, borderWidth:2.5, pointRadius:3}
+        {label:'실회원', data:s.mem, borderColor:'#f97316', backgroundColor:'#f97316', tension:.3, borderWidth:2.5, pointRadius:3}
       ]},
+      plugins:[barValueLabelPlugin],
       options:{responsive:true,maintainAspectRatio:false,
         scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},
           x:{ticks:{font:{size:11}},grid:{display:false}}},
-        plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
+        plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}}}});
   }
   const elR=document.getElementById('curiRevenueChart');
   if(elR){
     if(_curiChartRev)_curiChartRev.destroy();
-    _curiChartRev = new Chart(elR,{type:'bar',
+    const revTotal = s.workbook.map((v,i)=>(v||0)+(s.textbook[i]||0));
+    _curiChartRev = new Chart(elR,{type:'line',
       data:{labels:MONTH_LABELS.slice(0,8), datasets:[
-        {label:'문제은행', data:s.workbook, backgroundColor:'#2b6cb0'},
-        {label:'교재매출', data:s.textbook, backgroundColor:'#8a3ffc'}
+        {label:'매출 합계(문제은행+교재매출)', data:revTotal, borderColor:'#dc2626', backgroundColor:'#dc2626',
+          tension:.3, borderWidth:2.5, pointRadius:4, fill:false}
       ]},
+      plugins:[barValueLabelPlugin],
       options:{responsive:true,maintainAspectRatio:false,
         scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},
           x:{ticks:{font:{size:11}},grid:{display:false}}},
-        plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
+        plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}}}});
   }
 }
 
@@ -4406,7 +4496,7 @@ function kpiRowData(scope){
   const cnt = kpiCenterCounts(scope);
   const curi = curiSeriesForScope(scope);
   const curiCnt = kpiCuriCenterCount(scope);
-  const na = scope.mgr==='HQ';
+  const na = scope.mgr!==null && !DATA.managers.find(m=>m.name===scope.mgr); // HQ, 정은희 등 학원·우영 미보유 매니저
   return {
     na,
     academy:{
@@ -4495,9 +4585,15 @@ function renderUnifiedKpiGrid(){
 
 // ── 통합 선택기(스크롤 고정) ──
 function renderUnifiedScopePicker(){
+  const curiOnlyMgrs = Array.from(new Set(CURI_DATA.map(r=>r.mgr)))
+    .filter(n=>n!=='본사' && !DATA.managers.some(m=>m.name===n))
+    .sort((a,b)=>a.localeCompare(b,'ko'));
+  const hqOption = curiHqSubGroupsSorted().length
+    ? [`<option value="HQ" ${_scope.mgr==='HQ'?'selected':''}>본사(큐리매쓰)</option>`] : [];
   const mgrOpts = ['<option value="">전국</option>']
     .concat(DATA.managers.map(m=>`<option value="${m.name}" ${_scope.mgr===m.name?'selected':''}>${m.name}</option>`))
-    .concat([`<option value="HQ" ${_scope.mgr==='HQ'?'selected':''}>본사(큐리매쓰)</option>`]);
+    .concat(curiOnlyMgrs.map(n=>`<option value="${n}" ${_scope.mgr===n?'selected':''}>${n} (큐리매쓰)</option>`))
+    .concat(hqOption);
   const brList = scopeBranchOptions(_scope.mgr);
   const brOpts = ['<option value="">합산</option>'].concat(
     brList.map(n=>`<option value="${n}" ${_scope.br===n?'selected':''}>${n}</option>`));
@@ -4609,13 +4705,18 @@ function renderHqEng(){
 }
 function renderHqCuriList(){
   const byMgr = curiRegionsByManager();
-  const mgrBlocks = DATA.managers.filter(m=>byMgr[m.name]).map(m=>{
-    const cards = byMgr[m.name].map(rg=>`<div class="br-card" onclick='go(${JSON.stringify({view:'hqcuri',mgr:m.name,region:rg})})'>
-      <div class="bc-name">🧮 ${rg}</div><div class="bc-meta">${m.name} 담당</div>
+  // 실제 매니저(DATA 순서) 먼저, 그다음 큐리매쓰 전용 담당자(예: 정은희)
+  const realNames = DATA.managers.map(m=>m.name).filter(n=>byMgr[n]);
+  const extraNames = Object.keys(byMgr).filter(n=>!DATA.managers.some(m=>m.name===n)).sort((a,b)=>a.localeCompare(b,'ko'));
+  const orderedNames = realNames.concat(extraNames);
+  const mgrBlocks = orderedNames.map(name=>{
+    const cards = byMgr[name].map(rg=>`<div class="br-card" onclick='go(${JSON.stringify({view:'hqcuri',mgr:name,region:rg})})'>
+      <div class="bc-name">🧮 ${rg}</div><div class="bc-meta">${name} 담당</div>
     </div>`).join('');
-    return `<div class="voc-branch"><div class="voc-branch-t">▸ ${m.name}</div><div class="br-grid">${cards}</div></div>`;
+    return `<div class="voc-branch"><div class="voc-branch-t">▸ ${name}</div><div class="br-grid">${cards}</div></div>`;
   }).join('');
-  const hqCards = curiHqSubGroupsSorted().map(sub=>`<div class="br-card placeholder" onclick='go(${JSON.stringify({view:'hqcuri',mgr:'본사',region:sub})})'>
+  const hqSubs = curiHqSubGroupsSorted();
+  const hqCards = hqSubs.map(sub=>`<div class="br-card placeholder" onclick='go(${JSON.stringify({view:'hqcuri',mgr:'본사',region:sub})})'>
     <div class="bc-name">🏢 ${sub}</div><div class="bc-meta">본사 직영</div>
   </div>`).join('');
   app.innerHTML = `
@@ -4623,8 +4724,8 @@ function renderHqCuriList(){
     ${hqTabsHtml('curi')}
     <h3 class="hb" style="margin-top:16px">매니저별 큐리매쓰 본부</h3>
     ${mgrBlocks}
-    <h3 class="hb" style="margin-top:22px">본사 직영</h3>
-    <div class="br-grid">${hqCards}</div>`;
+    ${hqSubs.length ? `<h3 class="hb" style="margin-top:22px">본사 직영</h3>
+    <div class="br-grid">${hqCards}</div>` : ''}`;
 }
 /* ===== 큐리매쓰 센터 메모 (기존 메모 저장소·모달을 그대로 재사용, 별도 네임스페이스) =====
    key 규칙: 매니저='황지애'|'본사', 본부='큐리매쓰:<지역명>' → 실제 DATA 센터와 절대 겹치지 않음 */
@@ -4735,6 +4836,95 @@ function renderHqCuri(){
     </div>`;
 }
 
+/* ============================================================
+   전체 센터 현황 — 영어(학원·우영) / 수학(큐리매쓰) 전국 센터 리스트
+   ============================================================ */
+function renderAllCenters(){
+  let engTotal=0; DATA.managers.forEach(m=>m.branches.forEach(b=>engTotal+=b.centers.length));
+  const mathTotal = CURI_DATA.filter(r=>!r.center.includes('(해지)')).length;
+  app.innerHTML = `
+    <h2 class="mgr">📋 전체 센터 현황</h2>
+    <p class="hint" style="margin:10px 0 16px">브랜드를 선택하면 전국 센터별 월별 실적을 한 화면에서 확인할 수 있습니다.</p>
+    <div class="br-grid">
+      <div class="br-card" onclick="go({view:'allcenterslist',brand:'eng'})">
+        <div class="bc-name">🔤 영어 (학원·우영)</div>
+        <div class="bc-meta">센터 ${fmtNum(engTotal)}개 · 월별 실회원·신규회원</div>
+      </div>
+      <div class="br-card" onclick="go({view:'allcenterslist',brand:'math'})">
+        <div class="bc-name">🧮 수학 (큐리매쓰)</div>
+        <div class="bc-meta">센터 ${fmtNum(mathTotal)}개(해지 제외) · 월별 실회원</div>
+      </div>
+    </div>`;
+}
+let _acFilterMgr = '', _acSearch = '';
+function renderAllCentersList(){
+  const brand = route.brand;
+  _acFilterMgr = ''; _acSearch = '';
+  const mgrOpts = brand==='eng'
+    ? DATA.managers.map(m=>`<option value="${m.name}">${m.name}</option>`).join('')
+    : Array.from(new Set(CURI_DATA.map(r=>r.mgr))).sort((a,b)=>a.localeCompare(b,'ko')).map(n=>`<option value="${n}">${n}</option>`).join('');
+  app.innerHTML = `
+    <button class="back-btn" style="margin:0 0 14px" onclick="go({view:'allcenters'})">‹ 전체 센터 현황으로</button>
+    <h2 class="mgr">${brand==='eng'?'🔤 영어':'🧮 수학'} 전체 센터 현황</h2>
+    <div class="ac-filter-bar">
+      <label>매니저</label>
+      <select id="acMgrSel" onchange="acFilterChanged()"><option value="">전체</option>${mgrOpts}</select>
+      <label>검색</label>
+      <input type="text" id="acSearchInput" placeholder="센터명 검색" oninput="acFilterChanged()">
+    </div>
+    <div id="acTableWrap">${brand==='eng' ? buildAllCentersEngTable() : buildAllCentersMathTable()}</div>`;
+}
+function acFilterChanged(){
+  _acFilterMgr = document.getElementById('acMgrSel').value;
+  _acSearch = document.getElementById('acSearchInput').value.trim();
+  const wrap = document.getElementById('acTableWrap');
+  if(wrap) wrap.innerHTML = route.brand==='eng' ? buildAllCentersEngTable() : buildAllCentersMathTable();
+}
+function buildAllCentersEngTable(){
+  let rows=[];
+  DATA.managers.forEach(m=>{
+    if(_acFilterMgr && _acFilterMgr!==m.name) return;
+    m.branches.forEach(b=>b.centers.forEach(c=>{
+      if(_acSearch && !c.name.includes(_acSearch)) return;
+      rows.push({mgr:m.name, br:b.name, c});
+    }));
+  });
+  if(!rows.length) return `<p class="hint">조건에 맞는 센터가 없습니다.</p>`;
+  const body = rows.map(r=>{
+    const newArr = NEWMEM_DATA[normCenterName(r.c.name)];
+    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.c.mem[i]===null||r.c.mem[i]===undefined?'-':r.c.mem[i]}</td>`).join('');
+    const newCells = MONTH_LABELS.slice(0,8).map((_,i)=>{
+      const v = newArr ? newArr[i] : null;
+      return `<td class="num">${v===null||v===undefined?'-':v}</td>`;
+    }).join('');
+    return `<tr class="curi-group-start">
+        <td rowspan="2" class="curi-center-cell">${eschtml(r.c.name)}</td>
+        <td rowspan="2">${r.mgr}</td><td rowspan="2">${r.br}</td>
+        <td class="curi-metric">실회원</td>${memCells}</tr>
+      <tr class="curi-group-end"><td class="curi-metric">신규</td>${newCells}</tr>`;
+  }).join('');
+  return `<table class="curi-merged-table">
+    <thead><tr><th>센터명</th><th>매니저</th><th>본부</th><th>구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
+    <tbody>${body}</tbody>
+  </table>
+  <p class="uni-kpi-note">총 ${fmtNum(rows.length)}개 센터</p>`;
+}
+function buildAllCentersMathTable(){
+  let rows = CURI_DATA.filter(r=>!r.center.includes('(해지)'));
+  if(_acFilterMgr) rows = rows.filter(r=>r.mgr===_acFilterMgr);
+  if(_acSearch) rows = rows.filter(r=>r.center.includes(_acSearch));
+  if(!rows.length) return `<p class="hint">조건에 맞는 센터가 없습니다.</p>`;
+  const body = rows.map(r=>{
+    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.mem[i]===null||r.mem[i]===undefined?'-':r.mem[i]}</td>`).join('');
+    return `<tr><td>${eschtml(r.center)}</td><td>${r.mgr}</td><td>${r.region}</td>${memCells}</tr>`;
+  }).join('');
+  return `<table class="curi-merged-table">
+    <thead><tr><th>센터명</th><th>담당</th><th>지역</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
+    <tbody>${body}</tbody>
+  </table>
+  <p class="uni-kpi-note">총 ${fmtNum(rows.length)}개 센터(해지 제외) · 신규회원·매출은 추후 데이터 연결 예정</p>`;
+}
+
 let _homeRange = null;
 function renderHome(){
   if(!_homeRange) _homeRange = weekRange();
@@ -4753,20 +4943,23 @@ function renderHome(){
       ? `<div class="hc-top"><b>[${top.action.tag}]</b> ${top.br}·${top.center} — ${eschtml(top.text).slice(0,42)}${top.masked?' <i>(요약)</i>':''}</div>`
       : `<div class="hc-empty">이번 주 긴급 조치 사항 없음</div>`;
     let memTot=0; m.branches.forEach(b=>b.centers.forEach(c=>memTot+=(c.mem[7]||0)));
+    const curiM = curiSeriesForScope({mgr:m.name, br:null});
+    const curiRevM = (curiM.workbook[7]||0)+(curiM.textbook[7]||0);
     return `<div class="home-card" onclick="go({view:'mgr',mgr:${i}})">
       <div class="hc-name">${m.name} <span class="hc-score grade-${grade.k}">${grade.t} ${s.avg}점</span></div>
       <div class="hc-meta">실회원(8월) <b>${fmtNum(memTot)}명</b> · 이번 주 메모 <b>${s.nMemo}건</b> · 조치 필요 <b style="color:var(--alert)">${R.actions.length}건</b></div>
+      <div class="hc-meta">큐리매쓰 매출(8월) <b>${fmtNum(curiRevM)}</b></div>
       ${topHtml}
     </div>`;
   }).join('');
 
-  // 본사 직영 카드(큐리매쓰 전용 — 학원/우영 실적이 없어 별도 지표로 표시)
-  const hqCuri = curiSeriesForScope({mgr:'HQ', br:null});
-  const hqMem8 = hqCuri.mem[7], hqRev8 = (hqCuri.workbook[7]||0)+(hqCuri.textbook[7]||0);
+  // 정은희(큐리매쓰 전용 담당) 카드 — 경남·부산연제·직영 통합 담당
+  const jeCuri = curiSeriesForScope({mgr:'정은희', br:null});
+  const jeMem8 = jeCuri.mem[7], jeRev8 = (jeCuri.workbook[7]||0)+(jeCuri.textbook[7]||0);
   const hqCard = `<div class="home-card" onclick="go({view:'hq',section:'curi'})">
-    <div class="hc-name">본사 직영 <span class="hc-score" style="background:#f1eafc;color:#7c3aed">🧮 큐리매쓰</span></div>
-    <div class="hc-meta">큐리매쓰 실회원(8월) <b>${fmtNum(hqMem8)}명</b> · 매출 합계(8월) <b>${fmtNum(hqRev8)}</b></div>
-    <div class="hc-empty">직영·경남·부산연제·창원지사·김해양산지사 통합 — 클릭 시 큐리매쓰 현황으로 이동</div>
+    <div class="hc-name">정은희 <span class="hc-score" style="background:#fef3e2;color:#c2410c">🧮 큐리매쓰</span></div>
+    <div class="hc-meta">큐리매쓰 실회원(8월) <b>${fmtNum(jeMem8)}명</b> · 매출 합계(8월) <b>${fmtNum(jeRev8)}</b></div>
+    <div class="hc-empty">경남·부산연제·직영 통합 담당 — 클릭 시 큐리매쓰 현황으로 이동</div>
   </div>`;
 
   const curiAll = curiSeriesForScope({mgr:null,br:null});
@@ -4877,28 +5070,7 @@ function renderBranch(){
     // Track2: 센터 데이터가 있으면 실적 기반으로 렌더(면담 없이 회원 추세·위험도 표시)
     let t2body, t2note, lowList='없음';
     if(b.centers && b.centers.length){
-      const ordered = b.centers.map((c,idx)=>({c,idx,tier:priorityTier(c),u:urgencyScore(c)}))
-        .sort((a,b)=> a.tier-b.tier || b.u-a.u);
-      t2body = ordered.map(({c,idx})=>{
-        const low=isLowCenter(c);
-        const cells=MONTH_LABELS.map((_,i)=>{
-          const v=c.mem[i]; const flag=isLowMonth(c,i);
-          return `<td class="num ${flag?'warn':''}">${v===null?'-':v}${flag?' 🚨':''}</td>`;
-        }).join('');
-        const heat=`<span class="heat">${MONTH_LABELS.map(()=>`<span class="off" title="미면담"></span>`).join('')}</span>`;
-        const t=memTrend(c);
-        const trendTxt=`${t.first??'-'}→${t.last??'-'} <b class="${t.diff>0?'delta-up':t.diff<0?'delta-down':'delta-flat'}">${t.diff>0?'+':''}${t.diff}</b>`;
-        const risk=riskLevel(c);
-        const tier=priorityTier(c);
-        const prioLabel={1:'1순위',2:'2순위',3:'3순위',4:'4순위'}[tier];
-        const mc=memoCount(m.name,b.name,c.name);
-        return `<tr class="${low?'low-row':''}">
-          <td><span class="prio-tag prio-${tier}">${prioLabel}</span></td>
-          <td><a class="center-link" onclick="openCenterDetail(${route.mgr},${route.br},${idx})">${c.name}<span class="memo-badge" id="memobadge-${idx}">${mc?`📝${mc}`:''}</span></a></td>
-          <td class="num">${c.form}</td>${cells}
-          <td class="num">${heat}</td><td class="num trend-cell">${trendTxt}</td>
-          <td class="num risk-dot risk-${risk.k}">${risk.t}</td></tr>`;
-      }).join('');
+      t2body = buildTrack2Rows(m, b, route.mgr, route.br);
       lowList = b.centers.filter(isLowCenter).map(c=>c.name).join(', ') || '없음';
       t2note = `<div class="overall" style="background:#fbf6ec;border-left-color:var(--amber)"><b>안내</b> — CSV 센터 실적은 반영되었으나 활동보고서가 없어 <b>면담 히트맵은 전부 미면담</b>으로 표시됩니다. 회원 추세·저실적·위험도는 실제 실적 기준입니다.</div>`;
     } else {
@@ -4911,6 +5083,13 @@ function renderBranch(){
         <button class="back-btn" style="margin:0 0 14px" onclick='go({view:"mgr",mgr:${route.mgr}})'>‹ 본부 목록으로</button>
         <h2 class="mgr">👤 매니저: ${m.name}</h2>
         <h3 class="hb">🏢 가맹본부: ${b.name} 가맹지역본부 <span class="pill">보고서 대기</span></h3>
+        ${b.centers && b.centers.length ? `<div class="center-quick-pick">
+          <label>🔒 센터 정보 바로보기</label>
+          <select onchange="if(this.value!=='') openCenterDetail(${route.mgr},${route.br},+this.value); this.value=''">
+            <option value="">센터 선택…</option>
+            ${b.centers.map((c,ci)=>`<option value="${ci}">${c.name}</option>`).join('')}
+          </select>
+        </div>` : ''}
       </div>
 
       <div class="ai-summary" style="background:linear-gradient(135deg,#5a4a25 0%,#8a6a2e 100%)">
@@ -4931,13 +5110,14 @@ function renderBranch(){
       ${branchMemoPanelHtml(m.name,b.name)}
 
       <div class="track">
-        <div class="t-head"><span class="badge">TRACK 2</span><h4>센터별 실적 및 집중 관리 보드 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 관리 우선순위 자동 정렬 · 센터명 클릭 시 상세</span></h4></div>
+        <div class="t-head"><span class="badge">TRACK 2</span><h4>센터별 실적 및 집중 관리 보드 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 센터명 클릭 시 상세</span></h4></div>
         ${t2note}
+        ${b.centers && b.centers.length ? t2FilterBarHtml(b.name) : ''}
         <table>
           <thead><tr><th class="num">우선순위</th><th>센터명</th><th class="num">개설형태</th>
             ${MONTH_LABELS.map(l=>`<th class="num">${l}</th>`).join('')}
             <th class="num">면담 히트맵</th><th class="num">회원 추세</th><th class="num">위험도</th></tr></thead>
-          <tbody>${t2body}</tbody>
+          <tbody id="t2body-${t2Key(b.name)}">${t2body}</tbody>
         </table>
         ${b.centers && b.centers.length ? `<div class="legend">🚨 저실적 기준 — 학원(상가형·IGSE·숲): 15명 이하 · 교습소: 10명 이하 · 공부방: 5명 이하<br>
         회원 추세: 첫→최신월 증감 · 위험도: 감소·저실적·최근추세 종합(면담 데이터 없음) · <b>센터명 클릭</b> 시 상세·메모<br>
@@ -4953,32 +5133,8 @@ function renderBranch(){
     <td class="num">${r.영업}</td><td class="num">${r.개설}</td>
     <td><span class="cm">${r.cm}</span></td></tr>`).join('');
 
-  // Track2: 우선순위 정렬(1→4), 히트맵·스파크라인·위험도·우선순위 컬럼 추가
-  const ordered = b.centers.map((c,idx)=>({c,idx,tier:priorityTier(c),u:urgencyScore(c)}))
-    .sort((a,b)=> a.tier-b.tier || b.u-a.u);
-  const t2rows = ordered.map(({c,idx})=>{
-    const low = isLowCenter(c);
-    const cells = MONTH_LABELS.map((_,i)=>{
-      const v = c.mem[i]; const flag = isLowMonth(c,i);
-      return `<td class="num ${flag?'warn':''}">${v===null?'-':v}${flag?' 🚨':''}</td>`;
-    }).join('');
-    const heat = `<span class="heat">${MONTH_LABELS.map((_,i)=>{
-      const on=c.mng.months.includes(i+1); return `<span class="${on?'on':'off'}" title="${i+1}월 ${on?'면담':'미면담'}"></span>`;
-    }).join('')}</span>`;
-    const t=memTrend(c);
-    const trendTxt = `${t.first??'-'}→${t.last??'-'} <b class="${t.diff>0?'delta-up':t.diff<0?'delta-down':'delta-flat'}">${t.diff>0?'+':''}${t.diff}</b>`;
-    const risk=riskLevel(c);
-    const tier=priorityTier(c);
-    const prioLabel={1:'1순위',2:'2순위',3:'3순위',4:'4순위'}[tier];
-    const mc=memoCount(m.name,b.name,c.name);
-    return `<tr class="${low?'low-row':''}">
-      <td><span class="prio-tag prio-${tier}">${prioLabel}</span></td>
-      <td><a class="center-link" onclick="openCenterDetail(${route.mgr},${route.br},${idx})">${c.name}<span class="memo-badge" id="memobadge-${idx}">${mc?`📝${mc}`:''}</span></a></td>
-      <td class="num">${c.form}</td>${cells}
-      <td class="num">${heat}</td>
-      <td class="num trend-cell">${trendTxt}</td>
-      <td class="num risk-dot risk-${risk.k}">${risk.t}</td></tr>`;
-  }).join('');
+  // Track2: 정렬 모드에 따라 재구성 가능 (기본=우선순위)
+  const t2rows = buildTrack2Rows(m, b, route.mgr, route.br);
 
   const lowList = b.centers.filter(isLowCenter).map(c=>c.name).join(', ') || '없음';
 
@@ -5017,6 +5173,13 @@ function renderBranch(){
       <button class="back-btn" style="margin:0 0 14px" onclick='go({view:"mgr",mgr:${route.mgr}})'>‹ 본부 목록으로</button>
       <h2 class="mgr">👤 매니저: ${m.name}</h2>
       <h3 class="hb">🏢 가맹본부: ${b.name} 가맹지역본부</h3>
+      <div class="center-quick-pick">
+        <label>🔒 센터 정보 바로보기</label>
+        <select onchange="if(this.value!=='') openCenterDetail(${route.mgr},${route.br},+this.value); this.value=''">
+          <option value="">센터 선택…</option>
+          ${b.centers.map((c,ci)=>`<option value="${ci}">${c.name}</option>`).join('')}
+        </select>
+      </div>
     </div>
 
     <!-- ① AI Executive Summary -->
@@ -5090,12 +5253,13 @@ function renderBranch(){
 
     <!-- ⑨ 개선된 Track2 -->
     <div class="track">
-      <div class="t-head"><span class="badge">TRACK 2</span><h4>센터별 실적 및 집중 관리 보드 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 관리 우선순위 자동 정렬 · 센터명 클릭 시 상세</span></h4></div>
+      <div class="t-head"><span class="badge">TRACK 2</span><h4>센터별 실적 및 집중 관리 보드 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 센터명 클릭 시 상세</span></h4></div>
+      ${t2FilterBarHtml(b.name)}
       <table>
         <thead><tr><th class="num">우선순위</th><th>센터명</th><th class="num">개설형태</th>
           ${MONTH_LABELS.map(l=>`<th class="num">${l}</th>`).join('')}
           <th class="num">면담 히트맵</th><th class="num">회원 추세</th><th class="num">위험도</th></tr></thead>
-        <tbody>${t2rows}</tbody>
+        <tbody id="t2body-${t2Key(b.name)}">${t2rows}</tbody>
       </table>
       <div class="legend">🚨 저실적 기준 — 학원(상가형·IGSE·숲): 15명 이하 · 교습소: 10명 이하 · 공부방: 5명 이하<br>
       🟩 면담 히트맵: 채워진 칸 = 해당 월 면담 · 회원 추세: 첫→최신월 증감 · 위험도: 감소·저실적·면담공백·최근추세 종합<br>

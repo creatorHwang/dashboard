@@ -283,6 +283,9 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .hq-tab.active{background:var(--pine);color:#fff;border-color:var(--pine)}
 .curi-merged-table td, .curi-merged-table th{font-size:12.5px}
 .curi-center-cell{vertical-align:middle;background:var(--pine-soft);border-right:2px solid var(--line)}
+.ac-table .ac-name-col{position:sticky;left:0;z-index:3}
+.ac-table th.ac-name-col{z-index:7;background:var(--pine)}
+.ac-table td.ac-name-col{background:var(--pine-soft)}
 .curi-metric{color:var(--muted);font-weight:700;font-size:11.5px;white-space:nowrap}
 .curi-group-start td{border-top:2px solid var(--line)}
 .curi-merged-table thead th{position:sticky;top:0;z-index:5;background:#eef0ea;box-shadow:0 1px 0 var(--line)}
@@ -5943,13 +5946,16 @@ function renderAllCentersList(){
       <label>검색</label>
       <input type="text" id="acSearchInput" placeholder="센터명 검색" oninput="acFilterChanged()">
     </div>
+    <div class="mirror-scroll-top" id="acTopScroll"><div></div></div>
     <div id="acTableWrap">${brand==='eng' ? buildAllCentersEngTable() : buildAllCentersMathTable()}</div>`;
+  setupTopScrollSync('acTopScroll','acTableWrap');
 }
 function acFilterChanged(){
   _acFilterMgr = document.getElementById('acMgrSel').value;
   _acSearch = document.getElementById('acSearchInput').value.trim();
   const wrap = document.getElementById('acTableWrap');
   if(wrap) wrap.innerHTML = route.brand==='eng' ? buildAllCentersEngTable() : buildAllCentersMathTable();
+  setupTopScrollSync('acTopScroll','acTableWrap');
 }
 function buildAllCentersEngTable(){
   let rows=[];
@@ -5963,19 +5969,25 @@ function buildAllCentersEngTable(){
   if(!rows.length) return `<p class="hint">조건에 맞는 센터가 없습니다.</p>`;
   const body = rows.map(r=>{
     const newArr = NEWMEM_DATA[normCenterName(r.c.name)];
-    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.c.mem[i]===null||r.c.mem[i]===undefined?'-':r.c.mem[i]}</td>`).join('');
+    const revArr = ENGREV_DATA[normCenterName(r.c.name)];
+    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num mem-cell">${r.c.mem[i]===null||r.c.mem[i]===undefined?'-':r.c.mem[i]}</td>`).join('');
+    const revCells = MONTH_LABELS.slice(0,8).map((_,i)=>{
+      const v = revArr ? revArr[i] : null;
+      return `<td class="num">${v===null||v===undefined?'-':fmtNum(v)}</td>`;
+    }).join('');
     const newCells = MONTH_LABELS.slice(0,8).map((_,i)=>{
       const v = newArr ? newArr[i] : null;
       return `<td class="num">${v===null||v===undefined?'-':v}</td>`;
     }).join('');
     return `<tr class="curi-group-start">
-        <td rowspan="2" class="curi-center-cell">${eschtml(r.c.name)}</td>
-        <td rowspan="2">${r.mgr}</td><td rowspan="2">${r.br}</td>
+        <td rowspan="3" class="curi-center-cell ac-name-col">${eschtml(r.c.name)}</td>
+        <td rowspan="3">${r.mgr}</td><td rowspan="3">${r.br}</td>
         <td class="curi-metric">실회원</td>${memCells}</tr>
+      <tr><td class="curi-metric">매출</td>${revCells}</tr>
       <tr class="curi-group-end"><td class="curi-metric">신규</td>${newCells}</tr>`;
   }).join('');
-  return `<table class="curi-merged-table">
-    <thead><tr><th>센터명</th><th>매니저</th><th>본부</th><th>구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
+  return `<table class="curi-merged-table ac-table">
+    <thead><tr><th class="ac-name-col">센터명</th><th>매니저</th><th>본부</th><th>구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
     <tbody>${body}</tbody>
   </table>
   <p class="uni-kpi-note">총 ${fmtNum(rows.length)}개 센터</p>`;
@@ -5986,14 +5998,22 @@ function buildAllCentersMathTable(){
   if(_acSearch) rows = rows.filter(r=>r.center.includes(_acSearch));
   if(!rows.length) return `<p class="hint">조건에 맞는 센터가 없습니다.</p>`;
   const body = rows.map(r=>{
-    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.mem[i]===null||r.mem[i]===undefined?'-':r.mem[i]}</td>`).join('');
-    return `<tr><td>${eschtml(r.center)}</td><td>${r.mgr}</td><td>${r.region}</td>${memCells}</tr>`;
+    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num mem-cell">${r.mem[i]===null||r.mem[i]===undefined?'-':r.mem[i]}</td>`).join('');
+    const revCells = MONTH_LABELS.slice(0,8).map((_,i)=>{
+      const v = (r.workbook[i]||0)+(r.textbook[i]||0);
+      return `<td class="num">${fmtNum(v)}</td>`;
+    }).join('');
+    return `<tr class="curi-group-start">
+        <td rowspan="2" class="curi-center-cell ac-name-col">${eschtml(r.center)}</td>
+        <td rowspan="2">${r.mgr}</td><td rowspan="2">${r.region}</td>
+        <td class="curi-metric">실회원</td>${memCells}</tr>
+      <tr class="curi-group-end"><td class="curi-metric">매출</td>${revCells}</tr>`;
   }).join('');
-  return `<table class="curi-merged-table">
-    <thead><tr><th>센터명</th><th>담당</th><th>지역</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
+  return `<table class="curi-merged-table ac-table">
+    <thead><tr><th class="ac-name-col">센터명</th><th>담당</th><th>지역</th><th>구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
     <tbody>${body}</tbody>
   </table>
-  <p class="uni-kpi-note">총 ${fmtNum(rows.length)}개 센터(해지 제외) · 신규회원·매출은 추후 데이터 연결 예정</p>`;
+  <p class="uni-kpi-note">총 ${fmtNum(rows.length)}개 센터(해지 제외) · 신규회원은 추후 데이터 연결 예정</p>`;
 }
 
 let _homeRange = null;

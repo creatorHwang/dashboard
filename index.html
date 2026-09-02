@@ -297,16 +297,17 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .mirror-scroll-top{overflow-x:auto;overflow-y:hidden;height:16px;margin-bottom:4px}
 .mirror-scroll-top div{height:1px}
 .uni-kpi-table2{border-collapse:collapse;font-size:12.5px;min-width:640px}
-.uni-kpi-table2 th{background:var(--pine);color:#fff;font-weight:800;font-size:12px;padding:8px 10px;white-space:nowrap;border:1px solid var(--pine)}
+.uni-kpi-table2 th{background:var(--pine);color:#fff;font-weight:800;font-size:12px;padding:8px 10px;white-space:nowrap;border:1px solid var(--pine);position:sticky;top:0;z-index:6}
 .uni-kpi-table2 th.grp-eng{background:#1e3a8a;border-color:#1e3a8a}
 .uni-kpi-table2 th.grp-curi{background:#c2410c;border-color:#c2410c}
+.uni-kpi-table2 th.uni-corner{left:0;z-index:8}
 .uni-kpi-table2 td{border:1px solid var(--line);padding:8px 10px;white-space:nowrap}
 .uni-row-main td{background:#fff;font-weight:700}
-.uni-row-label{cursor:pointer;font-weight:800;color:var(--ink)}
+.uni-row-label{cursor:pointer;font-weight:800;color:var(--ink);position:sticky;left:0;z-index:4;background:#fff}
 .uni-row-label:hover{color:var(--pine)}
 .uni-arrow{display:inline-block;width:12px;color:var(--pine);font-weight:800}
 .uni-row-sub td{background:var(--pine-soft);font-weight:400;color:#3d4657;font-size:12px}
-.uni-row-sublabel{padding-left:22px !important;color:var(--muted)}
+.uni-row-sublabel{padding-left:22px !important;color:var(--muted);position:sticky;left:0;z-index:4;background:var(--pine-soft)}
 .uni-kpi-note{font-size:11px;color:var(--muted);margin-top:6px}
 .grp-eng{background:#1e3a8a;color:#fff;text-align:center}
 .grp-curi{background:#c2410c;color:#fff;text-align:center}
@@ -314,6 +315,8 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .curi-cell{background:#fff1e6}
 .uni-row-sub .eng-cell{background:#e0e7ff}
 .uni-row-sub .curi-cell{background:#ffe4cc}
+.mem-cell{background:#e8f7ee !important}
+.uni-row-sub .mem-cell{background:#dcf3e6 !important}
 .curi-mgr-row td{background:var(--pine-soft);font-weight:800;color:var(--pine);padding:8px 10px}
 .uni-delta{font-size:10.5px;font-weight:700;margin-top:1px}
 .uni-delta.up{color:var(--alert)}
@@ -938,15 +941,10 @@ const DATA = {
         },
         {
           name: '수원영통',
-          overall: '보고서 제출 5/5개월 (100.0%). 관리 대상 3개 중 0개 관리(커버리지 0.0%). 센터면담 6건·지역모임 10회·영업 9건·개설 5건. 센터 면담 기록 기준 관리 공백이 크게 확인되어 담당 매니저와 본부장 간 우선 점검이 필요함. PDF에는 있으나 조직.xlsx와 자동 매칭되지 않은 센터명이 있어 매칭 확인 필요.',
-          track1: [
-            {m:'1월', 면담:1, 모임:2, 영업:2, 개설:1, cm:'특이사항 없음'},
-            {m:'2월', 면담:1, 모임:2, 영업:2, 개설:1, cm:'특이사항 없음'},
-            {m:'3월', 면담:1, 모임:2, 영업:1, 개설:1, cm:'특이사항 없음'},
-            {m:'4월', 면담:0, 모임:2, 영업:2, 개설:1, cm:'특이사항 없음'},
-            {m:'5월', 면담:3, 모임:2, 영업:2, 개설:1, cm:'특이사항 없음'}
-          ],
-          matching: '조직표 매칭 확인 필요: 글빛교습소, 꾸준한 학습이벤트와 학교앞 위치 장점으로 꾸준한, 설 선물 전달하며 원장 감성관리., 스승의 날 이벤트로 원장 감성관리. 어린이 날 이벤, 하다가 기간이 계속 지체되어 방학특강 및 소개이벤트 진, 학원 통합세미나 필수 참여하도록 독려.',
+          placeholder: true,
+          overall: '활동분석보고서 미제출 — 월별 활동(Track 1)은 대기 중이나, CSV 센터 실적은 Track 2에 반영됨. 면담 기록이 없어 전 센터 미관리로 표시됨.',
+          track1: [],
+          matching: null,
           centers: [
             {name:'IGSE동수원', form:'학원(IGSE)', mem:[12,12,12,11,13,12,13,13], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'수원효탑초', form:'교습소', mem:[13,12,14,12,12,24,9,8], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1724,26 +1722,21 @@ const DATA = {
         },
         {
           name: '전남순천',
-          overall: '보고서 제출 3/5개월 (60.0%). 관리 대상 14개 중 6개 관리(커버리지 42.9%). 센터면담 10건·지역모임 3회·영업 5건·개설 3건. 센터 면담 기록 기준 관리 공백이 크게 확인되어 담당 매니저와 본부장 간 우선 점검이 필요함. PDF에는 있으나 조직.xlsx와 자동 매칭되지 않은 센터명이 있어 매칭 확인 필요.',
-          track1: [
-            {m:'1월', 면담:2, 모임:1, 영업:4, 개설:1, cm:'특이사항 없음'},
-            {m:'2월', 면담:5, 모임:0, 영업:0, 개설:1, cm:'특이사항 없음'},
-            {m:'3월', 면담:3, 모임:2, 영업:1, 개설:1, cm:'특이사항 없음'},
-            {m:'4월', 면담:0, 모임:0, 영업:0, 개설:0, cm:'미제출 ⚠미제출'},
-            {m:'5월', 면담:0, 모임:0, 영업:0, 개설:0, cm:'미제출 ⚠미제출'}
-          ],
-          matching: '조직표 매칭 확인 필요: 순천연향 2/5 -학원운영, 왕운igse',
+          placeholder: true,
+          overall: '활동분석보고서 미제출 — 월별 활동(Track 1)은 대기 중이나, CSV 센터 실적은 Track 2에 반영됨. 면담 기록이 없어 전 센터 미관리로 표시됨.',
+          track1: [],
+          matching: null,
           centers: [
-            {name:'IGSE순천왕운', form:'학원(IGSE)', mem:[25,22,28,26,24,24,26,25], mng:{months:[1], eval:'관리', note:'면담 1월'}},
-            {name:'IGSE순천조례남', form:'학원(IGSE)', mem:[42,36,39,22,38,26,42,39], mng:{months:[2,3], eval:'관리', note:'면담 2월·3월'}},
-            {name:'IGSE신대중흥7,8차', form:'학원(IGSE)', mem:[14,14,17,17,17,18,18,19], mng:{months:[2,3], eval:'관리', note:'면담 2월·3월'}},
+            {name:'IGSE순천왕운', form:'학원(IGSE)', mem:[25,22,28,26,24,24,26,25], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
+            {name:'IGSE순천조례남', form:'학원(IGSE)', mem:[42,36,39,22,38,26,42,39], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
+            {name:'IGSE신대중흥7,8차', form:'학원(IGSE)', mem:[14,14,17,17,17,18,18,19], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'숲순천신대', form:'학원(숲)', mem:[24,23,24,24,24,23,23,23], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
-            {name:'숲순천연향', form:'학원(숲)', mem:[12,11,12,12,12,12,11,12], mng:{months:[2], eval:'관리', note:'면담 2월'}},
-            {name:'숲여수여서', form:'학원(숲)', mem:[8,8,7,7,7,7,6,8], mng:{months:[3], eval:'관리', note:'면담 3월'}},
+            {name:'숲순천연향', form:'학원(숲)', mem:[12,11,12,12,12,12,11,12], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
+            {name:'숲여수여서', form:'학원(숲)', mem:[8,8,7,7,7,7,6,8], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'숲여천소호', form:'학원(숲)', mem:[26,15,18,18,18,18,18,18], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'금당신흥', form:'교습소', mem:[10,8,12,10,7,7,6,6], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'순천오천', form:'교습소', mem:[2,2,2,2,2,2,2,2], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
-            {name:'신대중흥1차', form:'공부방', mem:[14,12,16,17,17,17,15,15], mng:{months:[2], eval:'관리', note:'면담 2월'}},
+            {name:'신대중흥1차', form:'공부방', mem:[14,12,16,17,17,17,15,15], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'신대중흥9차', form:'공부방', mem:[7,8,7,7,7,7,6,6], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'여수웅천꿈에그린', form:'공부방', mem:[15,17,17,17,18,18,20,20], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
                         {name:'용당', form:'교습소', mem:[4,3,3,3,3,3,3,3], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}}
@@ -2750,8 +2743,19 @@ function buildTrack2Rows(m, b, mgrIdx, brIdx){
       const v = c.mem[i]; const flag = isLowMonth(c,i);
       return `<td class="num ${flag?'warn':''}">${v===null?'-':v}${flag?' 🚨':''}</td>`;
     }).join('');
+    // 면담 히트맵: 공식 면담 기록(mng.months) + 센터 메모가 남겨진 월도 함께 반영
+    const memoMonths = new Set();
+    getMemoLog(m.name, b.name, c.name).forEach(x=>{
+      const d = normDate(x.date);
+      if(d && d.slice(0,4) === '2026'){ memoMonths.add(parseInt(d.slice(5,7),10)); }
+    });
     const heat = `<span class="heat">${MONTH_LABELS.map((_,i)=>{
-      const on=c.mng.months.includes(i+1); return `<span class="${on?'on':'off'}" title="${i+1}월 ${on?'면담':'미면담'}"></span>`;
+      const mon=i+1;
+      const hasInterview=c.mng.months.includes(mon);
+      const hasMemo=memoMonths.has(mon);
+      const on = hasInterview || hasMemo;
+      const label = hasInterview && hasMemo ? '면담+메모' : hasInterview ? '면담' : hasMemo ? '메모' : '미면담';
+      return `<span class="${on?'on':'off'}" title="${mon}월 ${label}"></span>`;
     }).join('')}</span>`;
     const t=memTrend(c);
     const trendTxt = `${t.first??'-'}→${t.last??'-'} <b class="${t.diff>0?'delta-up':t.diff<0?'delta-down':'delta-flat'}">${t.diff>0?'+':''}${t.diff}</b>`;
@@ -5553,23 +5557,23 @@ function renderUnifiedKpiGrid(){
     const clickAttr = d.na ? '' : `onclick="toggleKpiExpand('${r.role}')"`;
     body += `<tr class="uni-row-main">
       <td class="uni-row-label" ${clickAttr}>${arrow} ${r.label}</td>
-      <td class="num eng-cell">${d.na?'—':`${fmtNum(d.total.mem)}명${uniDelta(d.total.mem,d.total.memPrev)}`}</td>
+      <td class="num eng-cell mem-cell">${d.na?'—':`${fmtNum(d.total.mem)}명${uniDelta(d.total.mem,d.total.memPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':`${fmtNum(d.total.rev)}${uniDelta(d.total.rev,d.total.revPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':`${fmtNum(d.total.new)}명${uniDelta(d.total.new,d.total.newPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':fmtNum(d.total.centers)+'개'}</td>
-      <td class="num curi-cell">${fmtNum(d.curi.mem)}명${uniDelta(d.curi.mem,d.curi.memPrev)}</td>
+      <td class="num curi-cell mem-cell">${fmtNum(d.curi.mem)}명${uniDelta(d.curi.mem,d.curi.memPrev)}</td>
       <td class="num curi-cell">${fmtNum(d.curi.rev)}${uniDelta(d.curi.rev,d.curi.revPrev)}</td>
       <td class="num curi-cell">${fmtNum(d.curi.centers)}개</td>
     </tr>`;
     if(exp && !d.na){
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 학원</td>
-        <td class="num eng-cell">${fmtNum(d.academy.mem)}명${uniDelta(d.academy.mem,d.academy.memPrev)}</td>
+        <td class="num eng-cell mem-cell">${fmtNum(d.academy.mem)}명${uniDelta(d.academy.mem,d.academy.memPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.rev)}${uniDelta(d.academy.rev,d.academy.revPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.new)}명${uniDelta(d.academy.new,d.academy.newPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.centers)}개</td>
         <td colspan="3" class="curi-cell"></td></tr>`;
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 우영</td>
-        <td class="num eng-cell">${fmtNum(d.op.mem)}명${uniDelta(d.op.mem,d.op.memPrev)}</td>
+        <td class="num eng-cell mem-cell">${fmtNum(d.op.mem)}명${uniDelta(d.op.mem,d.op.memPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.rev)}${uniDelta(d.op.rev,d.op.revPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.new)}명${uniDelta(d.op.new,d.op.newPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.centers)}개</td>
@@ -5580,7 +5584,7 @@ function renderUnifiedKpiGrid(){
   return `<div id="uniKpiGrid" class="uni-kpi-wrap">
     <table class="uni-kpi-table2">
       <thead>
-        <tr><th rowspan="2">구분</th><th colspan="4" class="grp-eng">영어</th><th colspan="3" class="grp-curi">큐리매쓰</th></tr>
+        <tr><th rowspan="2" class="uni-corner">구분</th><th colspan="4" class="grp-eng">영어</th><th colspan="3" class="grp-curi">큐리매쓰</th></tr>
         <tr>
           <th class="num eng-cell">실회원</th><th class="num eng-cell">매출</th><th class="num eng-cell">신규</th><th class="num eng-cell">센터수</th>
           <th class="num curi-cell">실회원</th><th class="num curi-cell">매출(합)</th><th class="num curi-cell">센터수</th>
@@ -5745,12 +5749,12 @@ function curiRegionRowsHtml(mgrName, region){
   const key = mgrName+'::'+region;
   const exp = _curiListExpanded[key];
   const agg = curiRegionAgg(mgrName, region);
-  const cells = agg.mem.map((v,i)=>`<td class="num curi-cell">${fmtNum(v)}명</td><td class="num curi-cell">${fmtNum(agg.rev[i])}</td>`).join('');
+  const cells = agg.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${fmtNum(v)}명</td><td class="num curi-cell">${fmtNum(agg.rev[i])}</td>`).join('');
   let html = `<tr class="uni-row-main"><td class="uni-row-label" onclick="toggleCuriListExpand('${jsq(key)}')"><span class="uni-arrow">${exp?'▾':'▸'}</span> ${region}</td>${cells}</tr>`;
   if(exp){
     const rows = CURI_DATA.filter(r=>(mgrName==='본사' ? (r.mgr==='본사'&&r.sub===region) : (r.mgr===mgrName&&r.region===region)) && !r.center.includes('(해지)'));
     rows.forEach(r=>{
-      const cells2 = r.mem.map((v,i)=>`<td class="num curi-cell">${v===null?'-':v}명</td><td class="num curi-cell">${fmtNum((r.workbook[i]||0)+(r.textbook[i]||0))}</td>`).join('');
+      const cells2 = r.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${v===null?'-':v}명</td><td class="num curi-cell">${fmtNum((r.workbook[i]||0)+(r.textbook[i]||0))}</td>`).join('');
       html += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ ${r.center}</td>${cells2}</tr>`;
     });
   }
@@ -5781,7 +5785,7 @@ function renderHqCuriList(){
     <div class="uni-kpi-wrap" id="hqCuriListMainScroll">
       <table class="uni-kpi-table2">
         <thead>
-          <tr><th rowspan="2">구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th colspan="2" class="grp-curi">${l}</th>`).join('')}</tr>
+          <tr><th rowspan="2" class="uni-corner">구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th colspan="2" class="grp-curi">${l}</th>`).join('')}</tr>
           <tr>${MONTH_LABELS.slice(0,8).map(()=>`<th class="num curi-cell">실회원</th><th class="num curi-cell">매출</th>`).join('')}</tr>
         </thead>
         <tbody>${body}</tbody>
@@ -5872,7 +5876,7 @@ function renderHqCuri(){
     const nameCell = `<td rowspan="3" class="curi-center-cell">
         <a class="center-link" onclick="openCuriMemo('${jsq(mgrLabel)}','${jsq(region)}','${jsq(r.center)}',${r.idx})">${r.center}<span class="memo-badge" id="curimemobadge-${r.idx}">${cnt?`📝${cnt}`:''}</span></a>
       </td>`;
-    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.mem[i]===null?'-':r.mem[i]}</td>`).join('');
+    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num mem-cell">${r.mem[i]===null?'-':r.mem[i]}</td>`).join('');
     const wbCells  = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.workbook[i]===null?'-':fmtNum(r.workbook[i])}</td>`).join('');
     const tbCells  = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.textbook[i]===null?'-':fmtNum(r.textbook[i])}</td>`).join('');
     return `<tr class="curi-group-start">${nameCell}<td class="curi-metric">실회원</td>${memCells}</tr>
@@ -6166,15 +6170,6 @@ function renderBranch(){
       <div class="ai-summary" style="background:linear-gradient(135deg,#5a4a25 0%,#8a6a2e 100%)">
         <div class="ai-tag">🗂️ 데이터 대기</div>
         <p>${b.overall}</p>
-      </div>
-
-      <div class="track">
-        <div class="t-head"><span class="badge">TRACK 1</span><h4>본부 월별 활동 내역</h4></div>
-        <div class="overall" style="background:#fbf6ec;border-left-color:var(--amber)"><b>안내</b> — 활동분석보고서가 아직 제출되지 않았습니다. 보고서 입수 시 아래 표의 공란이 자동으로 채워집니다.</div>
-        <table>
-          <thead><tr><th class="num">분석 월</th><th class="num">센터 면담</th><th class="num">지역 모임</th><th class="num">영업 활동</th><th class="num">개설 활동</th><th>종합 코멘트 (MD 발췌)</th></tr></thead>
-          <tbody>${emptyT1}</tbody>
-        </table>
       </div>
 
       <!-- 본부 매니저 메모 (Track1 바로 아래) -->

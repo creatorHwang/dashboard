@@ -363,6 +363,8 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .dir-table th{width:110px;text-align:left;color:var(--muted);font-weight:700;padding:5px 8px 5px 0;vertical-align:top}
 .dir-table td{padding:5px 0}
 .dir-table a{color:var(--pine);font-weight:700}
+.dir-tel{color:var(--pine);font-weight:800;text-decoration:none}
+.dir-tel:hover{text-decoration:underline}
 .dir-map{font-size:11px;color:var(--amber);margin-left:4px}
 .dir-sub{font-size:11px;color:var(--muted);font-weight:400}
 .dir-duration{margin-top:8px;font-size:13px;padding-top:8px;border-top:1px dashed var(--line)}
@@ -2245,11 +2247,12 @@ async function loadDirectorInfo(){
   const durTxt = dur ? `${dur.years}년 ${dur.months}개월째 운영중` : '기간 정보 없음';
   const durBasis = hasRecent ? '최근개설일(명의변경일) 기준' : '최초개설일 기준';
   const mapUrl = info.주소 ? `https://map.naver.com/v5/search/${encodeURIComponent(info.주소)}` : null;
+  const telNum = info.연락처 ? info.연락처.replace(/[^0-9+]/g,'') : null;
   if(!body) return;
   body.innerHTML = `
     <table class="dir-table">
       <tr><th>원장명</th><td>${eschtml(info.원장명||'-')}</td></tr>
-      <tr><th>연락처</th><td>${eschtml(info.연락처||'-')}</td></tr>
+      <tr><th>연락처</th><td>${info.연락처 && telNum ? `<a href="tel:${telNum}" class="dir-tel">📞 ${eschtml(info.연락처)}</a>` : eschtml(info.연락처||'-')}</td></tr>
       <tr><th>주소</th><td>${info.주소? `<a href="${mapUrl}" target="_blank" rel="noopener">${eschtml(info.주소)} <span class="dir-map">📍네이버맵</span></a>` : '-'}</td></tr>
       <tr><th>최초개설일</th><td>${eschtml(info.최초개설일||'-')}</td></tr>
       <tr><th>최근개설일<br><span class="dir-sub">(명의변경일)</span></th><td>${eschtml(info.최근개설일||'-')}</td></tr>

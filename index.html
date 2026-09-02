@@ -386,6 +386,9 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .ac-filter-bar label{font-size:12px;font-weight:700;color:var(--pine)}
 .ac-filter-bar select,.ac-filter-bar input{border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
 .ac-filter-bar input{flex:1;min-width:140px}
+.ac-search-btn{background:var(--pine);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.ac-search-btn:hover{background:#234a3f}
+.ac-search-btn:disabled{background:#c4c9be;cursor:not-allowed}
 .branch-head-sticky .back-btn{margin:0 0 10px !important}
 .branch-head-sticky h3.hb{padding-bottom:10px}
 </style>
@@ -2639,7 +2642,7 @@ function drawDetailRevChart(c){
   const el=document.getElementById('detailRevChart'); if(!el)return;
   if(_detailRevChart)_detailRevChart.destroy();
   const arr = ENGREV_DATA[normCenterName(c.name)];
-  const dataK = (arr||MONTH_LABELS.map(()=>null)).slice(0,8).map(toWonK);
+  const dataK = (arr||MONTH_LABELS.map(()=>null)).slice(0,8); // 원본이 이미 천원 단위
   _detailRevChart=new Chart(el,{type:'line',
     data:{labels:MONTH_LABELS.slice(0,8),datasets:[
       {label:'매출(천원)',data:dataK,borderColor:'#c2410c',backgroundColor:'rgba(194,65,12,.12)',
@@ -5233,12 +5236,17 @@ function renderVoc(){
 
 /* ===== 홈 화면 집계 유틸 (실회원 · BM · 큐리매쓰) ===== */
 function fmtNum(n){ return (n||0).toLocaleString('ko-KR'); }
-// 매출 표시 전용 — 천원 미만 절삭 후 "천원" 단위로 표기(영어·큐리매쓰 공통 기준)
-function fmtWon(v){
+// 영어 매출: 원본이 이미 천원 단위로 절삭되어 있음 — 나누지 않고 단위만 표기
+function fmtEngWon(v){
+  if(v===null||v===undefined) return '-';
+  return fmtNum(v)+'천원';
+}
+// 큐리매쓰 매출: 원본이 원(₩) 단위 — 천원 미만 절삭 후 표기
+function fmtCuriWon(v){
   if(v===null||v===undefined) return '-';
   return fmtNum(Math.floor(v/1000))+'천원';
 }
-function toWonK(v){ return (v===null||v===undefined) ? null : Math.floor(v/1000); }
+function toWonK(v){ return (v===null||v===undefined) ? null : Math.floor(v/1000); } // 큐리매쓰 전용(원→천원)
 function bmCategory(form){
   if(form==='학원(숲)') return '숲';
   if(form==='학원(IGSE)') return 'IGSE';
@@ -5433,8 +5441,7 @@ function drawEngRevChart(){
   const el=document.getElementById('engRevChart'); if(!el)return;
   if(_engRevChart)_engRevChart.destroy();
   const cats = engRevSeriesForScope(_scope);
-  const toK = arr => arr.map(toWonK);
-  const forest=toK(cats['숲']), igse=toK(cats['IGSE']), op=toK(cats['우영']), total=toK(cats['전체']);
+  const forest=cats['숲'], igse=cats['IGSE'], op=cats['우영'], total=cats['전체']; // 원본이 이미 천원 단위
   const maxV = Math.max(1, ...total);
   _engRevChart = new Chart(el,{
     data:{labels:MONTH_LABELS.slice(0,8), datasets:[
@@ -5595,7 +5602,15 @@ function uniDelta(cur, prev){
   return `<div class="uni-delta flat">→0</div>`;
 }
 // 매출 전월대비(천원 단위로 표시)
-function uniDeltaWon(cur, prev){
+// 영어 매출 전월대비(원본이 이미 천원 단위 — 나누지 않음)
+function uniDeltaEngWon(cur, prev){
+  const d = cur-prev;
+  if(d>0) return `<div class="uni-delta up">▲+${fmtNum(d)}천원</div>`;
+  if(d<0) return `<div class="uni-delta down">▼${fmtNum(d)}천원</div>`;
+  return `<div class="uni-delta flat">→0</div>`;
+}
+// 큐리매쓰 매출 전월대비(원본이 원 단위 — 천원으로 나눠서 표시)
+function uniDeltaCuriWon(cur, prev){
   const d = Math.floor(cur/1000) - Math.floor(prev/1000);
   if(d>0) return `<div class="uni-delta up">▲+${fmtNum(d)}천원</div>`;
   if(d<0) return `<div class="uni-delta down">▼${fmtNum(d)}천원</div>`;
@@ -5622,23 +5637,23 @@ function renderUnifiedKpiGrid(){
     body += `<tr class="uni-row-main">
       <td class="uni-row-label" ${clickAttr}>${arrow} ${r.label}</td>
       <td class="num eng-cell mem-cell">${d.na?'—':`${fmtNum(d.total.mem)}명${uniDelta(d.total.mem,d.total.memPrev)}`}</td>
-      <td class="num eng-cell">${d.na?'—':`${fmtWon(d.total.rev)}${uniDeltaWon(d.total.rev,d.total.revPrev)}`}</td>
+      <td class="num eng-cell">${d.na?'—':`${fmtEngWon(d.total.rev)}${uniDeltaEngWon(d.total.rev,d.total.revPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':`${fmtNum(d.total.new)}명${uniDelta(d.total.new,d.total.newPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':fmtNum(d.total.centers)+'개'}</td>
       <td class="num curi-cell mem-cell">${fmtNum(d.curi.mem)}명${uniDelta(d.curi.mem,d.curi.memPrev)}</td>
-      <td class="num curi-cell">${fmtWon(d.curi.rev)}${uniDeltaWon(d.curi.rev,d.curi.revPrev)}</td>
+      <td class="num curi-cell">${fmtCuriWon(d.curi.rev)}${uniDeltaCuriWon(d.curi.rev,d.curi.revPrev)}</td>
       <td class="num curi-cell">${fmtNum(d.curi.centers)}개</td>
     </tr>`;
     if(exp && !d.na){
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 학원</td>
         <td class="num eng-cell mem-cell">${fmtNum(d.academy.mem)}명${uniDelta(d.academy.mem,d.academy.memPrev)}</td>
-        <td class="num eng-cell">${fmtWon(d.academy.rev)}${uniDeltaWon(d.academy.rev,d.academy.revPrev)}</td>
+        <td class="num eng-cell">${fmtEngWon(d.academy.rev)}${uniDeltaEngWon(d.academy.rev,d.academy.revPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.new)}명${uniDelta(d.academy.new,d.academy.newPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.centers)}개</td>
         <td colspan="3" class="curi-cell"></td></tr>`;
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 우영</td>
         <td class="num eng-cell mem-cell">${fmtNum(d.op.mem)}명${uniDelta(d.op.mem,d.op.memPrev)}</td>
-        <td class="num eng-cell">${fmtWon(d.op.rev)}${uniDeltaWon(d.op.rev,d.op.revPrev)}</td>
+        <td class="num eng-cell">${fmtEngWon(d.op.rev)}${uniDeltaEngWon(d.op.rev,d.op.revPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.new)}명${uniDelta(d.op.new,d.op.newPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.centers)}개</td>
         <td colspan="3" class="curi-cell"></td></tr>`;
@@ -5813,12 +5828,12 @@ function curiRegionRowsHtml(mgrName, region){
   const key = mgrName+'::'+region;
   const exp = _curiListExpanded[key];
   const agg = curiRegionAgg(mgrName, region);
-  const cells = agg.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${fmtNum(v)}명</td><td class="num curi-cell">${fmtWon(agg.rev[i])}</td>`).join('');
+  const cells = agg.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${fmtNum(v)}명</td><td class="num curi-cell">${fmtCuriWon(agg.rev[i])}</td>`).join('');
   let html = `<tr class="uni-row-main"><td class="uni-row-label" onclick="toggleCuriListExpand('${jsq(key)}')"><span class="uni-arrow">${exp?'▾':'▸'}</span> ${region}</td>${cells}</tr>`;
   if(exp){
     const rows = CURI_DATA.filter(r=>(mgrName==='본사' ? (r.mgr==='본사'&&r.sub===region) : (r.mgr===mgrName&&r.region===region)) && !r.center.includes('(해지)'));
     rows.forEach(r=>{
-      const cells2 = r.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${v===null?'-':v}명</td><td class="num curi-cell">${fmtWon((r.workbook[i]||0)+(r.textbook[i]||0))}</td>`).join('');
+      const cells2 = r.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${v===null?'-':v}명</td><td class="num curi-cell">${fmtCuriWon((r.workbook[i]||0)+(r.textbook[i]||0))}</td>`).join('');
       html += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ ${r.center}</td>${cells2}</tr>`;
     });
   }
@@ -5954,8 +5969,8 @@ function renderHqCuri(){
     <h3 class="hb">${region} — 센터별 실적 <span style="font-size:12px;font-weight:400;color:var(--muted)">(해지 센터 제외 · 센터명 클릭 시 메모)</span></h3>
     <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr;max-width:520px;margin:12px 0">
       <div class="kpi" style="border-top-color:var(--amber)"><div class="k-label">실회원(8월)</div><div class="k-val">${fmtNum(totalMem8)}명</div></div>
-      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">문제은행(8월)</div><div class="k-val">${fmtWon(totalWb8)}</div></div>
-      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재매출(8월)</div><div class="k-val">${fmtWon(totalTb8)}</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">문제은행(8월)</div><div class="k-val">${fmtCuriWon(totalWb8)}</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재매출(8월)</div><div class="k-val">${fmtCuriWon(totalTb8)}</div></div>
     </div>
 
     <div class="track">
@@ -6028,7 +6043,8 @@ function acPickerHtml(){
   const brList = acBranchOptions(_acScope.mgr);
   const brOpts = ['<option value="">'+acThirdLabel()+' 선택…</option>'].concat(brList.map(n=>`<option value="${n}" ${_acScope.br===n?'selected':''}>${n}</option>`));
   const cList = acCenterOptions(_acScope.mgr, _acScope.br);
-  const cOpts = ['<option value="">센터 선택…</option>'].concat(cList.map(n=>`<option value="${n}" ${_acScope.center===n?'selected':''}>${n}</option>`));
+  const cOpts = ['<option value="">전체(본부 현황 보기)</option>'].concat(cList.map(n=>`<option value="${n}" ${_acScope.center===n?'selected':''}>${n}</option>`));
+  const canSearch = !!(_acScope.mgr && _acScope.br);
   return `<div class="ac-filter-bar">
     <label>매니저</label>
     <select onchange="acMgrChanged(this.value)">${mgrOpts.join('')}</select>
@@ -6036,6 +6052,7 @@ function acPickerHtml(){
     <select onchange="acBrChanged(this.value)">${brOpts.join('')}</select>` : ''}
     ${_acScope.br ? `<label>센터</label>
     <select onchange="acCenterChanged(this.value)">${cOpts.join('')}</select>` : ''}
+    <button class="ac-search-btn" ${canSearch?'':'disabled'} onclick="acSearch()">🔍 조회</button>
   </div>`;
 }
 function acRefreshPicker(){
@@ -6044,17 +6061,29 @@ function acRefreshPicker(){
 }
 function acMgrChanged(v){ _acScope = {mgr:v, br:'', center:''}; acRefreshPicker(); acClearDetail(); }
 function acBrChanged(v){ _acScope.br = v; _acScope.center=''; acRefreshPicker(); acClearDetail(); }
-function acCenterChanged(v){
-  _acScope.center = v;
-  acRefreshPicker();
-  const dw = document.getElementById('acDetailWrap');
-  if(dw) dw.innerHTML = v ? (route.brand==='eng' ? acEngDetailHtml() : acMathDetailHtml()) : '';
-  if(v){
+function acCenterChanged(v){ _acScope.center = v; acRefreshPicker(); acClearDetail(); }
+function acClearDetail(){ const dw=document.getElementById('acDetailWrap'); if(dw) dw.innerHTML=''; }
+// 조회 버튼: 센터까지 골랐으면 센터 상세, 본부(지역)까지만 골랐으면 그 본부(지역) 현황 화면으로 이동
+function acSearch(){
+  if(!_acScope.mgr || !_acScope.br) return;
+  if(_acScope.center){
+    const dw = document.getElementById('acDetailWrap');
+    if(dw) dw.innerHTML = route.brand==='eng' ? acEngDetailHtml() : acMathDetailHtml();
     if(route.brand==='eng') acDrawEngDetailCharts();
     else acDrawMathDetailCharts();
+    if(dw) dw.scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
+  // 센터 미선택 — 해당 본부(지역) 전체 현황으로 이동
+  if(route.brand==='eng'){
+    const mi = DATA.managers.findIndex(m=>m.name===_acScope.mgr);
+    const m = DATA.managers[mi];
+    const bi = m.branches.findIndex(b=>b.name===_acScope.br);
+    go({view:'br', mgr:mi, br:bi});
+  } else {
+    go({view:'hqcuri', mgr:_acScope.mgr, region:_acScope.br});
   }
 }
-function acClearDetail(){ const dw=document.getElementById('acDetailWrap'); if(dw) dw.innerHTML=''; }
 
 // ── 영어 센터 상세(페이지형 — 팝업 아님) ──
 function acEngDetailHtml(){
@@ -6121,7 +6150,7 @@ function acDrawEngDetailCharts(){
   if(_acEngRevChart)_acEngRevChart.destroy();
   const revArr = ENGREV_DATA[normCenterName(c.name)];
   if(elR) _acEngRevChart=new Chart(elR,{type:'line',
-    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:(revArr||[]).map(toWonK),borderColor:'#c2410c',backgroundColor:'rgba(194,65,12,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:(revArr||[]),borderColor:'#c2410c',backgroundColor:'rgba(194,65,12,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
     options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
   const elN=document.getElementById('acEngNewChart');
   if(_acEngNewChart)_acEngNewChart.destroy();
@@ -6145,7 +6174,7 @@ function acMathDetailHtml(){
           <div class="dm-sub">큐리매쓰 · ${r.region} · 담당 ${r.mgr}</div>
         </div>
       </div>
-      <div class="dm-trend" style="margin:8px 0">실회원(8월) <b>${fmtNum(mem8)}명</b> · 매출(8월) <b>${fmtWon(rev8)}</b></div>
+      <div class="dm-trend" style="margin:8px 0">실회원(8월) <b>${fmtNum(mem8)}명</b> · 매출(8월) <b>${fmtCuriWon(rev8)}</b></div>
     </div>
     <div class="card-box section-gap"><h4>📈 실회원 추이</h4>
       <div class="trend-wrap" style="height:220px"><canvas id="acMathMemChart"></canvas></div></div>

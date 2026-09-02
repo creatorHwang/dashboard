@@ -222,8 +222,11 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .dm-tags{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex:none}
 .dm-low{background:var(--alert-bg);color:var(--alert);font-weight:800;font-size:11px;padding:2px 8px;border-radius:10px}
 .dm-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:14px}
-@media(max-width:620px){ .dm-grid{grid-template-columns:1fr} }
+@media(max-width:620px){ .dm-grid{grid-template-columns:1fr} .dm-grid2{grid-template-columns:1fr} }
 .dm-chart-wrap{position:relative;height:200px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px}
+.dm-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.dm-chart-wrap.small{height:140px}
+.dm-mini-title{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px}
 .dm-mems{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-content:start}
 .dm-mem{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
 .dm-mem.low{background:var(--alert-bg);border-color:var(--alert);color:var(--alert)}
@@ -2520,6 +2523,8 @@ function openCenterDetail(mgrIdx,brIdx,cIdx){
   document.getElementById('modalBody').innerHTML=renderCenterDetail(m,b,c);
   ov.classList.add('show');
   drawDetailChart(c);
+  drawDetailRevChart(c);
+  drawDetailNewChart(c);
   renderMemoLog();
   loadDirectorInfo();   // 인증 없이 항상 바로 조회
 }
@@ -2527,6 +2532,8 @@ function closeCenterDetail(){
   const ov=document.getElementById('centerModal');
   if(ov) ov.classList.remove('show');
   if(_detailChart){ _detailChart.destroy(); _detailChart=null; }
+  if(_detailRevChart){ _detailRevChart.destroy(); _detailRevChart=null; }
+  if(_detailNewChart){ _detailNewChart.destroy(); _detailNewChart=null; }
   _modalCtx=null;
 }
 function renderCenterDetail(m,b,c){
@@ -2558,6 +2565,10 @@ function renderCenterDetail(m,b,c){
         <div class="dm-trend">추세 ${t.first??'-'} → ${t.last??'-'}명 <b class="${t.diff>0?'delta-up':t.diff<0?'delta-down':'delta-flat'}">${t.diff>0?'+':''}${t.diff} (${t.pct>0?'+':''}${t.pct}%)</b></div>
         <div class="dm-crit">저실적 기준 ${th}명 이하</div>
       </div>
+    </div>
+    <div class="dm-grid2">
+      <div><div class="dm-mini-title">💰 매출 추이</div><div class="dm-chart-wrap small"><canvas id="detailRevChart"></canvas></div></div>
+      <div><div class="dm-mini-title">🆕 신규회원 추이</div><div class="dm-chart-wrap small"><canvas id="detailNewChart"></canvas></div></div>
     </div>
     <div class="dm-mng"><b>월별 관리 코멘트</b><br>${mngTxt}</div>
 
@@ -2621,6 +2632,39 @@ function drawDetailChart(c){
       scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},color:'#9aa0a6'},grid:{color:'#eef0ea'}},
         x:{ticks:{font:{size:11},color:'#1c2431'},grid:{display:false}}},
       plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
+}
+let _detailRevChart=null, _detailNewChart=null;
+function drawDetailRevChart(c){
+  if(typeof Chart==='undefined')return;
+  const el=document.getElementById('detailRevChart'); if(!el)return;
+  if(_detailRevChart)_detailRevChart.destroy();
+  const arr = ENGREV_DATA[normCenterName(c.name)];
+  const dataK = (arr||MONTH_LABELS.map(()=>null)).slice(0,8).map(toWonK);
+  _detailRevChart=new Chart(el,{type:'line',
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[
+      {label:'매출(천원)',data:dataK,borderColor:'#c2410c',backgroundColor:'rgba(194,65,12,.12)',
+        fill:true,tension:.3,borderWidth:2,pointRadius:3,pointBackgroundColor:'#c2410c',spanGaps:true}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:9},color:'#9aa0a6',callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},
+        x:{ticks:{font:{size:10},color:'#1c2431'},grid:{display:false}}},
+      plugins:{legend:{display:false}}}});
+}
+function drawDetailNewChart(c){
+  if(typeof Chart==='undefined')return;
+  const el=document.getElementById('detailNewChart'); if(!el)return;
+  if(_detailNewChart)_detailNewChart.destroy();
+  const arr = NEWMEM_DATA[normCenterName(c.name)];
+  const data = (arr||MONTH_LABELS.map(()=>null)).slice(0,8);
+  _detailNewChart=new Chart(el,{type:'line',
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[
+      {label:'신규회원',data:data,borderColor:'#1e40af',backgroundColor:'rgba(30,64,175,.12)',
+        fill:true,tension:.3,borderWidth:2,pointRadius:3,pointBackgroundColor:'#1e40af',spanGaps:true}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:9},color:'#9aa0a6'},grid:{color:'#eef0ea'}},
+        x:{ticks:{font:{size:10},color:'#1c2431'},grid:{display:false}}},
+      plugins:{legend:{display:false}}}});
 }
 
 /* ===== 본부(Track1) 매니저 메모 패널 — 인라인, 날짜/내용 누적 =====
@@ -5029,10 +5073,10 @@ function renderDoc(){
 const MENU = [
   { id:'home', label:'🏠 홈', type:'group', expanded:true, navigable:true,
     children: () => [
-      {id:'home:mem', label:'실회원 추이'},
-      {id:'home:engrev', label:'영어 매출 추이'},
-      {id:'home:new', label:'신규회원 추이'},
-      {id:'home:curi', label:'큐리매쓰 현황'}
+      {id:'home:mem', label:'[영어] 실회원 추이'},
+      {id:'home:engrev', label:'[영어] 매출 추이'},
+      {id:'home:new', label:'[영어] 신규회원 추이'},
+      {id:'home:curi', label:'[수학] 큐리매쓰 현황'}
     ]},
   { id:'mgr',  label:'👤 매니저', type:'group', expanded:true,
     children: () => DATA.managers.map(m => ({ id:'mgr:'+m.name, label:m.name })) },
@@ -5189,6 +5233,12 @@ function renderVoc(){
 
 /* ===== 홈 화면 집계 유틸 (실회원 · BM · 큐리매쓰) ===== */
 function fmtNum(n){ return (n||0).toLocaleString('ko-KR'); }
+// 매출 표시 전용 — 천원 미만 절삭 후 "천원" 단위로 표기(영어·큐리매쓰 공통 기준)
+function fmtWon(v){
+  if(v===null||v===undefined) return '-';
+  return fmtNum(Math.floor(v/1000))+'천원';
+}
+function toWonK(v){ return (v===null||v===undefined) ? null : Math.floor(v/1000); }
 function bmCategory(form){
   if(form==='학원(숲)') return '숲';
   if(form==='학원(IGSE)') return 'IGSE';
@@ -5336,6 +5386,7 @@ const barValueLabelPlugin = {
       const meta = chart.getDatasetMeta(dsIndex);
       if(meta.hidden) return;
       const isLine = ds.type==='line';
+      const suffix = ds.valueSuffix || '';
       meta.data.forEach((el, i)=>{
         const v = ds.data[i];
         if(v===null||v===undefined) return;
@@ -5344,7 +5395,7 @@ const barValueLabelPlugin = {
         ctx.font = isLine ? 'bold 10px sans-serif' : '9px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.fillText(fmtNum(v), el.x, el.y - (isLine?8:2));
+        ctx.fillText(fmtNum(v)+suffix, el.x, el.y - (isLine?8:2));
         ctx.restore();
       });
     });
@@ -5382,20 +5433,22 @@ function drawEngRevChart(){
   const el=document.getElementById('engRevChart'); if(!el)return;
   if(_engRevChart)_engRevChart.destroy();
   const cats = engRevSeriesForScope(_scope);
-  const maxV = Math.max(1, ...cats['전체']);
+  const toK = arr => arr.map(toWonK);
+  const forest=toK(cats['숲']), igse=toK(cats['IGSE']), op=toK(cats['우영']), total=toK(cats['전체']);
+  const maxV = Math.max(1, ...total);
   _engRevChart = new Chart(el,{
     data:{labels:MONTH_LABELS.slice(0,8), datasets:[
-      {type:'bar', label:'숲', data:cats['숲'], backgroundColor:'#0891b2'},
-      {type:'bar', label:'IGSE', data:cats['IGSE'], backgroundColor:'#1e40af'},
-      {type:'bar', label:'우영', data:cats['우영'], backgroundColor:'#60a5fa'},
-      {type:'line', label:'합계', data:cats['전체'], borderColor:'#0c2d6b', backgroundColor:'#0c2d6b',
-        tension:.3, borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#0c2d6b', fill:false, order:0}
+      {type:'bar', label:'숲', data:forest, backgroundColor:'#0891b2', valueSuffix:'천원'},
+      {type:'bar', label:'IGSE', data:igse, backgroundColor:'#1e40af', valueSuffix:'천원'},
+      {type:'bar', label:'우영', data:op, backgroundColor:'#60a5fa', valueSuffix:'천원'},
+      {type:'line', label:'합계', data:total, borderColor:'#0c2d6b', backgroundColor:'#0c2d6b',
+        tension:.3, borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#0c2d6b', fill:false, order:0, valueSuffix:'천원'}
     ]},
     plugins:[barValueLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,
       layout:{padding:{top:26}},
       scales:{
-        y:{beginAtZero:true, suggestedMax:maxV*1.18, ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},
+        y:{beginAtZero:true, suggestedMax:maxV*1.18, ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천원'},grid:{color:'#eef0ea'}},
         x:{ticks:{font:{size:11}},grid:{display:false}}
       },
       plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},
@@ -5450,17 +5503,17 @@ function drawCuriCharts(){
   const elR=document.getElementById('curiRevenueChart');
   if(elR){
     if(_curiChartRev)_curiChartRev.destroy();
-    const revTotal = s.workbook.map((v,i)=>(v||0)+(s.textbook[i]||0));
-    const maxR = Math.max(1, ...revTotal);
+    const revTotalK = s.workbook.map((v,i)=>toWonK((v||0)+(s.textbook[i]||0)));
+    const maxR = Math.max(1, ...revTotalK);
     _curiChartRev = new Chart(elR,{type:'line',
       data:{labels:MONTH_LABELS.slice(0,8), datasets:[
-        {label:'매출 합계(문제은행+교재매출)', data:revTotal, borderColor:'#dc2626', backgroundColor:'#dc2626',
-          tension:.3, borderWidth:2.5, pointRadius:4, fill:false}
+        {label:'매출 합계(문제은행+교재매출)', data:revTotalK, borderColor:'#dc2626', backgroundColor:'#dc2626',
+          tension:.3, borderWidth:2.5, pointRadius:4, fill:false, valueSuffix:'천원'}
       ]},
       plugins:[barValueLabelPlugin],
       options:{responsive:true,maintainAspectRatio:false,
         layout:{padding:{top:26}},
-        scales:{y:{beginAtZero:true,suggestedMax:maxR*1.18,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},
+        scales:{y:{beginAtZero:true,suggestedMax:maxR*1.18,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천원'},grid:{color:'#eef0ea'}},
           x:{ticks:{font:{size:11}},grid:{display:false}}},
         plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}}}});
   }
@@ -5541,6 +5594,13 @@ function uniDelta(cur, prev){
   if(d<0) return `<div class="uni-delta down">▼${fmtNum(d)}</div>`;
   return `<div class="uni-delta flat">→0</div>`;
 }
+// 매출 전월대비(천원 단위로 표시)
+function uniDeltaWon(cur, prev){
+  const d = Math.floor(cur/1000) - Math.floor(prev/1000);
+  if(d>0) return `<div class="uni-delta up">▲+${fmtNum(d)}천원</div>`;
+  if(d<0) return `<div class="uni-delta down">▼${fmtNum(d)}천원</div>`;
+  return `<div class="uni-delta flat">→0</div>`;
+}
 // 전국/매니저/본부 각 행을 독립적으로 펼치고 접음
 let _kpiExpanded = {nation:false, mgr:false, br:false};
 function toggleKpiExpand(role){
@@ -5562,23 +5622,23 @@ function renderUnifiedKpiGrid(){
     body += `<tr class="uni-row-main">
       <td class="uni-row-label" ${clickAttr}>${arrow} ${r.label}</td>
       <td class="num eng-cell mem-cell">${d.na?'—':`${fmtNum(d.total.mem)}명${uniDelta(d.total.mem,d.total.memPrev)}`}</td>
-      <td class="num eng-cell">${d.na?'—':`${fmtNum(d.total.rev)}${uniDelta(d.total.rev,d.total.revPrev)}`}</td>
+      <td class="num eng-cell">${d.na?'—':`${fmtWon(d.total.rev)}${uniDeltaWon(d.total.rev,d.total.revPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':`${fmtNum(d.total.new)}명${uniDelta(d.total.new,d.total.newPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':fmtNum(d.total.centers)+'개'}</td>
       <td class="num curi-cell mem-cell">${fmtNum(d.curi.mem)}명${uniDelta(d.curi.mem,d.curi.memPrev)}</td>
-      <td class="num curi-cell">${fmtNum(d.curi.rev)}${uniDelta(d.curi.rev,d.curi.revPrev)}</td>
+      <td class="num curi-cell">${fmtWon(d.curi.rev)}${uniDeltaWon(d.curi.rev,d.curi.revPrev)}</td>
       <td class="num curi-cell">${fmtNum(d.curi.centers)}개</td>
     </tr>`;
     if(exp && !d.na){
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 학원</td>
         <td class="num eng-cell mem-cell">${fmtNum(d.academy.mem)}명${uniDelta(d.academy.mem,d.academy.memPrev)}</td>
-        <td class="num eng-cell">${fmtNum(d.academy.rev)}${uniDelta(d.academy.rev,d.academy.revPrev)}</td>
+        <td class="num eng-cell">${fmtWon(d.academy.rev)}${uniDeltaWon(d.academy.rev,d.academy.revPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.new)}명${uniDelta(d.academy.new,d.academy.newPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.centers)}개</td>
         <td colspan="3" class="curi-cell"></td></tr>`;
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 우영</td>
         <td class="num eng-cell mem-cell">${fmtNum(d.op.mem)}명${uniDelta(d.op.mem,d.op.memPrev)}</td>
-        <td class="num eng-cell">${fmtNum(d.op.rev)}${uniDelta(d.op.rev,d.op.revPrev)}</td>
+        <td class="num eng-cell">${fmtWon(d.op.rev)}${uniDeltaWon(d.op.rev,d.op.revPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.new)}명${uniDelta(d.op.new,d.op.newPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.centers)}개</td>
         <td colspan="3" class="curi-cell"></td></tr>`;
@@ -5652,10 +5712,10 @@ function uniReset(){
 // 사이드바 메뉴를 홈 화면 상단에도 동일하게 노출(빠른 이동용)
 function renderHomeQuickNav(){
   const items = [
-    {label:'실회원 추이', action:"go({view:'home',scrollTo:'mem'})"},
-    {label:'영어 매출 추이', action:"go({view:'home',scrollTo:'engrev'})"},
-    {label:'신규회원 추이', action:"go({view:'home',scrollTo:'new'})"},
-    {label:'큐리매쓰 현황', action:"go({view:'home',scrollTo:'curi'})"},
+    {label:'[영어] 실회원 추이', action:"go({view:'home',scrollTo:'mem'})"},
+    {label:'[영어] 매출 추이', action:"go({view:'home',scrollTo:'engrev'})"},
+    {label:'[영어] 신규회원 추이', action:"go({view:'home',scrollTo:'new'})"},
+    {label:'[수학] 큐리매쓰 현황', action:"go({view:'home',scrollTo:'curi'})"},
   ].concat(DATA.managers.map((m,i)=>({label:m.name, action:`go({view:'mgr',mgr:${i}})`})))
    .concat([{label:'본사 직영', action:"go({view:'hq',section:'curi'})"}]);
   return `<div class="home-quicknav">${items.map(it=>`<button class="qn-pill" onclick="${it.action}">${it.label}</button>`).join('')}</div>`;
@@ -5753,12 +5813,12 @@ function curiRegionRowsHtml(mgrName, region){
   const key = mgrName+'::'+region;
   const exp = _curiListExpanded[key];
   const agg = curiRegionAgg(mgrName, region);
-  const cells = agg.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${fmtNum(v)}명</td><td class="num curi-cell">${fmtNum(agg.rev[i])}</td>`).join('');
+  const cells = agg.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${fmtNum(v)}명</td><td class="num curi-cell">${fmtWon(agg.rev[i])}</td>`).join('');
   let html = `<tr class="uni-row-main"><td class="uni-row-label" onclick="toggleCuriListExpand('${jsq(key)}')"><span class="uni-arrow">${exp?'▾':'▸'}</span> ${region}</td>${cells}</tr>`;
   if(exp){
     const rows = CURI_DATA.filter(r=>(mgrName==='본사' ? (r.mgr==='본사'&&r.sub===region) : (r.mgr===mgrName&&r.region===region)) && !r.center.includes('(해지)'));
     rows.forEach(r=>{
-      const cells2 = r.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${v===null?'-':v}명</td><td class="num curi-cell">${fmtNum((r.workbook[i]||0)+(r.textbook[i]||0))}</td>`).join('');
+      const cells2 = r.mem.map((v,i)=>`<td class="num curi-cell mem-cell">${v===null?'-':v}명</td><td class="num curi-cell">${fmtWon((r.workbook[i]||0)+(r.textbook[i]||0))}</td>`).join('');
       html += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ ${r.center}</td>${cells2}</tr>`;
     });
   }
@@ -5894,8 +5954,8 @@ function renderHqCuri(){
     <h3 class="hb">${region} — 센터별 실적 <span style="font-size:12px;font-weight:400;color:var(--muted)">(해지 센터 제외 · 센터명 클릭 시 메모)</span></h3>
     <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr;max-width:520px;margin:12px 0">
       <div class="kpi" style="border-top-color:var(--amber)"><div class="k-label">실회원(8월)</div><div class="k-val">${fmtNum(totalMem8)}명</div></div>
-      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">문제은행(8월)</div><div class="k-val">${fmtNum(totalWb8)}</div></div>
-      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재매출(8월)</div><div class="k-val">${fmtNum(totalTb8)}</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">문제은행(8월)</div><div class="k-val">${fmtWon(totalWb8)}</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재매출(8월)</div><div class="k-val">${fmtWon(totalTb8)}</div></div>
     </div>
 
     <div class="track">
@@ -5919,103 +5979,209 @@ function renderAllCenters(){
   const mathTotal = CURI_DATA.filter(r=>!r.center.includes('(해지)')).length;
   app.innerHTML = `
     <h2 class="mgr">📋 전체 센터 현황</h2>
-    <p class="hint" style="margin:10px 0 16px">브랜드를 선택하면 전국 센터별 월별 실적을 한 화면에서 확인할 수 있습니다.</p>
+    <p class="hint" style="margin:10px 0 16px">브랜드를 선택한 뒤 매니저·본부·센터를 순서대로 골라 조회합니다.</p>
     <div class="br-grid">
       <div class="br-card" onclick="go({view:'allcenterslist',brand:'eng'})">
         <div class="bc-name">🔤 영어 (학원·우영)</div>
-        <div class="bc-meta">센터 ${fmtNum(engTotal)}개 · 월별 실회원·신규회원</div>
+        <div class="bc-meta">센터 ${fmtNum(engTotal)}개</div>
       </div>
       <div class="br-card" onclick="go({view:'allcenterslist',brand:'math'})">
         <div class="bc-name">🧮 수학 (큐리매쓰)</div>
-        <div class="bc-meta">센터 ${fmtNum(mathTotal)}개(해지 제외) · 월별 실회원</div>
+        <div class="bc-meta">센터 ${fmtNum(mathTotal)}개(해지 제외)</div>
       </div>
     </div>`;
 }
-let _acFilterMgr = '', _acSearch = '';
+
+// ── 전체 센터 현황: 매니저→본부(영어)/지역(수학)→센터 드릴다운 ──
+let _acScope = {mgr:'', br:'', center:''};
+function acThirdLabel(){ return route.brand==='eng' ? '본부' : '지역'; }
+function acBranchOptions(mgrName){
+  if(!mgrName) return [];
+  if(route.brand==='eng'){
+    const m = DATA.managers.find(x=>x.name===mgrName);
+    return m ? m.branches.map(b=>b.name) : [];
+  }
+  return Array.from(new Set(CURI_DATA.filter(r=>r.mgr===mgrName).map(r=>r.region))).sort((a,b)=>a.localeCompare(b,'ko'));
+}
+function acCenterOptions(mgrName, brName){
+  if(!mgrName || !brName) return [];
+  if(route.brand==='eng'){
+    const m = DATA.managers.find(x=>x.name===mgrName);
+    const b = m && m.branches.find(x=>x.name===brName);
+    return b ? b.centers.map(c=>c.name) : [];
+  }
+  return CURI_DATA.filter(r=>r.mgr===mgrName && r.region===brName && !r.center.includes('(해지)')).map(r=>r.center);
+}
 function renderAllCentersList(){
   const brand = route.brand;
-  _acFilterMgr = ''; _acSearch = '';
-  const mgrOpts = brand==='eng'
-    ? DATA.managers.map(m=>`<option value="${m.name}">${m.name}</option>`).join('')
-    : Array.from(new Set(CURI_DATA.map(r=>r.mgr))).sort((a,b)=>a.localeCompare(b,'ko')).map(n=>`<option value="${n}">${n}</option>`).join('');
+  _acScope = {mgr:'', br:'', center:''};
   app.innerHTML = `
     <button class="back-btn" style="margin:0 0 14px" onclick="go({view:'allcenters'})">‹ 전체 센터 현황으로</button>
     <h2 class="mgr">${brand==='eng'?'🔤 영어':'🧮 수학'} 전체 센터 현황</h2>
-    <div class="ac-filter-bar">
-      <label>매니저</label>
-      <select id="acMgrSel" onchange="acFilterChanged()"><option value="">전체</option>${mgrOpts}</select>
-      <label>검색</label>
-      <input type="text" id="acSearchInput" placeholder="센터명 검색" oninput="acFilterChanged()">
+    <div id="acPickerWrap">${acPickerHtml()}</div>
+    <div id="acDetailWrap"></div>`;
+}
+function acPickerHtml(){
+  const brand = route.brand;
+  const mgrList = brand==='eng' ? DATA.managers.map(m=>m.name) : Array.from(new Set(CURI_DATA.map(r=>r.mgr))).sort((a,b)=>a.localeCompare(b,'ko'));
+  const mgrOpts = ['<option value="">매니저 선택…</option>'].concat(mgrList.map(n=>`<option value="${n}" ${_acScope.mgr===n?'selected':''}>${n}</option>`));
+  const brList = acBranchOptions(_acScope.mgr);
+  const brOpts = ['<option value="">'+acThirdLabel()+' 선택…</option>'].concat(brList.map(n=>`<option value="${n}" ${_acScope.br===n?'selected':''}>${n}</option>`));
+  const cList = acCenterOptions(_acScope.mgr, _acScope.br);
+  const cOpts = ['<option value="">센터 선택…</option>'].concat(cList.map(n=>`<option value="${n}" ${_acScope.center===n?'selected':''}>${n}</option>`));
+  return `<div class="ac-filter-bar">
+    <label>매니저</label>
+    <select onchange="acMgrChanged(this.value)">${mgrOpts.join('')}</select>
+    ${_acScope.mgr ? `<label>${acThirdLabel()}</label>
+    <select onchange="acBrChanged(this.value)">${brOpts.join('')}</select>` : ''}
+    ${_acScope.br ? `<label>센터</label>
+    <select onchange="acCenterChanged(this.value)">${cOpts.join('')}</select>` : ''}
+  </div>`;
+}
+function acRefreshPicker(){
+  const wrap = document.getElementById('acPickerWrap');
+  if(wrap) wrap.innerHTML = acPickerHtml();
+}
+function acMgrChanged(v){ _acScope = {mgr:v, br:'', center:''}; acRefreshPicker(); acClearDetail(); }
+function acBrChanged(v){ _acScope.br = v; _acScope.center=''; acRefreshPicker(); acClearDetail(); }
+function acCenterChanged(v){
+  _acScope.center = v;
+  acRefreshPicker();
+  const dw = document.getElementById('acDetailWrap');
+  if(dw) dw.innerHTML = v ? (route.brand==='eng' ? acEngDetailHtml() : acMathDetailHtml()) : '';
+  if(v){
+    if(route.brand==='eng') acDrawEngDetailCharts();
+    else acDrawMathDetailCharts();
+  }
+}
+function acClearDetail(){ const dw=document.getElementById('acDetailWrap'); if(dw) dw.innerHTML=''; }
+
+// ── 영어 센터 상세(페이지형 — 팝업 아님) ──
+function acEngDetailHtml(){
+  const m = DATA.managers.find(x=>x.name===_acScope.mgr);
+  const b = m.branches.find(x=>x.name===_acScope.br);
+  const c = b.centers.find(x=>x.name===_acScope.center);
+  const t=memTrend(c), risk=riskLevel(c), tier=priorityTier(c);
+  const prioLabel={1:'1순위 (감소+미면담)',2:'2순위 (저실적)',3:'3순위 (감소)',4:'4순위 (관리중)'}[tier];
+  const th=threshold(c.form);
+  const mngTxt=c.mng.months.length
+    ? `면담 ${c.mng.months.map(x=>x+'월').join('·')} · <b>${c.mng.eval}</b> — ${c.mng.note}`
+    : `<b>${c.mng.eval}</b> · ${c.mng.note}`;
+  return `
+    <div class="card-box section-gap">
+      <div class="dm-head">
+        <div>
+          <div class="dm-name">${c.name}</div>
+          <div class="dm-sub">${c.form} · ${b.name} · 담당 ${m.name}</div>
+        </div>
+        <div class="dm-tags">
+          <span class="prio-tag prio-${tier}">${prioLabel}</span>
+          <span class="risk-dot risk-${risk.k}">${risk.t}</span>
+          ${isLowCenter(c)?'<span class="dm-low">저실적</span>':''}
+        </div>
+      </div>
+      <div class="dm-trend" style="margin:8px 0">추세 ${t.first??'-'} → ${t.last??'-'}명 <b class="${t.diff>0?'delta-up':t.diff<0?'delta-down':'delta-flat'}">${t.diff>0?'+':''}${t.diff} (${t.pct>0?'+':''}${t.pct}%)</b> · 저실적 기준 ${th}명 이하</div>
     </div>
-    <div class="mirror-scroll-top" id="acTopScroll"><div></div></div>
-    <div id="acTableWrap">${brand==='eng' ? buildAllCentersEngTable() : buildAllCentersMathTable()}</div>`;
-  setupTopScrollSync('acTopScroll','acTableWrap');
+
+    <div class="card-box section-gap"><h4>📈 실회원 추이</h4>
+      <div class="trend-wrap" style="height:220px"><canvas id="acEngMemChart"></canvas></div></div>
+    <div class="card-box section-gap"><h4>💰 매출 추이</h4>
+      <div class="trend-wrap" style="height:220px"><canvas id="acEngRevChart"></canvas></div></div>
+    <div class="card-box section-gap"><h4>🆕 신규회원 추이</h4>
+      <div class="trend-wrap" style="height:220px"><canvas id="acEngNewChart"></canvas></div></div>
+
+    <div class="card-box section-gap">
+      <div class="dm-mng"><b>월별 관리 코멘트</b><br>${mngTxt}</div>
+      ${directorInfoHtml(c.name)}
+      <div class="dm-memo">
+        <div class="dm-memo-title">📝 매니저 메모 <span id="memoCnt"></span></div>
+        <div class="dm-memo-form">
+          <input type="date" id="memoDate" class="memo-date" value="${todayStr()}">
+          <input type="text" id="memoText" class="memo-text" placeholder="메모 내용 입력 후 Enter 또는 추가"
+            onkeydown="if(event.key==='Enter')submitMemo()">
+          <button class="memo-add" onclick="submitMemo()">＋ 추가</button>
+        </div>
+        <div id="memoLog" class="dm-memo-log"></div>
+      </div>
+    </div>`;
 }
-function acFilterChanged(){
-  _acFilterMgr = document.getElementById('acMgrSel').value;
-  _acSearch = document.getElementById('acSearchInput').value.trim();
-  const wrap = document.getElementById('acTableWrap');
-  if(wrap) wrap.innerHTML = route.brand==='eng' ? buildAllCentersEngTable() : buildAllCentersMathTable();
-  setupTopScrollSync('acTopScroll','acTableWrap');
+let _acEngMemChart=null,_acEngRevChart=null,_acEngNewChart=null;
+function acDrawEngDetailCharts(){
+  if(typeof Chart==='undefined')return;
+  const m = DATA.managers.find(x=>x.name===_acScope.mgr);
+  const b = m.branches.find(x=>x.name===_acScope.br);
+  const c = b.centers.find(x=>x.name===_acScope.center);
+  _modalCtx = {mgr:m.name, br:b.name, c:c.name, mgrIdx:DATA.managers.indexOf(m), brIdx:m.branches.indexOf(b), cIdx:b.centers.indexOf(c)};
+  const elM=document.getElementById('acEngMemChart');
+  if(_acEngMemChart)_acEngMemChart.destroy();
+  if(elM) _acEngMemChart=new Chart(elM,{type:'line',
+    data:{labels:MONTH_LABELS,datasets:[{label:'실회원',data:c.mem,borderColor:'#2f5d50',backgroundColor:'rgba(47,93,80,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+  const elR=document.getElementById('acEngRevChart');
+  if(_acEngRevChart)_acEngRevChart.destroy();
+  const revArr = ENGREV_DATA[normCenterName(c.name)];
+  if(elR) _acEngRevChart=new Chart(elR,{type:'line',
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:(revArr||[]).map(toWonK),borderColor:'#c2410c',backgroundColor:'rgba(194,65,12,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+  const elN=document.getElementById('acEngNewChart');
+  if(_acEngNewChart)_acEngNewChart.destroy();
+  const newArr = NEWMEM_DATA[normCenterName(c.name)];
+  if(elN) _acEngNewChart=new Chart(elN,{type:'line',
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'신규회원',data:newArr||[],borderColor:'#1e40af',backgroundColor:'rgba(30,64,175,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+  renderMemoLog();
+  loadDirectorInfo();
 }
-function buildAllCentersEngTable(){
-  let rows=[];
-  DATA.managers.forEach(m=>{
-    if(_acFilterMgr && _acFilterMgr!==m.name) return;
-    m.branches.forEach(b=>b.centers.forEach(c=>{
-      if(_acSearch && !c.name.includes(_acSearch)) return;
-      rows.push({mgr:m.name, br:b.name, c});
-    }));
-  });
-  if(!rows.length) return `<p class="hint">조건에 맞는 센터가 없습니다.</p>`;
-  const body = rows.map(r=>{
-    const newArr = NEWMEM_DATA[normCenterName(r.c.name)];
-    const revArr = ENGREV_DATA[normCenterName(r.c.name)];
-    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num mem-cell">${r.c.mem[i]===null||r.c.mem[i]===undefined?'-':r.c.mem[i]}</td>`).join('');
-    const revCells = MONTH_LABELS.slice(0,8).map((_,i)=>{
-      const v = revArr ? revArr[i] : null;
-      return `<td class="num">${v===null||v===undefined?'-':fmtNum(v)}</td>`;
-    }).join('');
-    const newCells = MONTH_LABELS.slice(0,8).map((_,i)=>{
-      const v = newArr ? newArr[i] : null;
-      return `<td class="num">${v===null||v===undefined?'-':v}</td>`;
-    }).join('');
-    return `<tr class="curi-group-start">
-        <td rowspan="3" class="curi-center-cell ac-name-col">${eschtml(r.c.name)}</td>
-        <td rowspan="3">${r.mgr}</td><td rowspan="3">${r.br}</td>
-        <td class="curi-metric">실회원</td>${memCells}</tr>
-      <tr><td class="curi-metric">매출</td>${revCells}</tr>
-      <tr class="curi-group-end"><td class="curi-metric">신규</td>${newCells}</tr>`;
-  }).join('');
-  return `<table class="curi-merged-table ac-table">
-    <thead><tr><th class="ac-name-col">센터명</th><th>매니저</th><th>본부</th><th>구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
-    <tbody>${body}</tbody>
-  </table>
-  <p class="uni-kpi-note">총 ${fmtNum(rows.length)}개 센터</p>`;
+
+// ── 수학(큐리매쓰) 센터 상세(페이지형) ──
+function acMathDetailHtml(){
+  const r = CURI_DATA.find(x=>x.mgr===_acScope.mgr && x.region===_acScope.br && x.center===_acScope.center);
+  const mem8 = r.mem[7]||0, rev8 = (r.workbook[7]||0)+(r.textbook[7]||0);
+  return `
+    <div class="card-box section-gap">
+      <div class="dm-head">
+        <div>
+          <div class="dm-name">${r.center}</div>
+          <div class="dm-sub">큐리매쓰 · ${r.region} · 담당 ${r.mgr}</div>
+        </div>
+      </div>
+      <div class="dm-trend" style="margin:8px 0">실회원(8월) <b>${fmtNum(mem8)}명</b> · 매출(8월) <b>${fmtWon(rev8)}</b></div>
+    </div>
+    <div class="card-box section-gap"><h4>📈 실회원 추이</h4>
+      <div class="trend-wrap" style="height:220px"><canvas id="acMathMemChart"></canvas></div></div>
+    <div class="card-box section-gap"><h4>💰 매출 추이 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 문제은행+교재매출 합산</span></h4>
+      <div class="trend-wrap" style="height:220px"><canvas id="acMathRevChart"></canvas></div></div>
+    <div class="card-box section-gap">
+      <p class="hint">큐리매쓰 센터의 신규회원 데이터는 아직 연결되지 않았습니다.</p>
+      ${(()=>{ const idx=CURI_DATA.indexOf(r); return `<div class="dir-info"><div class="dir-title">📝 담당자 메모 <span id="curiMemoCnt"></span></div>
+        <div class="dm-memo-form">
+          <input type="date" id="curiMemoDate" class="memo-date" value="${todayStr()}">
+          <input type="text" id="curiMemoText" class="memo-text" placeholder="메모 내용 입력 후 Enter 또는 추가" onkeydown="if(event.key==='Enter')submitCuriMemo()">
+          <button class="memo-add" onclick="submitCuriMemo()">＋ 추가</button>
+        </div>
+        <div id="curiMemoLog" class="dm-memo-log"></div></div>`; })()}
+    </div>`;
 }
-function buildAllCentersMathTable(){
-  let rows = CURI_DATA.filter(r=>!r.center.includes('(해지)'));
-  if(_acFilterMgr) rows = rows.filter(r=>r.mgr===_acFilterMgr);
-  if(_acSearch) rows = rows.filter(r=>r.center.includes(_acSearch));
-  if(!rows.length) return `<p class="hint">조건에 맞는 센터가 없습니다.</p>`;
-  const body = rows.map(r=>{
-    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num mem-cell">${r.mem[i]===null||r.mem[i]===undefined?'-':r.mem[i]}</td>`).join('');
-    const revCells = MONTH_LABELS.slice(0,8).map((_,i)=>{
-      const v = (r.workbook[i]||0)+(r.textbook[i]||0);
-      return `<td class="num">${fmtNum(v)}</td>`;
-    }).join('');
-    return `<tr class="curi-group-start">
-        <td rowspan="2" class="curi-center-cell ac-name-col">${eschtml(r.center)}</td>
-        <td rowspan="2">${r.mgr}</td><td rowspan="2">${r.region}</td>
-        <td class="curi-metric">실회원</td>${memCells}</tr>
-      <tr class="curi-group-end"><td class="curi-metric">매출</td>${revCells}</tr>`;
-  }).join('');
-  return `<table class="curi-merged-table ac-table">
-    <thead><tr><th class="ac-name-col">센터명</th><th>담당</th><th>지역</th><th>구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
-    <tbody>${body}</tbody>
-  </table>
-  <p class="uni-kpi-note">총 ${fmtNum(rows.length)}개 센터(해지 제외) · 신규회원은 추후 데이터 연결 예정</p>`;
+let _acMathMemChart=null,_acMathRevChart=null;
+function acDrawMathDetailCharts(){
+  if(typeof Chart==='undefined')return;
+  const r = CURI_DATA.find(x=>x.mgr===_acScope.mgr && x.region===_acScope.br && x.center===_acScope.center);
+  const idx = CURI_DATA.indexOf(r);
+  _curiModalCtx = {mgr:r.mgr, region:r.region, center:r.center, idx};
+  const elM=document.getElementById('acMathMemChart');
+  if(_acMathMemChart)_acMathMemChart.destroy();
+  if(elM) _acMathMemChart=new Chart(elM,{type:'line',
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'실회원',data:r.mem,borderColor:'#f97316',backgroundColor:'rgba(249,115,22,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+  const elR=document.getElementById('acMathRevChart');
+  if(_acMathRevChart)_acMathRevChart.destroy();
+  const revK = r.workbook.map((v,i)=>toWonK((v||0)+(r.textbook[i]||0)));
+  if(elR) _acMathRevChart=new Chart(elR,{type:'line',
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:revK,borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+  renderCuriMemoLog();
 }
+
 
 let _homeRange = null;
 function renderHome(){
@@ -6030,28 +6196,17 @@ function renderHome(){
   const cards = results.map(({m,i,R})=>{
     const s = R.stat;
     const grade = s.avg>=70?{k:'good',t:'🟢'}: s.avg>=45?{k:'warn',t:'🟡'}:{k:'risk',t:'🔴'};
-    const top = R.actions[0];
-    const topHtml = top
-      ? `<div class="hc-top"><b>[${top.action.tag}]</b> ${top.br}·${top.center} — ${eschtml(top.text).slice(0,42)}${top.masked?' <i>(요약)</i>':''}</div>`
-      : `<div class="hc-empty">이번 주 긴급 조치 사항 없음</div>`;
-    let memTot=0; m.branches.forEach(b=>b.centers.forEach(c=>memTot+=(c.mem[7]||0)));
-    const curiM = curiSeriesForScope({mgr:m.name, br:null});
-    const curiRevM = (curiM.workbook[7]||0)+(curiM.textbook[7]||0);
     return `<div class="home-card" onclick="go({view:'mgr',mgr:${i}})">
       <div class="hc-name">${m.name} <span class="hc-score grade-${grade.k}">${grade.t} ${s.avg}점</span></div>
-      <div class="hc-meta">실회원(8월) <b>${fmtNum(memTot)}명</b> · 이번 주 메모 <b>${s.nMemo}건</b> · 조치 필요 <b style="color:var(--alert)">${R.actions.length}건</b></div>
-      <div class="hc-meta">큐리매쓰 매출(8월) <b>${fmtNum(curiRevM)}</b></div>
-      ${topHtml}
+      <div class="hc-meta">본부 <b>${m.branches.length}개</b></div>
     </div>`;
   }).join('');
 
   // 정은희(큐리매쓰 전용 담당) 카드 — 경남·부산연제·직영 통합 담당
-  const jeCuri = curiSeriesForScope({mgr:'정은희', br:null});
-  const jeMem8 = jeCuri.mem[7], jeRev8 = (jeCuri.workbook[7]||0)+(jeCuri.textbook[7]||0);
+  const jeRegionCnt = curiRegionsByManager()['정은희']?.length || 0;
   const hqCard = `<div class="home-card" onclick="go({view:'hq',section:'curi'})">
     <div class="hc-name">정은희 <span class="hc-score" style="background:#fef3e2;color:#c2410c">🧮 큐리매쓰</span></div>
-    <div class="hc-meta">큐리매쓰 실회원(8월) <b>${fmtNum(jeMem8)}명</b> · 매출 합계(8월) <b>${fmtNum(jeRev8)}</b></div>
-    <div class="hc-empty">경남·부산연제·직영 통합 담당 — 클릭 시 큐리매쓰 현황으로 이동</div>
+    <div class="hc-meta">담당 지역 <b>${jeRegionCnt}개</b></div>
   </div>`;
 
   const curiAll = curiSeriesForScope({mgr:null,br:null});
@@ -6063,22 +6218,22 @@ function renderHome(){
     ${renderUnifiedKpiGrid()}
 
     <div class="card-box section-gap" id="sec-mem">
-      <h4>📈 실회원 추이</h4>
+      <h4>📈 [영어] 실회원 추이</h4>
       <div class="trend-wrap" style="height:280px"><canvas id="homeBmChart"></canvas></div>
     </div>
 
     <div class="card-box section-gap" id="sec-engrev">
-      <h4>💰 영어 매출 추이</h4>
+      <h4>💰 [영어] 매출 추이</h4>
       <div class="trend-wrap" style="height:280px"><canvas id="engRevChart"></canvas></div>
     </div>
 
     <div class="card-box section-gap" id="sec-new">
-      <h4>🆕 신규회원 추이</h4>
+      <h4>🆕 [영어] 신규회원 추이</h4>
       <div class="trend-wrap" style="height:280px"><canvas id="newMemChart"></canvas></div>
     </div>
 
     <div class="card-box section-gap" id="sec-curi">
-      <h4>🧮 큐리매쓰 현황 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 실회원(선그래프) · 매출(막대그래프)</span></h4>
+      <h4>🧮 [수학] 큐리매쓰 현황 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 실회원(선그래프) · 매출(꺾은선)</span></h4>
       <div class="dash-grid2b" style="margin-top:10px">
         <div>
           <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">실회원 추이</div>

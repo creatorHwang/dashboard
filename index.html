@@ -419,7 +419,7 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
     <p class="lock-sub">관계자 전용 대시보드입니다. 비밀번호를 입력해 주세요.</p>
     <input type="password" id="lockPwInput" class="lock-input" placeholder="비밀번호"
       onkeydown="if(event.key==='Enter')submitDashAuth()" autofocus>
-    <button class="lock-btn" onclick="submitDashAuth()">확인</button>
+    <button id="lockBtn" class="lock-btn" onclick="submitDashAuth()">확인</button>
     <div id="lockErr" class="lock-err"></div>
   </div>
 </div>
@@ -8304,8 +8304,7 @@ function drawTrend(b){
       plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:12}}}}});
 }
 
-// ===== 대시보드 접속 비밀번호 (여기 값만 바꾸면 비밀번호가 바뀝니다) =====
-const DASH_PASSWORD = 'yoons2026';
+// ===== 대시보드 접속 비밀번호 — 서버(Apps Script)에서 확인, 파일 안엔 원문 없음 =====
 const AUTH_SESSION_KEY = 'fc_dash_auth_v1';
 
 function isDashAuthed(){
@@ -8319,16 +8318,34 @@ function startDashApp(){
   setCloudStatus(CLOUD_URL?'sync':'off');
   cloudPull();
 }
-function submitDashAuth(){
+async function submitDashAuth(){
   const pwEl = document.getElementById('lockPwInput');
   const errEl = document.getElementById('lockErr');
-  if(pwEl.value === DASH_PASSWORD){
-    try { sessionStorage.setItem(AUTH_SESSION_KEY, '1'); } catch(e){}
-    startDashApp();
-  } else {
-    errEl.textContent = '비밀번호가 올바르지 않습니다.';
-    pwEl.value = '';
-    pwEl.focus();
+  const btnEl = document.getElementById('lockBtn');
+  if(!pwEl.value){ return; }
+  if(!CLOUD_URL){
+    errEl.textContent = '서버 연동이 설정되지 않았습니다.';
+    return;
+  }
+  errEl.textContent = '';
+  if(btnEl){ btnEl.disabled = true; btnEl.textContent = '확인 중…'; }
+  try{
+    const res = await fetch(CLOUD_URL, {method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'login', password: pwEl.value})});
+    const data = await res.json();
+    if(data.ok){
+      try { sessionStorage.setItem(AUTH_SESSION_KEY, '1'); } catch(e){}
+      startDashApp();
+    } else {
+      errEl.textContent = data.error || '비밀번호가 올바르지 않습니다.';
+      pwEl.value = '';
+      pwEl.focus();
+    }
+  } catch(e){
+    errEl.textContent = '서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+  } finally {
+    if(btnEl){ btnEl.disabled = false; btnEl.textContent = '확인'; }
   }
 }
 

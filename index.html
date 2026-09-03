@@ -30,6 +30,9 @@ header.top .period{font-size:12.5px;color:var(--muted)}
 .mgr-card .who{font-size:18px;font-weight:800}
 .mgr-card .meta{font-size:12.5px;color:var(--muted);margin-top:6px}
 .hint{font-size:12.5px;color:var(--muted);margin-top:16px}
+.closed-tag{color:var(--muted);font-weight:700;font-size:11.5px}
+.decline-closed-row{background:#f3f4f2;color:var(--muted)}
+.decline-closed-row td{cursor:default}
 
 /* branch list */
 .br-list{display:grid;gap:12px}
@@ -465,6 +468,9 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 등촌제일 ↔ 등촌제1, 염창이너스 ↔ (조직표 미확인)',
           centers: [
+            {name:'(H)한진', code:'7292', form:'공부방', mem:[7,7,7,6,6,0,0,0], closed:true, closedDate:'6/30/26', mng:{months:[], eval:'해지', note:'6/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'IGSE상암상지', code:'7494', form:'IGSE', mem:[13,5,0,0,0,0,0,0], closed:true, closedDate:'1/31/26', mng:{months:[], eval:'해지', note:'1/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'IGSE마포상암', code:'5346', form:'IGSE', mem:[5,0,0,0,0,0,0,0], closed:true, closedDate:'1/31/26', mng:{months:[], eval:'해지', note:'1/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'등촌제1', code:'7211', form:'교습소', mem:[9,12,12,11,12,10,10,10], mng:{months:[], eval:'미관리', note:'면담 기록 없음(보고서상 "등촌제일" 표기 — 매칭 확인)'}},
             {name:'염창우성', code:'7381', form:'교습소', mem:[39,40,41,34,40,31,41,43], mng:{months:[7], eval:'미관리', note:'면담 기록 없음 · 2월 배너 홍보 지원'}},
             {name:'개봉푸르지오', code:'7000', form:'교습소', mem:[11,11,11,6,11,6,11,11], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -580,6 +586,9 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'(H)영흥', code:'7625', form:'공부방', mem:[4,3,4,4,3,0,0,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)봉수초', code:'7462', form:'공부방', mem:[3,2,0,0,0,0,0,0], closed:true, closedDate:'5/31/26', mng:{months:[], eval:'해지', note:'5/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)장기초풍경채', code:'7800', form:'공부방', mem:[1,1,1,1,1,0,0,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'숲김포감정', code:'7623', form:'학원(숲)', mem:[16,16,16,15,14,15,15,20], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'숲김포구래', code:'7624', form:'학원(숲)', mem:[15,16,14,15,13,15,15,15], mng:{months:[6], eval:'미관리', note:'면담 기록 없음'}},
             {name:'숲인천백운', code:'2721', form:'학원(숲)', mem:[0,0,0,2,1,1,1,0], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -668,6 +677,7 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: - 출산 축하, -교재신청 및 안부 인사/ 요즘 영.수 함께 하고자 하는 회, -아이 출산 관련 상담, 양평서종',
           centers: [
+            {name:'(H)서종교습소', code:'7557', form:'교습소', mem:[10,8,8,0,0,0,0,0], closed:true, closedDate:'4/30/26', mng:{months:[], eval:'해지', note:'4/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE이천신하', code:'5285', form:'학원(IGSE)', mem:[47,45,52,49,54,39,56,55], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE이천한내', code:'6334', form:'학원(IGSE)', mem:[22,24,25,23,24,16,20,21], mng:{months:[1,3,7], eval:'관리', note:'면담 1월·3월'}},
             {name:'숲이천창전', code:'6558', form:'학원(숲)', mem:[65,55,54,55,54,53,53,52], mng:{months:[1,7], eval:'관리', note:'면담 1월'}},
@@ -732,6 +742,7 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 각우영, 도봉 북서울공부 했으나 주 타깃은 자사고 수업에 맞춰서 진행함., 아이원공부방, 예전부터 교습소이전도 생각하고 고민했으, 을지초교습소',
           centers: [
+            {name:'(H)월계사슴', code:'7275', form:'교습소', mem:[2,1,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE상계', code:'5951', form:'학원(IGSE)', mem:[92,95,101,75,78,81,89,84], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'길음초공부방', code:'7610', form:'공부방', mem:[13,13,14,15,16,18,17,16], mng:{months:[6], eval:'미관리', note:'면담 기록 없음'}},
             {name:'도봉북서울공부방', code:'6865', form:'공부방', mem:[4,4,4,4,4,1,5,5], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -821,6 +832,7 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'숲신용산', code:'5706', form:'숲', mem:[14,14,15,9,10,0,0,0], closed:true, closedDate:'5/31/26', mng:{months:[], eval:'해지', note:'5/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'숲청파', code:'5976', form:'학원(숲)', mem:[19,18,21,22,22,22,22,22], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'고은', code:'7335', form:'교습소', mem:[3,3,4,4,3,3,4,3], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'이촌용강', code:'7182', form:'공부방', mem:[79,78,84,85,82,87,80,80], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -872,6 +884,7 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 숲만안동 외, 숲석수, 숲초원, 평촌어바인공부',
           centers: [
+            {name:'(H)안산해솔', code:'7642', form:'공부방', mem:[3,3,3,0,0,0,0,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE산본동', code:'5710', form:'학원(IGSE)', mem:[11,13,14,15,16,18,18,17], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE안양북', code:'5739', form:'학원(IGSE)', mem:[21,21,25,25,25,23,25,26], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE안양신안', code:'3536', form:'학원(IGSE)', mem:[10,8,7,8,8,8,8,8], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -924,6 +937,7 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 5/13, 공부방 는 13텬 차 공부방원장님과 식사하며서 그동안의 애, 배곡골드교습소, 부천약대교습소, 산현igse학원, 서해교습소, 서해교습소에서, 서해정왕교습소, 시흥산현igse학원, 시흥장곡igse학원, 시흥정왕교습소, 에피트공부방, 장곡igse학원, 한라3차공부방',
           centers: [
+            {name:'(H)시흥능곡', code:'6900', form:'교습소', mem:[10,10,10,10,10,10,0,0], closed:true, closedDate:'6/30/26', mng:{months:[], eval:'해지', note:'6/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE배곧', code:'5568', form:'학원(IGSE)', mem:[21,20,22,15,15,13,13,15], mng:{months:[6], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE부천상동', code:'5684', form:'학원(IGSE)', mem:[61,65,64,64,62,60,63,62], mng:{months:[7], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE부천오정북', code:'3215', form:'학원(IGSE)', mem:[19,19,19,18,17,18,18,20], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1041,6 +1055,11 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 경주숲',
           centers: [
+            {name:'(H)대구뉴웰시티', code:'7747', form:'교습소', mem:[11,12,12,12,12,12,0,0], closed:true, closedDate:'6/30/26', mng:{months:[], eval:'해지', note:'6/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)경주현곡푸르지오', code:'6776', form:'공부방', mem:[5,5,5,4,0,0,0,0], closed:true, closedDate:'4/30/26', mng:{months:[], eval:'해지', note:'4/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'IGSE칠곡남율', code:'7724', form:'IGSE', mem:[3,3,3,3,3,3,1,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'숲왜관', code:'2274', form:'숲', mem:[4,0,0,0,0,0,0,0], closed:true, closedDate:'5/31/26', mng:{months:[], eval:'해지', note:'5/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'숲경주용강', code:'5470', form:'숲', mem:[3,3,3,3,4,3,0,0], closed:true, closedDate:'6/30/26', mng:{months:[], eval:'해지', note:'6/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE경주황성공원', code:'5550', form:'학원(IGSE)', mem:[22,20,19,21,20,18,17,16], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE구미송정', code:'5749', form:'학원(IGSE)', mem:[3,4,5,4,4,3,5,5], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE구미신평', code:'6567', form:'학원(IGSE)', mem:[31,31,31,29,29,29,28,29], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1156,6 +1175,10 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'(H)유가예미지', code:'7676', form:'교습소', mem:[42,0,0,0,0,0,0,0], closed:true, closedDate:'1/31/26', mng:{months:[], eval:'해지', note:'1/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)대곡한실초', code:'7524', form:'교습소', mem:[50,50,55,0,0,0,0,0], closed:true, closedDate:'3/31/26', mng:{months:[], eval:'해지', note:'3/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'IGSE대구학정', code:'5354', form:'IGSE', mem:[18,18,19,0,0,0,0,0], closed:true, closedDate:'3/31/26', mng:{months:[], eval:'해지', note:'3/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'IGSE대구성당', code:'4576', form:'IGSE', mem:[3,3,4,4,4,3,0,0], closed:true, closedDate:'7/3/26', mng:{months:[], eval:'해지', note:'7/3/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE대곡한실', code:'7832', form:'학원(IGSE)', mem:[0,0,0,47,56,56,56,56], mng:{months:[7], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE대구대실', code:'7164', form:'학원(IGSE)', mem:[17,15,17,17,17,16,17,16], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE대구매천', code:'4637', form:'학원(IGSE)', mem:[20,20,19,21,23,23,23,25], mng:{months:[7], eval:'미관리', note:'면담 기록 없음'}},
@@ -1199,6 +1222,7 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 옆 센터 타 수학 과목 학원과 합병하여 학원형을 운',
           centers: [
+            {name:'숲초월', code:'7788', form:'숲', mem:[0,0,1,1,1,0,0,0], closed:true, closedDate:'6/30/26', mng:{months:[], eval:'해지', note:'6/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE광주태전', code:'6575', form:'학원(IGSE)', mem:[9,10,9,7,8,10,8,8], mng:{months:[3], eval:'관리', note:'면담 3월'}},
             {name:'숲광주곤지암', code:'5384', form:'학원(숲)', mem:[10,11,8,8,7,6,5,5], mng:{months:[3,7], eval:'관리', note:'면담 3월'}},
             {name:'숲광주역동', code:'7709', form:'학원(숲)', mem:[24,23,21,20,20,19,18,17], mng:{months:[7], eval:'미관리', note:'면담 기록 없음'}},
@@ -1226,6 +1250,8 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 블로그 미팅 >, 블로그 컨텐츠 리뷰 및 피드백 >, 이벤트 선물 전달, 전체 거점, 최우수캠퍼스 선정 안내',
           centers: [
+            {name:'(H)감일중앙', code:'6755', form:'교습소', mem:[15,15,16,14,12,0,0,0], closed:true, closedDate:'6/30/26', mng:{months:[], eval:'해지', note:'6/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)감일스윗시티2단지', code:'6720', form:'공부방', mem:[12,10,10,9,9,9,0,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
                                     {name:'미사11단지', code:'7161', form:'공부방', mem:[23,23,24,24,23,22,23,23], mng:{months:[5,6,7], eval:'관리', note:'면담 5월'}},
             {name:'미사19단지', code:'6860', form:'공부방', mem:[3,3,3,3,3,3,3,3], mng:{months:[5], eval:'관리', note:'면담 5월  · 조직표 매칭 확인(미사11단지(0.83))'}},
             {name:'미사8단지', code:'7130', form:'공부방', mem:[19,18,16,16,17,16,15,14], mng:{months:[2,6,7], eval:'관리', note:'면담 2월'}},
@@ -1280,6 +1306,7 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 운정 해오름 마',
           centers: [
+            {name:'(H)저동초', code:'7063', form:'교습소', mem:[1,2,2,2,2,2,0,0], closed:true, closedDate:'6/30/26', mng:{months:[], eval:'해지', note:'6/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE고양향동', code:'7157', form:'학원(IGSE)', mem:[51,52,53,52,52,54,56,55], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE일산대화', code:'6794', form:'학원(IGSE)', mem:[52,48,49,36,49,38,50,52], mng:{months:[1], eval:'관리', note:'면담 1월'}},
             {name:'IGSE일산덕이', code:'7770', form:'학원(IGSE)', mem:[19,21,29,30,29,29,30,30], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1354,6 +1381,8 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'(H)퇴계남부', code:'7345', form:'교습소', mem:[4,0,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)원주롯데캐슬', code:'7355', form:'공부방', mem:[10,0,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'숲신철원', code:'6622', form:'학원(숲)', mem:[45,43,51,37,48,37,48,48], mng:{months:[], eval:'미관리', note:'활동보고서 미제출 — 면담 기록 없음(CSV 실적만 반영)'}},
             {name:'숲원주남부', code:'5879', form:'학원(숲)', mem:[28,25,29,28,28,26,26,26], mng:{months:[], eval:'미관리', note:'활동보고서 미제출 — 면담 기록 없음(CSV 실적만 반영)'}},
             {name:'IGSE인제기린', code:'6579', form:'학원(IGSE)', mem:[20,20,27,26,26,26,26,27], mng:{months:[], eval:'미관리', note:'활동보고서 미제출 — 면담 기록 없음(CSV 실적만 반영)'}},
@@ -1389,6 +1418,8 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'(H)신흥역하늘채랜더스원', code:'7732', form:'교습소', mem:[4,2,4,3,3,0,0,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'IGSE용인상현', code:'5817', form:'IGSE', mem:[14,13,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'강남비발디', code:'6931', form:'교습소', mem:[12,11,10,10,10,10,10,9], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'서천휴먼시아1단지', code:'7512', form:'공부방', mem:[1,1,1,1,1,1,1,1], mng:{months:[2], eval:'관리', note:'면담 2월'}},
             {name:'성남도촌초', code:'7833', form:'교습소', mem:[0,0,0,2,4,4,2,2], mng:{months:[7], eval:'미관리', note:'면담 기록 없음'}},
@@ -1456,6 +1487,7 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 아산배방자이, 현대성정',
           centers: [
+            {name:'(H)아산풍기', code:'7256', form:'공부방', mem:[8,0,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE신방통정', code:'6361', form:'학원(IGSE)', mem:[22,23,23,22,21,21,21,21], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE천안불당', code:'5831', form:'학원(IGSE)', mem:[15,14,15,12,7,9,8,3], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'숲천안', code:'5640', form:'학원(숲)', mem:[14,19,20,16,15,14,13,13], mng:{months:[3,4], eval:'관리', note:'면담 3월·4월'}},
@@ -1497,6 +1529,8 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 내포 대방학재, 세종아름',
           centers: [
+            {name:'(H)부여', code:'7330', form:'교습소', mem:[10,0,0,0,0,0,0,0], closed:true, closedDate:'1/31/26', mng:{months:[], eval:'해지', note:'1/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'숲서산삼성', code:'5994', form:'숲', mem:[8,4,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE서산성연', code:'6268', form:'학원(IGSE)', mem:[22,20,21,25,25,22,19,21], mng:{months:[1], eval:'관리', note:'면담 1월'}},
             {name:'IGSE서산예천', code:'6451', form:'학원(IGSE)', mem:[39,33,38,33,47,37,46,43], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE예산', code:'5874', form:'학원(IGSE)', mem:[28,28,27,25,25,25,23,23], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1553,6 +1587,7 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'(H)청주용암', code:'6934', form:'교습소', mem:[7,4,7,6,5,0,0,0], closed:true, closedDate:'6/30/26', mng:{months:[], eval:'해지', note:'6/30/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE오송스퀘어', code:'7716', form:'학원(IGSE)', mem:[35,30,34,34,35,35,38,38], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE오창', code:'6470', form:'학원(IGSE)', mem:[15,13,12,11,12,12,12,14], mng:{months:[3], eval:'관리', note:'면담 3월'}},
             {name:'IGSE옥천', code:'2271', form:'학원(IGSE)', mem:[72,70,68,68,70,67,66,67], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1611,6 +1646,7 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'숲익산영등', code:'3076', form:'숲', mem:[6,6,0,0,0,0,0,0], closed:true, closedDate:'3/31/26', mng:{months:[], eval:'해지', note:'3/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE익산모현현대', code:'6724', form:'학원(IGSE)', mem:[26,24,21,18,19,17,17,17], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE익산부송', code:'5840', form:'학원(IGSE)', mem:[37,36,25,16,27,11,27,26], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE익산어양', code:'3337', form:'학원(IGSE)', mem:[1,1,2,6,6,6,6,6], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1679,6 +1715,10 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 금호화개Igse, 동림한울Igse, 동립푸른 우영, 방림영어숲, 백운님영어숩, 봉선삼익우영, 일곡영어숩, 일곡영어숲, 첨단대우, 청솔2차교습소',
           centers: [
+            {name:'(H)양림3호', code:'7162', form:'교습소', mem:[9,9,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)봉선삼익', code:'7737', form:'공부방', mem:[2,0,0,0,0,0,0,0], closed:true, closedDate:'3/31/26', mng:{months:[], eval:'해지', note:'3/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)첨단대우교습소', code:'6864', form:'교습소', mem:[9,7,6,6,0,0,0,0], closed:true, closedDate:'5/31/26', mng:{months:[], eval:'해지', note:'5/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'IGSE광양마동', code:'5723', form:'IGSE', mem:[11,8,12,9,8,8,8,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
                         {name:'IGSE광양용강', code:'6540', form:'학원(IGSE)', mem:[25,25,29,20,32,24,34,31], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE광주풍암', code:'5892', form:'학원(IGSE)', mem:[21,20,21,21,22,21,21,17], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE금호화개', code:'6984', form:'학원(IGSE)', mem:[10,10,11,13,14,13,12,13], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1817,6 +1857,9 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 인수인계 대상자 찾고 있음',
           centers: [
+            {name:'(H)우동푸르지오더원', code:'7785', form:'공부방', mem:[4,3,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)부암초', code:'7440', form:'교습소', mem:[18,19,19,19,19,16,0,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'IGSE부산해운마린', code:'5300', form:'IGSE', mem:[8,13,15,13,0,0,0,0], closed:true, closedDate:'5/31/26', mng:{months:[], eval:'해지', note:'5/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE부산개금', code:'5578', form:'학원(IGSE)', mem:[40,40,42,43,44,42,45,38], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE부산동거제', code:'5326', form:'학원(IGSE)', mem:[62,66,55,56,55,55,57,53], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE부산동삼', code:'5459', form:'학원(IGSE)', mem:[20,16,22,21,22,20,21,22], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1863,6 +1906,8 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'(H)마산양덕', code:'6875', form:'교습소', mem:[3,6,6,6,5,4,2,0], closed:true, closedDate:'7/31/26', mng:{months:[], eval:'해지', note:'7/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)월영캠퍼스', code:'7239', form:'교습소', mem:[1,1,0,0,0,0,0,0], closed:true, closedDate:'2/28/26', mng:{months:[], eval:'해지', note:'2/28/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE거제아주', code:'5991', form:'학원(IGSE)', mem:[33,28,32,33,34,34,31,31], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE거제옥포', code:'5872', form:'학원(IGSE)', mem:[39,34,29,30,27,24,26,24], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'IGSE마산구암', code:'5865', form:'학원(IGSE)', mem:[4,4,4,6,6,6,7,6], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -1905,6 +1950,7 @@ const DATA = {
           ],
           matching: '조직표 매칭 확인 필요: 6,27, 원, 개설 서류 점검 등, 우영수남학원, 진영igse',
           centers: [
+            {name:'(H)관동캠퍼스', code:'7480', form:'공부방', mem:[5,5,5,4,4,0,0,0], closed:true, closedDate:'5/31/26', mng:{months:[], eval:'해지', note:'5/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'IGSE김해진영', code:'2670', form:'학원(IGSE)', mem:[49,47,52,52,56,59,57,59], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'숲의령', code:'3576', form:'학원(숲)', mem:[7,23,28,22,22,19,20,15], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
             {name:'숲하동', code:'2650', form:'학원(숲)', mem:[40,39,41,18,37,28,35,33], mng:{months:[], eval:'미관리', note:'면담 기록 없음'}},
@@ -2041,6 +2087,8 @@ const DATA = {
           ],
           matching: null,
           centers: [
+            {name:'(H)울산남창', code:'6826', form:'교습소', mem:[6,6,5,5,4,0,0,0], closed:true, closedDate:'5/31/26', mng:{months:[], eval:'해지', note:'5/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
+            {name:'(H)개운초', code:'7035', form:'교습소', mem:[9,8,9,17,16,0,0,0], closed:true, closedDate:'5/31/26', mng:{months:[], eval:'해지', note:'5/31/26 해지 — 회원 추세·위험도 산정 대상 아님'}},
             {name:'옥산초', code:'7146', form:'교습소', mem:[51,52,61,54,62,62,64,67], mng:{months:[], eval:'미관리', note:'직영 관리 센터(6·7월 실적, 활동보고서 없음)'}},
             {name:'울산용연초', code:'7753', form:'교습소', mem:[5,5,7,8,7,8,8,9], mng:{months:[], eval:'미관리', note:'직영 관리 센터(6·7월 실적, 활동보고서 없음)'}},
             {name:'화정캠퍼스', code:'7112', form:'교습소', mem:[3,3,2,3,3,3,4,4], mng:{months:[], eval:'미관리', note:'직영 관리 센터(6·7월 실적, 활동보고서 없음)'}},
@@ -2521,6 +2569,7 @@ function downloadWord(){
 let _modalCtx=null, _detailChart=null;
 function openCenterDetail(mgrIdx,brIdx,cIdx){
   const m=DATA.managers[mgrIdx], b=m.branches[brIdx], c=b.centers[cIdx];
+  if(c.closed) return; // 해지 센터는 상세 팝업 대상 아님
   _modalCtx={mgr:m.name,br:b.name,c:c.name,mgrIdx,brIdx,cIdx};
   const ov=document.getElementById('centerModal');
   document.getElementById('modalBody').innerHTML=renderCenterDetail(m,b,c);
@@ -2629,12 +2678,14 @@ function drawDetailChart(c){
       {label:'회원 수',data:c.mem.map(v=>v===null?null:v),borderColor:'#2f5d50',backgroundColor:'rgba(47,93,80,.12)',
         fill:true,tension:.3,borderWidth:2,pointRadius:4,pointBackgroundColor:'#2f5d50',spanGaps:true},
       {label:`저실적 기준(${th})`,data:MONTH_LABELS.map(()=>th),borderColor:'#c0392b',borderDash:[5,4],
-        borderWidth:1.5,pointRadius:0,fill:false}
+        borderWidth:1.5,pointRadius:0,fill:false,hideValueLabel:true}
     ]},
+    plugins:[barValueLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,
-      scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},color:'#9aa0a6'},grid:{color:'#eef0ea'}},
+      layout:{padding:{top:26, right:28}},
+      scales:{y:{beginAtZero:true,suggestedMax:Math.max(1,...c.mem.filter(v=>v!==null),th)*1.25,ticks:{precision:0,font:{size:10},color:'#9aa0a6'},grid:{color:'#eef0ea'}},
         x:{ticks:{font:{size:11},color:'#1c2431'},grid:{display:false}}},
-      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}}}}});
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}}}});
 }
 let _detailRevChart=null, _detailNewChart=null;
 function drawDetailRevChart(c){
@@ -2643,15 +2694,18 @@ function drawDetailRevChart(c){
   if(_detailRevChart)_detailRevChart.destroy();
   const arr = ENGREV_DATA[normCenterName(c.name)];
   const dataK = (arr||MONTH_LABELS.map(()=>null)).slice(0,8); // 원본이 이미 천원 단위
+  const maxV = Math.max(1, ...dataK.filter(v=>v!==null&&v!==undefined));
   _detailRevChart=new Chart(el,{type:'line',
     data:{labels:MONTH_LABELS.slice(0,8),datasets:[
       {label:'매출(천원)',data:dataK,borderColor:'#c2410c',backgroundColor:'rgba(194,65,12,.12)',
-        fill:true,tension:.3,borderWidth:2,pointRadius:3,pointBackgroundColor:'#c2410c',spanGaps:true}
+        fill:true,tension:.3,borderWidth:2,pointRadius:3,pointBackgroundColor:'#c2410c',spanGaps:true,valueSuffix:'천'}
     ]},
+    plugins:[barValueLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,
-      scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:9},color:'#9aa0a6',callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},
+      layout:{padding:{top:24, right:30}},
+      scales:{y:{beginAtZero:true,suggestedMax:maxV*1.28,ticks:{precision:0,font:{size:9},color:'#9aa0a6',callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},
         x:{ticks:{font:{size:10},color:'#1c2431'},grid:{display:false}}},
-      plugins:{legend:{display:false}}}});
+      plugins:{legend:{display:false},tooltip:{enabled:false}}}});
 }
 function drawDetailNewChart(c){
   if(typeof Chart==='undefined')return;
@@ -2659,15 +2713,18 @@ function drawDetailNewChart(c){
   if(_detailNewChart)_detailNewChart.destroy();
   const arr = NEWMEM_DATA[normCenterName(c.name)];
   const data = (arr||MONTH_LABELS.map(()=>null)).slice(0,8);
+  const maxV = Math.max(1, ...data.filter(v=>v!==null&&v!==undefined));
   _detailNewChart=new Chart(el,{type:'line',
     data:{labels:MONTH_LABELS.slice(0,8),datasets:[
       {label:'신규회원',data:data,borderColor:'#1e40af',backgroundColor:'rgba(30,64,175,.12)',
         fill:true,tension:.3,borderWidth:2,pointRadius:3,pointBackgroundColor:'#1e40af',spanGaps:true}
     ]},
+    plugins:[barValueLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,
-      scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:9},color:'#9aa0a6'},grid:{color:'#eef0ea'}},
+      layout:{padding:{top:24, right:26}},
+      scales:{y:{beginAtZero:true,suggestedMax:maxV*1.28,ticks:{precision:0,font:{size:9},color:'#9aa0a6'},grid:{color:'#eef0ea'}},
         x:{ticks:{font:{size:10},color:'#1c2431'},grid:{display:false}}},
-      plugins:{legend:{display:false}}}});
+      plugins:{legend:{display:false},tooltip:{enabled:false}}}});
 }
 
 /* ===== 본부(Track1) 매니저 메모 패널 — 인라인, 날짜/내용 누적 =====
@@ -2736,16 +2793,20 @@ function sparkline(mem){
   return vals.map(v=>v===null?' ':blocks[Math.round((v-mn)/rng*(blocks.length-1))]).join('');
 }
 // 센터 위험도: 회원감소·저실적·면담공백·최근하락 종합
+// 위험도 분류 — 1순위: 회원추세(감소 여부) / 2순위: 저실적 기준(실제 인원 임계치 이하, 추세와 무관하게 적용)
 function riskLevel(c){
   const t=memTrend(c), low=isLowCenter(c), noMng=c.mng.months.length===0, rec=recentDrop(c);
-  let score=0;
-  if(t.diff<0) score+=2;
-  if(t.pct<=-30) score+=1;
-  if(low) score+=2;
-  if(noMng) score+=1;
-  if(rec<0) score+=1;
-  if(score>=5) return {k:'red',t:'🔴 위험'};
-  if(score>=3) return {k:'yel',t:'🟡 주의'};
+  // 1순위: 회원 추세가 감소 중이면 최소 주의, 다른 악재가 겹치면 위험
+  if(t.diff<0){
+    if(t.pct<=-30 || noMng || rec<0) return {k:'red',t:'🔴 위험'};
+    return {k:'yel',t:'🟡 주의'};
+  }
+  // 2순위: 추세가 감소가 아니어도, 실제 인원이 저실적 기준 이하면 별도로 위험 신호
+  if(low){
+    if(noMng) return {k:'red',t:'🔴 위험'};
+    return {k:'yel',t:'🟡 주의'};
+  }
+  if(rec<0) return {k:'yel',t:'🟡 주의'};
   return {k:'grn',t:'🟢 양호'};
 }
 // 관리 우선순위: 1 감소+미면담 / 2 저실적 / 3 감소 / 4 관리중
@@ -2764,12 +2825,12 @@ function t2SortComparator(mode){
   if(mode==='mem_desc') return (a,b)=> (b.c.mem[7]??-Infinity) - (a.c.mem[7]??-Infinity);
   if(mode==='mem_asc')  return (a,b)=> (a.c.mem[7]??Infinity) - (b.c.mem[7]??Infinity);
   if(mode==='bm') return (a,b)=> (T2_BM_ORDER[a.c.form]??9)-(T2_BM_ORDER[b.c.form]??9) || a.tier-b.tier;
-  return (a,b)=> a.tier-b.tier || b.u-a.u; // priority(기본)
+  return (a,b)=> a.diff-b.diff || b.u-a.u; // priority(기본) — 회원추세 감소가 큰(가장 음수인) 센터 먼저
 }
 function t2FilterBarHtml(brName){
   const key = t2Key(brName);
   const mode = _t2SortMode[key] || 'priority';
-  const opts = [['priority','우선순위'],['mem_desc','실회원 많은순'],['mem_asc','실회원 적은순'],['bm','BM별(숲→IGSE→상가형→교습소→공부방)']];
+  const opts = [['priority','우선순위(회원추세 감소순)'],['mem_desc','실회원 많은순'],['mem_asc','실회원 적은순'],['bm','BM별(숲→IGSE→상가형→교습소→공부방)']];
   return `<div class="t2-filter-bar">
     <label>정렬</label>
     <select onchange="changeT2Sort('${key}', this.value)">
@@ -2788,7 +2849,8 @@ function changeT2Sort(key, mode){
 // Track2 행 생성(정렬 모드 반영) — 초기 렌더와 필터 변경 시 재사용
 function buildTrack2Rows(m, b, mgrIdx, brIdx){
   const mode = _t2SortMode[t2Key(b.name)] || 'priority';
-  const ordered = b.centers.map((c,idx)=>({c,idx,tier:priorityTier(c),u:urgencyScore(c)}))
+  const ordered = b.centers.map((c,idx)=>({c,idx})).filter(x=>!x.c.closed)
+    .map(x=>({c:x.c, idx:x.idx, tier:priorityTier(x.c), u:urgencyScore(x.c), diff:memTrend(x.c).diff}))
     .sort(t2SortComparator(mode));
   return ordered.map(({c,idx})=>{
     const low = isLowCenter(c);
@@ -4077,7 +4139,52 @@ const NEWMEM_DATA = {
   '목동1':[1,1,3,0,0,1,0,0],
   '신월1':[2,0,0,0,0,3,0,0],
   '신월4교습소':[3,0,2,0,0,1,0,0],
-  '대방초':[1,0,1,0,2,0,0,0]
+  '대방초':[1,0,1,0,2,0,0,0],
+  '숲초월':[0,0,1,0,0,0,0,0],
+  '숲경주용강':[0,0,1,0,1,0,0,0],
+  '숲왜관':[0,0,0,0,0,0,0,0],
+  '숲신용산':[0,0,4,0,0,0,0,0],
+  '숲익산영등':[3,1,0,0,0,0,0,0],
+  '숲서산삼성':[3,0,0,0,0,0,0,0],
+  'igse칠곡남율':[0,0,0,0,0,0,0,0],
+  'igse대구성당':[0,0,1,0,0,0,0,0],
+  'igse대구학정':[1,1,0,0,0,0,0,0],
+  'igse부산해운마린':[0,0,2,0,0,0,0,0],
+  'igse마포상암':[0,0,0,0,0,0,0,0],
+  'igse상암상지':[0,0,0,0,0,0,0,0],
+  'igse용인상현':[2,0,0,0,0,0,0,0],
+  'igse광양마동':[1,0,3,0,0,1,0,0],
+  '원주롯데캐슬':[0,0,0,0,0,0,0,0],
+  '퇴계남부':[0,0,0,0,0,0,0,0],
+  '서종교습소':[2,0,1,0,0,0,0,0],
+  '감일스윗시티2단지':[0,0,0,0,0,0,0,0],
+  '감일중앙':[0,0,2,0,0,0,0,0],
+  '신흥역하늘채랜더스원':[0,0,4,1,0,0,0,0],
+  '시흥능곡':[2,0,0,0,0,0,0,0],
+  '안산해솔':[0,0,0,0,0,0,0,0],
+  '저동초':[0,0,0,0,0,0,0,0],
+  '관동캠퍼스':[0,0,0,0,0,0,0,0],
+  '월영캠퍼스':[0,0,0,0,0,0,0,0],
+  '마산양덕':[0,2,1,0,0,0,0,0],
+  '부암초':[2,1,1,0,0,1,0,0],
+  '우동푸르지오더원':[0,0,0,0,0,0,0,0],
+  '경주현곡푸르지오':[2,0,0,0,0,0,0,0],
+  '대구뉴웰시티':[1,1,1,0,0,0,0,0],
+  '대곡한실초':[4,0,5,0,0,0,0,0],
+  '유가예미지':[4,0,0,0,0,0,0,0],
+  '한진':[0,0,0,0,0,0,0,0],
+  '월계사슴':[0,0,0,0,0,0,0,0],
+  '장기초풍경채':[0,0,0,0,0,0,0,0],
+  '봉수초':[0,0,0,0,0,0,0,0],
+  '영흥':[0,0,0,0,0,0,0,0],
+  '첨단대우교습소':[0,0,0,0,0,0,0,0],
+  '봉선삼익':[0,0,0,0,0,0,0,0],
+  '양림3호':[0,0,0,0,0,0,0,0],
+  '부여':[0,0,0,0,0,0,0,0],
+  '아산풍기':[0,0,0,0,0,0,0,0],
+  '청주용암':[1,0,1,0,0,0,0,0],
+  '개운초':[0,0,2,8,0,0,0,0],
+  '울산남창':[1,0,0,0,0,0,0,0]
 };
 
 const ENGREV_DATA = {
@@ -5026,7 +5133,52 @@ const ENGREV_DATA = {
   '목동1':[232,218,308,312,290,300,432,410],
   '신월1':[570,562,590,497,551,548,756,761],
   '신월4교습소':[428,501,557,562,547,481,562,554],
-  '대방초':[75,89,91,118,162,178,199,152]
+  '대방초':[75,89,91,118,162,178,199,152],
+  '숲초월':[0,0,32,39,39,0,0,0],
+  '숲경주용강':[77,54,101,77,77,77,0,0],
+  '숲왜관':[35,0,0,0,0,0,0,0],
+  '숲신용산':[527,439,461,347,378,0,0,0],
+  '숲익산영등':[211,230,0,0,0,0,0,0],
+  '숲서산삼성':[90,53,0,0,0,0,0,0],
+  'igse칠곡남율':[116,116,116,116,116,116,40,0],
+  'igse대구성당':[75,99,140,155,154,62,0,0],
+  'igse대구학정':[669,690,447,0,0,0,0,0],
+  'igse부산해운마린':[243,498,566,501,0,0,0,0],
+  'igse마포상암':[104,0,0,0,0,0,0,0],
+  'igse상암상지':[495,0,0,0,0,0,0,0],
+  'igse용인상현':[502,105,0,0,0,0,0,0],
+  'igse광양마동':[381,308,389,327,287,307,178,0],
+  '원주롯데캐슬':[289,183,0,0,0,0,0,0],
+  '퇴계남부':[118,47,0,0,0,0,0,0],
+  '서종교습소':[223,240,193,162,0,0,0,0],
+  '감일스윗시티2단지':[413,320,296,298,266,266,0,0],
+  '감일중앙':[464,444,460,480,357,189,0,0],
+  '신흥역하늘채랜더스원':[118,59,98,142,49,0,0,0],
+  '시흥능곡':[295,296,296,296,296,296,0,0],
+  '안산해솔':[89,89,89,0,0,0,0,0],
+  '저동초':[30,59,59,59,59,59,0,0],
+  '관동캠퍼스':[149,148,149,118,118,0,0,0],
+  '월영캠퍼스':[30,31,0,0,0,0,0,0],
+  '마산양덕':[74,84,116,148,91,96,0,0],
+  '부암초':[503,537,586,562,562,534,0,0],
+  '우동푸르지오더원':[128,96,0,0,0,0,0,0],
+  '경주현곡푸르지오':[155,148,148,118,0,0,0,0],
+  '대구뉴웰시티':[348,382,357,379,379,379,0,0],
+  '대곡한실초':[1453,1480,1596,0,0,0,0,0],
+  '유가예미지':[1278,0,0,0,0,0,0,0],
+  '한진':[207,207,207,178,178,0,0,0],
+  '월계사슴':[59,30,0,0,0,0,0,0],
+  '장기초풍경채':[39,39,39,32,39,0,0,0],
+  '봉수초':[89,59,0,0,0,0,0,0],
+  '영흥':[118,89,120,118,89,0,0,0],
+  '첨단대우교습소':[274,178,178,178,0,0,0,0],
+  '봉선삼익':[63,64,0,0,0,0,0,0],
+  '양림3호':[356,252,0,0,0,0,0,0],
+  '부여':[296,0,0,0,0,0,0,0],
+  '아산풍기':[237,211,0,0,0,0,0,0],
+  '청주용암':[199,118,200,177,148,63,0,0],
+  '개운초':[266,237,282,665,650,0,0,0],
+  '울산남창':[171,200,148,198,158,0,0,0]
 };
 
 const DOC_LINKS = [
@@ -5392,7 +5544,7 @@ const barValueLabelPlugin = {
     const {ctx} = chart;
     chart.data.datasets.forEach((ds, dsIndex)=>{
       const meta = chart.getDatasetMeta(dsIndex);
-      if(meta.hidden) return;
+      if(meta.hidden || ds.hideValueLabel) return;
       const isLine = ds.type==='line';
       const suffix = ds.valueSuffix || '';
       meta.data.forEach((el, i)=>{
@@ -5400,7 +5552,7 @@ const barValueLabelPlugin = {
         if(v===null||v===undefined) return;
         ctx.save();
         ctx.fillStyle = isLine ? (ds.borderColor||'#c0392b') : '#1c2431';
-        ctx.font = isLine ? 'bold 10px sans-serif' : '9px sans-serif';
+        ctx.font = isLine ? 'bold 12px sans-serif' : '11px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText(fmtNum(v)+suffix, el.x, el.y - (isLine?8:2));
@@ -5453,9 +5605,9 @@ function drawEngRevChart(){
     ]},
     plugins:[barValueLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,
-      layout:{padding:{top:26}},
+      layout:{padding:{top:30, right:36}},
       scales:{
-        y:{beginAtZero:true, suggestedMax:maxV*1.18, ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천원'},grid:{color:'#eef0ea'}},
+        y:{beginAtZero:true, suggestedMax:maxV*1.25, ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천원'},grid:{color:'#eef0ea'}},
         x:{ticks:{font:{size:11}},grid:{display:false}}
       },
       plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},
@@ -5502,8 +5654,8 @@ function drawCuriCharts(){
       ]},
       plugins:[barValueLabelPlugin],
       options:{responsive:true,maintainAspectRatio:false,
-        layout:{padding:{top:26}},
-        scales:{y:{beginAtZero:true,suggestedMax:maxM*1.18,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},
+        layout:{padding:{top:30, right:34}},
+        scales:{y:{beginAtZero:true,suggestedMax:maxM*1.22,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},
           x:{ticks:{font:{size:11}},grid:{display:false}}},
         plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}}}});
   }
@@ -5519,8 +5671,8 @@ function drawCuriCharts(){
       ]},
       plugins:[barValueLabelPlugin],
       options:{responsive:true,maintainAspectRatio:false,
-        layout:{padding:{top:26}},
-        scales:{y:{beginAtZero:true,suggestedMax:maxR*1.18,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천원'},grid:{color:'#eef0ea'}},
+        layout:{padding:{top:30, right:38}},
+        scales:{y:{beginAtZero:true,suggestedMax:maxR*1.25,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천원'},grid:{color:'#eef0ea'}},
           x:{ticks:{font:{size:11}},grid:{display:false}}},
         plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}}}});
   }
@@ -6023,7 +6175,7 @@ function acCenterOptions(mgrName, brName){
   if(route.brand==='eng'){
     const m = DATA.managers.find(x=>x.name===mgrName);
     const b = m && m.branches.find(x=>x.name===brName);
-    return b ? b.centers.map(c=>c.name) : [];
+    return b ? b.centers.filter(c=>!c.closed).map(c=>c.name) : [];
   }
   return CURI_DATA.filter(r=>r.mgr===mgrName && r.region===brName && !r.center.includes('(해지)')).map(r=>r.center);
 }
@@ -6143,21 +6295,33 @@ function acDrawEngDetailCharts(){
   _modalCtx = {mgr:m.name, br:b.name, c:c.name, mgrIdx:DATA.managers.indexOf(m), brIdx:m.branches.indexOf(b), cIdx:b.centers.indexOf(c)};
   const elM=document.getElementById('acEngMemChart');
   if(_acEngMemChart)_acEngMemChart.destroy();
+  const memMax = Math.max(1, ...c.mem.filter(v=>v!==null&&v!==undefined));
   if(elM) _acEngMemChart=new Chart(elM,{type:'line',
     data:{labels:MONTH_LABELS,datasets:[{label:'실회원',data:c.mem,borderColor:'#2f5d50',backgroundColor:'rgba(47,93,80,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
-    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+    plugins:[barValueLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:26}},
+      scales:{y:{beginAtZero:true,suggestedMax:memMax*1.25,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   const elR=document.getElementById('acEngRevChart');
   if(_acEngRevChart)_acEngRevChart.destroy();
   const revArr = ENGREV_DATA[normCenterName(c.name)];
+  const revMax = Math.max(1, ...(revArr||[]).filter(v=>v!==null&&v!==undefined));
   if(elR) _acEngRevChart=new Chart(elR,{type:'line',
-    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:(revArr||[]),borderColor:'#c2410c',backgroundColor:'rgba(194,65,12,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
-    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:(revArr||[]),borderColor:'#c2410c',backgroundColor:'rgba(194,65,12,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true,valueSuffix:'천'}]},
+    plugins:[barValueLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:30}},
+      scales:{y:{beginAtZero:true,suggestedMax:revMax*1.28,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   const elN=document.getElementById('acEngNewChart');
   if(_acEngNewChart)_acEngNewChart.destroy();
   const newArr = NEWMEM_DATA[normCenterName(c.name)];
+  const newMax = Math.max(1, ...(newArr||[]).filter(v=>v!==null&&v!==undefined));
   if(elN) _acEngNewChart=new Chart(elN,{type:'line',
     data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'신규회원',data:newArr||[],borderColor:'#1e40af',backgroundColor:'rgba(30,64,175,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
-    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+    plugins:[barValueLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:26}},
+      scales:{y:{beginAtZero:true,suggestedMax:newMax*1.28,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   renderMemoLog();
   loadDirectorInfo();
 }
@@ -6199,15 +6363,23 @@ function acDrawMathDetailCharts(){
   _curiModalCtx = {mgr:r.mgr, region:r.region, center:r.center, idx};
   const elM=document.getElementById('acMathMemChart');
   if(_acMathMemChart)_acMathMemChart.destroy();
+  const memMax = Math.max(1, ...r.mem.filter(v=>v!==null&&v!==undefined));
   if(elM) _acMathMemChart=new Chart(elM,{type:'line',
     data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'실회원',data:r.mem,borderColor:'#f97316',backgroundColor:'rgba(249,115,22,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
-    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+    plugins:[barValueLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:26}},
+      scales:{y:{beginAtZero:true,suggestedMax:memMax*1.25,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   const elR=document.getElementById('acMathRevChart');
   if(_acMathRevChart)_acMathRevChart.destroy();
   const revK = r.workbook.map((v,i)=>toWonK((v||0)+(r.textbook[i]||0)));
+  const revMax = Math.max(1, ...revK.filter(v=>v!==null&&v!==undefined));
   if(elR) _acMathRevChart=new Chart(elR,{type:'line',
-    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:revK,borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
-    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},plugins:{legend:{display:false}}}});
+    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:revK,borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true,valueSuffix:'천'}]},
+    plugins:[barValueLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:30}},
+      scales:{y:{beginAtZero:true,suggestedMax:revMax*1.28,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)+'천'},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   renderCuriMemoLog();
 }
 
@@ -6319,21 +6491,102 @@ function renderMain(){
 
 function renderMgr(){
   const m = DATA.managers[route.mgr];
+  _mgrDeclineFilter = '';
   const rows = m.branches.map((b,i)=>{
     if(b.placeholder){
       return `<div class="br-card placeholder" onclick='go({view:"br",mgr:${route.mgr},br:${i}})'>
         <div class="bc-name">🏢 ${b.name} <span class="pill">대기</span></div>
         <div class="bc-meta">보고서 미제출 — 입수 시 자동 표시</div></div>`;
     }
-    const low = b.centers.filter(isLowCenter).length;
+    const activeCenters = b.centers.filter(c=>!c.closed);
+    const low = activeCenters.filter(isLowCenter).length;
     return `<div class="br-card" onclick='go({view:"br",mgr:${route.mgr},br:${i}})'>
       <div class="bc-name">🏢 ${b.name}</div>
-      <div class="bc-meta">센터 ${b.centers.length}개 · 저실적 <b class="warn">${low}개</b></div></div>`;
+      <div class="bc-meta">센터 ${activeCenters.length}개 · 저실적 <b class="warn">${low}개</b></div></div>`;
   }).join('');
   app.innerHTML = `<h2 class="mgr">👤 매니저: ${m.name}</h2>
     <button class="back-btn" style="margin:0 0 14px" onclick='go({view:"main"})'>‹ 매니저 목록으로</button>
     <p class="hint" style="margin:0 0 16px">본부를 클릭하면 의사결정 대시보드(활동 내역 + 센터 실적 보드)가 열립니다.</p>
-    <div class="br-grid">${rows}</div>`;
+    <div class="br-grid">${rows}</div>
+    ${renderMgrDeclineList(route.mgr)}`;
+}
+let _mgrDeclineFilter = '';
+function mgrDeclineFilterChanged(v){
+  _mgrDeclineFilter = v;
+  const wrap = document.getElementById('mgrDeclineWrap');
+  if(wrap) wrap.outerHTML = renderMgrDeclineList(route.mgr);
+}
+// 매니저 화면 하단 — 회원 감소 추이 상위 센터 목록(본부 필터 가능, 해지 센터는 별도 표기·추세·팝업 제외)
+function closedCenterAvg3(c){
+  // 해지월 직전 3개월 평균(해지월 포함) — 예: 6월 말 해지면 4·5·6월 평균
+  const m = String(c.closedDate||'').match(/^(\d{1,2})\//);
+  const closeMonth = m ? parseInt(m[1],10) : null; // 1~12
+  if(!closeMonth || closeMonth<1 || closeMonth>8){
+    // 파싱 실패 시 마지막 유효값으로 대체
+    for(let i=7;i>=0;i--){ if(c.mem[i]!==null && c.mem[i]!==undefined) return {avg:c.mem[i], label:MONTH_LABELS[i]+'(마지막값)'}; }
+    return {avg:null, label:'-'};
+  }
+  const endIdx = closeMonth-1; // 0-indexed
+  const startIdx = Math.max(0, endIdx-2);
+  const vals = [];
+  for(let i=startIdx;i<=endIdx;i++){ if(c.mem[i]!==null && c.mem[i]!==undefined) vals.push(c.mem[i]); }
+  if(!vals.length) return {avg:null, label:'-'};
+  const avg = Math.round((vals.reduce((a,b)=>a+b,0)/vals.length)*10)/10;
+  const label = `${MONTH_LABELS[startIdx]}~${MONTH_LABELS[endIdx]} 평균`;
+  return {avg, label};
+}
+function renderMgrDeclineList(mgrIdx){
+  const m = DATA.managers[mgrIdx];
+  const active = [], closedList = [];
+  m.branches.forEach((b,bi)=>{
+    if(_mgrDeclineFilter && _mgrDeclineFilter!==b.name) return;
+    b.centers.forEach((c,ci)=>{
+      if(c.closed){
+        const {avg,label} = closedCenterAvg3(c);
+        closedList.push({br:b.name, bi, ci, c, avg, label});
+      } else {
+        active.push({br:b.name, bi, ci, c, t:memTrend(c)});
+      }
+    });
+  });
+  active.sort((a,b)=>a.t.diff-b.t.diff); // 감소가 큰(가장 음수) 센터 먼저
+  const top = active; // 전체 본부든 특정 본부든 전부 표시
+
+  const activeRows = top.map(({br,bi,ci,c,t})=>{
+    const cur = c.mem[7]===null||c.mem[7]===undefined ? '-' : c.mem[7]+'명';
+    const diffTxt = `${t.diff>0?'+':''}${t.diff}`;
+    const cls = t.diff<0?'delta-down':t.diff>0?'delta-up':'delta-flat';
+    return `<tr onclick="openCenterDetail(${mgrIdx},${bi},${ci})" style="cursor:pointer">
+      <td>${br}</td><td>${c.name}</td><td class="num">${cur}</td>
+      <td class="num"><b class="${cls}">${diffTxt}</b></td></tr>`;
+  }).join('');
+
+  const closedRows = closedList.map(({br,c,avg,label})=>{
+    return `<tr class="decline-closed-row">
+      <td>${br}</td><td>${c.name} <span class="closed-tag">(해지)</span></td>
+      <td class="num">${avg===null?'-':avg+'명('+label+')'}</td>
+      <td class="num">해지일 ${eschtml(c.closedDate||'-')}</td></tr>`;
+  }).join('');
+
+  const emptyRow = (!activeRows && !closedRows) ? `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">센터가 없습니다.</td></tr>` : '';
+
+  const brOpts = ['<option value="">전체 본부</option>'].concat(
+    m.branches.map(b=>`<option value="${b.name}" ${_mgrDeclineFilter===b.name?'selected':''}>${b.name}</option>`));
+
+  return `<div class="card-box section-gap" id="mgrDeclineWrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <h4 style="margin:0">📉 회원 감소 추이 상위 센터 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 감소폭이 큰 순서 · 행 클릭 시 상세</span></h4>
+      <div class="t2-filter-bar" style="margin:0">
+        <label>본부</label>
+        <select onchange="mgrDeclineFilterChanged(this.value)">${brOpts.join('')}</select>
+      </div>
+    </div>
+    <table style="margin-top:10px">
+      <thead><tr><th>본부</th><th>센터명</th><th class="num">현재 회원수</th><th class="num">회원추세</th></tr></thead>
+      <tbody>${activeRows}${closedRows}${emptyRow}</tbody>
+    </table>
+    ${closedList.length ? `<p class="hint" style="margin-top:8px">해지 센터는 추세를 계산하지 않으며, 클릭해도 상세 화면이 열리지 않습니다.</p>` : ''}
+  </div>`;
 }
 
 function renderBranch(){
@@ -6367,7 +6620,7 @@ function renderBranch(){
           <label>🔒 센터 정보 바로보기</label>
           <select onchange="if(this.value!=='') openCenterDetail(${route.mgr},${route.br},+this.value); this.value=''">
             <option value="">센터 선택…</option>
-            ${b.centers.map((c,ci)=>`<option value="${ci}">${c.name}</option>`).join('')}
+            ${b.centers.map((c,ci)=>({c,ci})).filter(x=>!x.c.closed).map(({c,ci})=>`<option value="${ci}">${c.name}</option>`).join('')}
           </select>
         </div>` : ''}
       </div>
@@ -6448,7 +6701,7 @@ function renderBranch(){
         <label>🔒 센터 정보 바로보기</label>
         <select onchange="if(this.value!=='') openCenterDetail(${route.mgr},${route.br},+this.value); this.value=''">
           <option value="">센터 선택…</option>
-          ${b.centers.map((c,ci)=>`<option value="${ci}">${c.name}</option>`).join('')}
+          ${b.centers.map((c,ci)=>({c,ci})).filter(x=>!x.c.closed).map(({c,ci})=>`<option value="${ci}">${c.name}</option>`).join('')}
         </select>
       </div>
     </div>

@@ -322,6 +322,8 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .uni-kpi-table2 th{background:var(--pine);color:#fff;font-weight:800;font-size:12px;padding:8px 10px;white-space:nowrap;border:1px solid var(--pine);position:sticky;top:0;z-index:6}
 .uni-kpi-table2 th.grp-eng{background:#1e3a8a;border-color:#1e3a8a}
 .uni-kpi-table2 th.grp-curi{background:#c2410c;border-color:#c2410c}
+.uni-kpi-table2 th.eng-cell{background:#3b5bb5;border-color:#3b5bb5}
+.uni-kpi-table2 th.curi-cell{background:#e2853f;border-color:#e2853f}
 .uni-kpi-table2 th.uni-corner{left:0;z-index:8}
 .uni-kpi-table2 td{border:1px solid var(--line);padding:8px 10px;white-space:nowrap}
 .uni-row-main td{background:#fff;font-weight:700}
@@ -398,6 +400,36 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .center-quick-pick select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
 .track2-table thead th{position:sticky;top:132px;z-index:25;background:#eef0ea;box-shadow:0 1px 0 var(--line)}
 .t2-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px}
+.lc-filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px}
+.lc-filter-bar label{font-weight:700;color:var(--muted)}
+.lc-filter-bar select{border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+.lc-gran-toggle{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.lc-gran-toggle button{border:none;background:#fff;padding:6px 14px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+.lc-gran-toggle button.active{background:var(--pine);color:#fff}
+.lc-summary{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--muted)}
+.lc-summary b{font-size:15px;margin-left:4px}
+.lc-sort-bar{display:flex;align-items:center;gap:8px;margin:14px 0 8px;font-size:12.5px}
+.lc-sort-bar label{font-weight:700;color:var(--muted)}
+.lc-sort-bar select{border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+.lc-table{width:100%;border-collapse:collapse;font-size:13px}
+.lc-table th{background:var(--pine);color:#fff;font-weight:800;font-size:12px;padding:8px 10px;text-align:left}
+.lc-table th.num,.lc-table td.num{text-align:right}
+.lc-table td{border:1px solid var(--line);padding:7px 10px}
+.lc-table tbody tr:hover{background:var(--pine-soft)}
+.lc-row-selected{background:var(--pine-soft)}
+.lc-tab-bar{display:flex;gap:6px;border-bottom:2px solid var(--line)}
+.lc-tab-btn{border:none;background:none;padding:9px 18px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px}
+.lc-tab-btn.active{color:var(--pine);border-bottom-color:var(--pine)}
+.lc-tab-btn:hover{color:var(--pine)}
+.lc-toggle-row{display:flex;align-items:flex-start;gap:10px;margin-top:10px;flex-wrap:wrap}
+.lc-toggle-row label{font-weight:700;color:var(--muted);font-size:12.5px;padding-top:7px;white-space:nowrap}
+.lc-toggle-group{display:flex;flex-wrap:wrap;gap:6px}
+.lc-toggle-btn{border:1px solid var(--line);background:#fff;border-radius:16px;padding:6px 14px;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit}
+.lc-toggle-btn.active{background:var(--pine);color:#fff;border-color:var(--pine)}
+.lc-toggle-btn:hover:not(.active){border-color:var(--pine)}
+.lc-row-disabled{color:var(--muted);cursor:default}
+.lc-row-disabled:hover{background:none}
+.lc-type-tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px}
 .t2-filter-bar label{font-weight:700;color:var(--pine)}
 .t2-filter-bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
 .ac-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;background:var(--pine-soft);border-radius:8px;padding:9px 12px}
@@ -3069,14 +3101,14 @@ const crumbs = document.getElementById('crumbs');
 function parseHash(){
   const h = (location.hash || '#home').slice(1);
   if(h==='home' || h==='') return {view:'home'};
-  const mHomeSec = h.match(/^home:(mem|engrev|new|curi)$/);
+  const mHomeSec = h.match(/^home:(mem|engrev|new|curi|network)$/);
   if(mHomeSec) return {view:'home', scrollTo:mHomeSec[1]};
   const mHq = h.match(/^hq:(eng|curi)$/);
   if(mHq) return {view:'hq', section:mHq[1]};
   const mHqCuri = h.match(/^hqcuri:([^/]+)\/(.+)$/);
   if(mHqCuri) return {view:'hqcuri', mgr:decodeURIComponent(mHqCuri[1]), region:decodeURIComponent(mHqCuri[2])};
   if(h==='allcenters') return {view:'allcenters'};
-  const mAllList = h.match(/^allcenters:(eng|math)$/);
+  const mAllList = h.match(/^allcenters:(eng|math|lc)$/);
   if(mAllList) return {view:'allcenterslist', brand:mAllList[1]};
   const mDoc = h.match(/^doc:(.+)$/);
   if(mDoc){
@@ -3127,120 +3159,999 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeCenterDetail()
 
 /* ===== 외부 문서 링크 (사이드바 내 인라인 열람/작성) ===== */
 const CURI_DATA = [
-  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 경남 직영', mem:[90,90,90,90,90,90,90,90], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[306000,333000,206000,566000,189000,387000,207000,252000]},
-  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 에이블 영수전문학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'경남', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 수학교실 창원안민학원', mem:[7,5,5,5,5,5,5,5], workbook:[150000,90000,90000,150000,150000,150000,90000,90000], textbook:[52000,110000,null,null,null,121000,121000,121000]},
-  {region:'경남김해', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 숲의령', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,120000,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 대구경북 직영', mem:[1,1,1,1,1,1,1,1], workbook:[150000,150000,150000,150000,90000,150000,150000,150000], textbook:[null,null,117000,104000,null,null,null,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 신암교육원', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,150000,150000,150000,150000], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 구미도량교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 의성교육원', mem:[1,2,2,2,3,3,3,3], workbook:[150000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,13000,13000,16000,28000,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 파머스영어윤쌤수학', mem:[null,1,1,null,null,null,null,null], workbook:[150000,150000,90000,150000,150000,150000,150000,150000], textbook:[null,13000,null,null,null,null,null,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 율하교육원', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,150000,150000,150000,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'플레이팩토 큐리매쓰 사고력수학학원, 올타실험과학', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구달서', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 IGSE예미지학원', mem:[null,1,1,1,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,126000,null,null,null,null,null,18000]},
-  {region:'대구달서', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 대구월배학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구달서', mgr:'윤길한', sub:null, center:'큐리매쓰 신월성센터', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구달서', mgr:'윤길한', sub:null, center:'큐리매쓰 대구죽곡초', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구달서', mgr:'윤길한', sub:null, center:'큐리매쓰 대구희엘', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구달서', mgr:'윤길한', sub:null, center:'큐리매쓰 대구서재', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대전', mgr:'황성연', sub:null, center:'큐리매쓰 대전둔산동부학원', mem:[null,12,12,13,14,14,15,15], workbook:[null,null,null,null,90000,null,null,null], textbook:[null,225000,null,54000,72000,null,81000,33500]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 부산광안 직영', mem:[13,13,12,10,9,9,11,11], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[160000,65000,78000,91000,104000,26000,110000,91000]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 문현교육원', mem:[7,7,7,7,7,7,7,7], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[104000,39000,78000,104000,26000,111000,156000,52000]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 해빛교육원', mem:[2,2,2,2,2,2,2,2], workbook:[150000,150000,150000,150000,150000,150000,150000,150000], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 부산민락교육원', mem:[null,null,1,3,3,3,5,5], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,26000,124000,null,143000,null]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산감만', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산장림', mem:[null,null,null,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,27000,69000,null,null,null]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE대연경성', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산모라', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산당리교육원', mem:[4,2,2,2,2,2,2,2], workbook:[90000,90000,150000,150000,90000,150000,90000,90000], textbook:[78000,null,null,52000,null,39000,13000,52000]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산연제 직영', mem:[15,15,15,15,15,15,15,15], workbook:[90000,90000,90000,90000,150000,90000,90000,90000], textbook:[236000,132000,91000,null,110000,65000,889000,null]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 만덕교육원', mem:[null,null,1,1,1,1,1,1], workbook:[null,null,150000,90000,90000,90000,90000,150000], textbook:[null,null,13000,13000,13000,26000,null,null]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 사직교육원', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,90000,90000,null,90000], textbook:[null,null,null,13000,13000,13000,13000,null]},
-  {region:'부산해운대', mgr:'황지애', sub:null, center:'큐리매쓰 윤선생IGSE동삼학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,90000,90000,90000,90000], textbook:[null,null,null,null,9000,12500,null,14500]},
-  {region:'부산해운대', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 숲좌동중앙어학원', mem:[null,null,null,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산해운대', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산개금', mem:[null,null,null,12,12,12,12,12], workbook:[null,null,null,null,null,null,90000,150000], textbook:[null,null,null,81000,null,81000,null,null]},
-  {region:'부산해운대', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE양정학원', mem:[null,null,null,1,3,3,3,3], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산해운대', mgr:'황지애', sub:null, center:'큐리매쓰 매쓰플러스 수학교습소', mem:[null,null,null,1,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 구서학원', mem:[null,null,null,null,1,1,1,1], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,180000,null,null,null,108000,null]},
-  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산화명학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 숲부산신호학원', mem:[null,null,null,null,null,null,3,4], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,331000,39500]},
-  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE울산선암', mem:[null,null,null,null,8,10,11,12], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,201000,337500,36000]},
-  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE회야탑클래스학원', mem:[null,null,null,null,null,null,24,24], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,203500,79000]},
-  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 계양해링턴교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 인천연수남부교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 주안교육원', mem:[1,1,1,1,1,1,1,1], workbook:[150000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,13000,13000,13000,23500,null]},
-  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 나쌤수학교습소', mem:[5,7,7,8,8,10,10,10], workbook:[null,null,null,null,null,null,null,null], textbook:[52000,195000,78000,175000,129500,128000,117000,208000]},
-  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 인천청라점', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,9000,null,9000]},
-  {region:'전남광주', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 숲백운동', mem:[null,null,null,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,36000,27000,45000,null,null]},
-  {region:'전남광주', mgr:'황성연', sub:null, center:'큐리매쓰 수완은빛초점', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,108000,null,108000]},
-  {region:'화성평택', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 고덕리슈빌', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,69000,409500]},
-  {region:'경기안양', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 IGSE안양북', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,99000,null,null,null,null,null]},
-  {region:'경기안양', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 숲안양관양', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,51000,null,null,null]},
-  {region:'경기안양', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 숲안양호성', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'경기이천', mgr:'김혜림', sub:null, center:'큐리매쓰 양평동초 수학공부방', mem:[null,null,null,null,1,1,1,1], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,108000,null,null,null]},
-  {region:'경기이천', mgr:'김혜림', sub:null, center:'윤선생 큐리매쓰 이천신하', mem:[null,null,null,11,11,3,4,5], workbook:[null,null,null,null,90000,null,null,null], textbook:[null,null,null,99000,null,27000,9000,9000]},
-  {region:'경기이천', mgr:'김혜림', sub:null, center:'윤선생 큐리매쓰 한내학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'경기고양', mgr:'장민경', sub:null, center:'큐리매쓰 온에듀', mem:[null,null,null,null,null,null,null,6], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,196000]},
-  {region:'서울송파', mgr:'김혜림', sub:null, center:'윤선생 IGSE앤 쎈수학 문정학원', mem:[null,null,3,6,6,6,6,6], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,18000,45000,null,36000,null,null]},
-  {region:'서울송파', mgr:'김혜림', sub:null, center:'윤선생 큐리매쓰 IGSE강동중앙학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'서울중랑', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 숲묵동	', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'서울중랑', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 동원백점', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'서울강북', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 삼각산아이원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'서울도봉', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 쌍문학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'제주', mgr:'김혜림', sub:null, center:'윤선생 큐리매쓰 하귀일영수공부방', mem:[null,6,7,7,null,7,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,99000,18000,null,null,null,null,null]},
-  {region:'충북충주', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 서충주신우희가로', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,18000,null,27000,null,null,null,null]},
-  {region:'충북충주', mgr:'황성연', sub:null, center:'큐리매쓰 충주삼원초', mem:[null,null,null,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,45000,null,null]},
-  {region:'충남세종', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 내포에듀시티학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,27000,null,null,25000,null]},
-  {region:'충남세종', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 IGSE홍성홍남', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,66000,null]},
-  {region:'충남세종', mgr:'황성연', sub:null, center:'큐리매쓰 세종산울 리첸시아', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,63000,null,null,24000,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 아소비탑에듀', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 숲광명광문', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 용인동백', mem:[null,null,null,null,null,null,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,54000,108000]},
-  {region:'본사', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 사고력 덕의수학교습소', mem:[null,null,null,null,null,15,15,16], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,313000,153000]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 옥빛초점', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 딱풀리는수학평내1호', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 메타인지교습소', mem:[null,null,null,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,108000,null,36000,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 예스수학학원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 광주,전남서부', mem:[null,null,null,null,null,null,null,null], workbook:[150000,150000,90000,90000,90000,90000,90000,90000], textbook:[null,13000,13000,13000,13000,13000,13000,13000]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 마곡교육원', mem:[null,null,null,null,null,null,null,null], workbook:[90000,90000,90000,null,null,null,null,null], textbook:[13000,null,26000,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'새솔동 위드유수학 큐리매쓰 교육원', mem:[null,null,null,null,null,null,null,null], workbook:[90000,90000,90000,90000,90000,null,null,null], textbook:[13000,null,26000,26000,78000,26000,null,39000]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 서초교육원', mem:[9,10,10,10,10,10,10,10], workbook:[90000,90000,150000,90000,90000,90000,90000,90000], textbook:[52000,null,52000,null,37000,26000,26000,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 용인역북교육원', mem:[10,8,9,9,6,6,8,7], workbook:[90000,150000,90000,90000,90000,90000,90000,90000], textbook:[null,65000,null,65000,65000,110000,110000,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 제주연동교육원', mem:[6,6,6,6,6,6,6,6], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,26000,16000,13000,13000,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 신철원교육원', mem:[2,3,3,2,2,2,3,3], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,13000,13000,13000,13000,26000]},
-  {region:'본사', mgr:'정은희', sub:null, center:'꼬마알 큐리매쓰 시흥교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'최강 큐리매쓰 갈매점', mem:[3,3,3,3,3,3,3,3], workbook:[null,null,null,null,null,null,null,null], textbook:[null,110000,null,26000,null,50000,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 배곧윤선생IGSE아카데미', mem:[2,2,3,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,26000]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 옥천교육원', mem:[19,18,18,16,14,15,19,19], workbook:[90000,90000,90000,90000,90000,90000,90000,90000], textbook:[91000,208000,130000,26000,215000,65000,221000,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 초월학원', mem:[1,1,1,1,1,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[13000,13000,13000,13000,13000,null,null,null]},
-  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 주촌교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 평화꽃밭학원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 이촌용강교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 연산교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산부곡교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 북부산교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 화명중앙교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 해운좌동교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산동래교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 부산당감동교육원', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 동대문교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 송파위례교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 구월교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 대천교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 복현중앙교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'대구경북', mgr:'윤길한', sub:null, center:'(해지)큐리매쓰 송정교육원(해지)', mem:[null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'큐리매쓰 강동중앙 교육원(해지)', mem:[5,5,5,null,null,null,null,null], workbook:[90000,90000,90000,null,null,null,null,null], textbook:[13000,13000,null,null,null,null,null,null]},
-  {region:'본사', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 IGSE의정부가능(해지)', mem:[null,null,1,1,null,null,null,null], workbook:[null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null]}
+  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 경남 직영', mem:[90,90,90,90,90,90,90,90,90], workbook:[90000,90000,90000,90000,90000,90000,90000,90000,90000], textbook:[306000,333000,206000,566000,189000,387000,207000,252000,243000], textbookQty:[34,37,22,60,21,43,23,28,27]},
+  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 에이블 영수전문학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'경남', mgr:'정은희', sub:null, center:'윤선생 큐리매쓰 수학교실 창원안민학원', mem:[7,5,5,5,5,5,5,5,5], workbook:[150000,90000,90000,150000,150000,150000,90000,90000,90000], textbook:[52000,110000,null,null,null,121000,121000,121000,null], textbookQty:[4,10,null,null,null,11,11,11,null]},
+  {region:'경남김해', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 숲의령', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,120000,null,null], textbookQty:[null,null,null,null,null,null,30,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 대구경북 직영', mem:[1,1,1,1,1,1,1,1,1], workbook:[150000,150000,150000,150000,90000,150000,150000,150000,90000], textbook:[null,null,117000,104000,null,null,null,132000,null], textbookQty:[null,null,9,8,null,null,null,12,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 신암교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,150000,150000,150000,150000,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 구미도량교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 의성교육원', mem:[1,2,2,2,3,3,3,3,3], workbook:[150000,90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,13000,13000,16000,28000,13000,null], textbookQty:[1,1,1,1,1,2,6,1,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 파머스영어윤쌤수학', mem:[null,1,1,null,null,null,null,null,null], workbook:[150000,150000,90000,150000,150000,150000,150000,150000,150000], textbook:[null,13000,null,null,null,null,null,null,null], textbookQty:[null,1,null,null,null,null,null,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 율하교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,150000,150000,150000,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'플레이팩토 큐리매쓰 사고력수학학원, 올타실험과학', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 수학발전소', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구달서', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 IGSE예미지학원', mem:[null,1,1,1,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,126000,null,null,null,null,null,18000,null], textbookQty:[null,14,null,null,null,null,null,2,null]},
+  {region:'대구달서', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 대구월배학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구달서', mgr:'윤길한', sub:null, center:'큐리매쓰 신월성센터', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구달서', mgr:'윤길한', sub:null, center:'큐리매쓰 대구죽곡초', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구달서', mgr:'윤길한', sub:null, center:'큐리매쓰 대구희엘', mem:[null,null,null,null,null,null,null,4,4], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,279000,null], textbookQty:[null,null,null,null,null,null,null,83,null]},
+  {region:'대구달서', mgr:'윤길한', sub:null, center:'큐리매쓰 대구서재', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,135000,null], textbookQty:[null,null,null,null,null,null,null,45,null]},
+  {region:'대전', mgr:'황성연', sub:null, center:'큐리매쓰 대전둔산동부학원', mem:[null,12,12,13,14,14,15,15,15], workbook:[null,null,null,null,90000,null,null,null,null], textbook:[null,225000,null,54000,72000,null,81000,33500,null], textbookQty:[null,25,null,6,8,null,9,5,null]},
+  {region:'대전', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 IGSE연세어학 대성학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 부산광안 직영', mem:[13,13,12,10,9,9,11,11,11], workbook:[90000,90000,90000,90000,90000,90000,90000,90000,90000], textbook:[160000,65000,78000,91000,104000,26000,110000,91000,26000], textbookQty:[14,5,6,7,8,2,10,7,2]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 문현교육원', mem:[7,7,7,7,7,7,7,7,7], workbook:[90000,90000,90000,90000,90000,90000,90000,90000,90000], textbook:[104000,39000,78000,104000,26000,111000,156000,104000,null], textbookQty:[8,3,6,8,2,10,12,8,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 해빛교육원', mem:[2,2,2,2,2,2,2,2,2], workbook:[150000,150000,150000,150000,150000,150000,150000,150000,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 부산민락교육원', mem:[null,null,1,3,3,3,5,5,5], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,26000,124000,null,143000,52000,null], textbookQty:[null,null,null,2,28,null,11,4,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산감만', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산장림', mem:[null,null,null,1,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,27000,69000,null,null,null,null], textbookQty:[null,null,null,3,13,null,null,null,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE대연경성', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산모라', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산당리교육원', mem:[4,2,2,2,2,2,2,2,2], workbook:[90000,90000,150000,150000,90000,150000,90000,90000,null], textbook:[78000,null,null,52000,null,39000,13000,52000,null], textbookQty:[6,null,null,4,null,3,1,4,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산연제 직영', mem:[15,15,15,15,15,15,15,15,15], workbook:[90000,90000,90000,90000,150000,90000,90000,90000,150000], textbook:[236000,132000,91000,null,110000,65000,889000,null,null], textbookQty:[20,12,7,null,10,5,105,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 만덕교육원', mem:[null,null,1,1,1,1,1,1,1], workbook:[null,null,150000,90000,90000,90000,90000,150000,null], textbook:[null,null,13000,13000,13000,26000,null,null,null], textbookQty:[null,null,1,1,1,2,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 사직교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[150000,150000,150000,150000,90000,90000,null,90000,null], textbook:[null,null,null,13000,13000,13000,13000,null,null], textbookQty:[null,null,null,1,1,1,1,null,null]},
+  {region:'부산해운대', mgr:'황지애', sub:null, center:'큐리매쓰 윤선생IGSE동삼학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,90000,90000,90000,90000,null], textbook:[null,null,null,null,9000,12500,null,14500,null], textbookQty:[null,null,null,null,1,2,null,2,null]},
+  {region:'부산해운대', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 숲좌동중앙어학원', mem:[null,null,null,1,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산해운대', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산개금', mem:[null,null,null,12,12,12,12,12,12], workbook:[null,null,null,null,null,null,90000,150000,null], textbook:[null,null,null,81000,null,81000,null,null,null], textbookQty:[null,null,null,9,null,9,null,null,null]},
+  {region:'부산해운대', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE양정학원', mem:[null,null,null,1,3,3,3,3,3], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산해운대', mgr:'황지애', sub:null, center:'큐리매쓰 매쓰플러스 수학교습소', mem:[null,null,null,1,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 구서학원', mem:[null,null,null,null,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,180000,null,null,null,108000,null,null], textbookQty:[null,null,20,null,null,null,18,null,null]},
+  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE부산화명학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 숲부산신호학원', mem:[null,null,null,null,null,null,3,4,4], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,331000,39500,106000], textbookQty:[null,null,null,null,null,null,52,5,13]},
+  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE울산선암', mem:[null,null,null,null,8,10,11,12,13], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,201000,337500,36000,25000], textbookQty:[null,null,null,null,null,28,52,4,4]},
+  {region:'부산양산', mgr:'황지애', sub:null, center:'윤선생 큐리매쓰 IGSE회야탑클래스학원', mem:[null,null,null,null,null,null,24,24,24], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,203500,89500,null], textbookQty:[null,null,null,null,null,null,40,12,null]},
+  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 계양해링턴교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 인천연수남부교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 주안교육원', mem:[1,1,1,1,1,1,1,1,1], workbook:[150000,90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,13000,13000,13000,23500,13000,null], textbookQty:[1,1,1,1,1,1,4,1,null]},
+  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 나쌤수학교습소', mem:[5,7,7,8,8,10,10,10,9], workbook:[null,null,null,null,null,null,null,null,null], textbook:[52000,195000,78000,175000,129500,128000,117000,208000,null], textbookQty:[4,15,6,15,13,26,9,16,null]},
+  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 인천청라점', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,9000,null,9000,null], textbookQty:[null,null,null,null,null,1,null,1,null]},
+  {region:'전남광주', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 숲백운동', mem:[null,null,null,2,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,36000,27000,45000,null,null,null], textbookQty:[null,null,null,4,3,5,null,null,null]},
+  {region:'전남광주', mgr:'황성연', sub:null, center:'큐리매쓰 수완은빛초점', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,108000,null,108000,null], textbookQty:[null,null,null,null,null,12,null,12,null]},
+  {region:'화성평택', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 고덕리슈빌', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,69000,409500,null], textbookQty:[null,null,null,null,null,null,23,51,null]},
+  {region:'경기안양', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 IGSE안양북', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,99000,null,null,null,null,null,null], textbookQty:[null,null,11,null,null,null,null,null,null]},
+  {region:'경기안양', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 숲안양관양', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,51000,null,null,null,null], textbookQty:[null,null,null,null,7,null,null,null,null]},
+  {region:'경기안양', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 숲안양호성', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'경기이천', mgr:'김혜림', sub:null, center:'큐리매쓰 양평동초 수학공부방', mem:[null,null,null,null,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,108000,null,null,null,null], textbookQty:[null,null,null,null,12,null,null,null,null]},
+  {region:'경기이천', mgr:'김혜림', sub:null, center:'윤선생 큐리매쓰 이천신하', mem:[null,null,null,11,11,3,4,3,3], workbook:[null,null,null,null,90000,null,null,null,null], textbook:[null,null,null,99000,null,27000,9000,36000,null], textbookQty:[null,null,null,11,null,3,1,4,null]},
+  {region:'경기이천', mgr:'김혜림', sub:null, center:'윤선생 큐리매쓰 한내학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'경기고양', mgr:'장민경', sub:null, center:'큐리매쓰 온에듀', mem:[null,null,null,null,null,null,null,6,6], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,205000,null], textbookQty:[null,null,null,null,null,null,null,23,null]},
+  {region:'경기광주', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 광명초', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'서울송파', mgr:'김혜림', sub:null, center:'윤선생 IGSE앤 쎈수학 문정학원', mem:[null,null,3,6,6,6,6,6,6], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,18000,45000,null,36000,null,null,44000], textbookQty:[null,null,2,5,null,4,null,null,4]},
+  {region:'서울송파', mgr:'김혜림', sub:null, center:'윤선생 큐리매쓰 IGSE강동중앙학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'서울중랑', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 숲묵동	', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'서울중랑', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 동원백점', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'서울강북', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 삼각산아이원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'서울도봉', mgr:'윤길한', sub:null, center:'윤선생 큐리매쓰 쌍문학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'제주', mgr:'김혜림', sub:null, center:'윤선생 큐리매쓰 하귀일영수공부방', mem:[null,6,7,7,null,7,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,99000,18000,null,null,null,null,null,null], textbookQty:[null,11,2,null,null,null,null,null,null]},
+  {region:'충북충주', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 서충주신우희가로', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,18000,null,27000,null,null,null,null,null], textbookQty:[null,2,null,3,null,null,null,null,null]},
+  {region:'충북충주', mgr:'황성연', sub:null, center:'큐리매쓰 충주삼원초', mem:[null,null,null,1,1,1,1,1,1], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,45000,null,null,null], textbookQty:[null,null,null,null,null,7,null,null,null]},
+  {region:'충남세종', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 내포에듀시티학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,27000,null,null,25000,null,null], textbookQty:[null,null,null,3,null,null,3,null,null]},
+  {region:'충남세종', mgr:'황성연', sub:null, center:'윤선생 큐리매쓰 IGSE홍성홍남', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,66000,null,47500], textbookQty:[null,null,null,null,null,null,22,null,5]},
+  {region:'충남세종', mgr:'황성연', sub:null, center:'큐리매쓰 세종산울 리첸시아', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,63000,null,null,24000,null,null], textbookQty:[null,null,null,7,null,null,8,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 아소비탑에듀', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'윤선생 큐리매쓰 숲광명광문', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 용인동백', mem:[null,null,null,null,null,null,2,2,2], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,54000,108000,null], textbookQty:[null,null,null,null,null,null,12,12,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'윤선생 큐리매쓰 사고력 덕의수학교습소', mem:[null,null,null,null,null,15,15,16,16], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,313000,153000,null], textbookQty:[null,null,null,null,null,null,41,17,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 옥빛초점', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 딱풀리는수학평내1호', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 메타인지교습소', mem:[null,null,null,2,2,2,2,2,2], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,108000,null,36000,null,45000,null], textbookQty:[null,null,null,12,null,4,null,5,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 예스수학학원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 광주,전남서부', mem:[null,null,null,null,null,null,null,null,null], workbook:[150000,150000,90000,90000,90000,90000,90000,90000,null], textbook:[null,13000,13000,13000,13000,13000,13000,13000,null], textbookQty:[null,1,1,1,1,1,1,1,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 마곡교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[90000,90000,90000,null,null,null,null,null,null], textbook:[13000,null,26000,null,null,null,null,null,null], textbookQty:[1,null,2,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'새솔동 위드유수학 큐리매쓰 교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[90000,90000,90000,90000,90000,null,null,null,null], textbook:[13000,null,26000,26000,78000,26000,null,39000,52000], textbookQty:[1,null,2,2,16,2,null,3,4]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 서초교육원', mem:[9,10,10,10,10,10,10,10,10], workbook:[90000,90000,150000,90000,90000,90000,90000,90000,90000], textbook:[52000,null,52000,null,37000,26000,26000,26000,null], textbookQty:[4,null,4,null,9,2,2,2,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 용인역북교육원', mem:[10,8,9,9,6,6,8,8,8], workbook:[90000,150000,90000,90000,90000,90000,90000,90000,90000], textbook:[null,65000,null,65000,65000,110000,110000,100000,null], textbookQty:[null,5,null,5,5,10,10,10,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 제주연동교육원', mem:[6,6,6,6,6,6,6,6,6], workbook:[90000,90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,26000,16000,13000,13000,13000,null], textbookQty:[1,1,1,2,2,1,1,1,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 신철원교육원', mem:[2,3,3,2,2,2,3,3,5], workbook:[90000,90000,90000,90000,90000,90000,90000,90000,90000], textbook:[13000,13000,13000,13000,13000,13000,13000,26000,39000], textbookQty:[1,1,1,1,1,1,1,2,3]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'꼬마알 큐리매쓰 시흥교육원', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'최강 큐리매쓰 갈매점', mem:[3,3,3,3,3,3,3,3,3], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,110000,null,26000,null,50000,null,null,null], textbookQty:[null,10,null,2,null,10,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 배곧윤선생IGSE아카데미', mem:[2,2,3,2,2,2,2,1,1], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,26000,null], textbookQty:[null,null,null,null,null,null,null,2,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 옥천교육원', mem:[19,18,18,16,14,15,19,19,14], workbook:[90000,90000,90000,90000,90000,90000,90000,90000,90000], textbook:[91000,208000,130000,26000,215000,65000,221000,65000,null], textbookQty:[7,16,10,2,18,5,17,5,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 초월학원(해지)', mem:[1,1,1,1,1,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[13000,13000,13000,13000,13000,null,null,null,null], textbookQty:[1,1,1,1,1,null,null,null,null]},
+  {region:'경남', mgr:'정은희', sub:null, center:'큐리매쓰 주촌교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'윤선생 큐리매쓰 평화꽃밭학원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 이촌용강교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 연산교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산부곡교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 북부산교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 화명중앙교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 해운좌동교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산연제', mgr:'정은희', sub:null, center:'큐리매쓰 부산동래교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'부산광안', mgr:'황지애', sub:null, center:'큐리매쓰 부산당감동교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 동대문교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 송파위례교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'인천김포', mgr:'김혜림', sub:null, center:'큐리매쓰 구월교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 대천교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 복현중앙교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'대구경북', mgr:'윤길한', sub:null, center:'큐리매쓰 송정교육원(해지)', mem:[null,null,null,null,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'큐리매쓰 강동중앙 교육원(해지)', mem:[5,5,5,null,null,null,null,null,null], workbook:[90000,90000,90000,null,null,null,null,null,null], textbook:[13000,13000,null,null,null,null,null,null,null], textbookQty:[1,1,null,null,null,null,null,null,null]},
+  {region:'본사', mgr:'정은희', sub:'직영', center:'윤선생 큐리매쓰 IGSE의정부가능(해지)', mem:[null,null,1,1,null,null,null,null,null], workbook:[null,null,null,null,null,null,null,null,null], textbook:[null,null,null,null,null,null,null,null,null], textbookQty:[null,null,null,null,null,null,null,null,null]}
 ];
-const CURI_MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월'];
+const CURI_MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월'];
 
 /* 센터명 정규화(공백/괄호/대소문자 무시) — NEWMEM_DATA 조회 키와 동일한 규칙 */
 function normCenterName(s){
   s = String(s).replace('(H)','').replace('（H）','');
   return s.replace(/[\s()（）\[\].]/g,'').toLowerCase();
 }
+const LIFECYCLE_DATA = [
+{type:'open',y:2023,m:1,br:'경기고양',mgr:'장민경',name:'숲일산백석',src:'학원',code:'7542'},
+{type:'transfer',y:2025,m:8,br:'경기고양',mgr:'장민경',name:'숲일산백석',src:'학원',code:'7542'},
+{type:'open',y:2023,m:4,br:'경기과천',mgr:'윤길한',name:'숲광명광문',src:'학원',code:'7586'},
+{type:'open',y:2024,m:6,br:'경기광주',mgr:'윤길한',name:'숲광주역동',src:'학원',code:'7709'},
+{type:'open',y:2025,m:12,br:'경기안양',mgr:'윤길한',name:'숲안양공작',src:'학원',code:'7804'},
+{type:'open',y:2025,m:11,br:'경기안양',mgr:'윤길한',name:'숲안양관양',src:'학원',code:'7805'},
+{type:'open',y:2024,m:7,br:'경기안양',mgr:'윤길한',name:'숲안양평촌',src:'학원',code:'7711'},
+{type:'open',y:2026,m:6,br:'경기안양',mgr:'윤길한',name:'숲안양호성',src:'학원',code:'7841'},
+{type:'transfer',y:2026,m:2,br:'경기안양',mgr:'윤길한',name:'숲안양만안동',src:'학원',code:'5606'},
+{type:'transfer',y:2023,m:12,br:'대구경북',mgr:'윤길한',name:'숲경주',src:'학원',code:'5771'},
+{type:'transfer',y:2023,m:1,br:'대구경북',mgr:'윤길한',name:'숲고령',src:'학원',code:'5485'},
+{type:'transfer',y:2026,m:3,br:'대구경북',mgr:'윤길한',name:'숲김천신음',src:'학원',code:'5671'},
+{type:'transfer',y:2024,m:5,br:'대구달서',mgr:'윤길한',name:'숲대구칠성',src:'학원',code:'5597'},
+{type:'transfer',y:2023,m:3,br:'대구달서',mgr:'윤길한',name:'숲대구평리',src:'학원',code:'2595'},
+{type:'transfer',y:2023,m:3,br:'부산양산',mgr:'황지애',name:'숲울산반구',src:'학원',code:'6563'},
+{type:'transfer',y:2023,m:4,br:'서울중랑',mgr:'윤길한',name:'숲묵동',src:'학원',code:'4661'},
+{type:'open',y:2023,m:8,br:'인천김포',mgr:'김혜림',name:'숲김포감정',src:'학원',code:'7623'},
+{type:'open',y:2023,m:8,br:'인천김포',mgr:'김혜림',name:'숲김포구래',src:'학원',code:'7624'},
+{type:'transfer',y:2023,m:5,br:'전남광주',mgr:'황성연',name:'숲광주수완장덕',src:'학원',code:'5466'},
+{type:'transfer',y:2023,m:11,br:'전남광주',mgr:'황성연',name:'숲구례',src:'학원',code:'5265'},
+{type:'transfer',y:2024,m:10,br:'전남광주',mgr:'황성연',name:'숲광주일곡',src:'학원',code:'5826'},
+{type:'open',y:2023,m:6,br:'전남광주',mgr:'황성연',name:'숲목포백련',src:'학원',code:'7612'},
+{type:'open',y:2025,m:10,br:'전남광주',mgr:'황성연',name:'숲남악오룡',src:'학원',code:'7801'},
+{type:'open',y:2025,m:8,br:'전북',mgr:'황성연',name:'숲군산내흥',src:'학원',code:'7793'},
+{type:'open',y:2026,m:7,br:'전북',mgr:'황성연',name:'숲전주혁신온빛',src:'학원',code:'7845'},
+{type:'open',y:2023,m:12,br:'전북',mgr:'황성연',name:'숲송천오송',src:'학원',code:'7658'},
+{type:'transfer',y:2026,m:7,br:'전북',mgr:'황성연',name:'숲송천오송',src:'학원',code:'7658'},
+{type:'open',y:2023,m:7,br:'전북',mgr:'황성연',name:'숲전주인후',src:'학원',code:'7622'},
+{type:'transfer',y:2023,m:1,br:'전북',mgr:'황성연',name:'숲전주혁신교습소',src:'학원',code:'5722'},
+{type:'transfer',y:2025,m:8,br:'전북',mgr:'황성연',name:'숲평화꽃밭',src:'학원',code:'6590'},
+{type:'transfer',y:2024,m:1,br:'제주',mgr:'김혜림',name:'숲제주',src:'학원',code:'5950'},
+{type:'open',y:2026,m:3,br:'충남세종',mgr:'황성연',name:'숲내포디에트르',src:'학원',code:'7827'},
+{type:'open',y:2023,m:12,br:'충남천안',mgr:'황성연',name:'숲천안신부',src:'학원',code:'7659'},
+{type:'transfer',y:2024,m:3,br:'강원',mgr:'장민경',name:'IGSE춘천한숲시티',src:'학원',code:'6597'},
+{type:'open',y:2025,m:4,br:'경기고양',mgr:'장민경',name:'IGSE일산덕이',src:'학원',code:'7770'},
+{type:'transfer',y:2023,m:1,br:'경기고양',mgr:'장민경',name:'IGSE파주문산',src:'학원',code:'6318'},
+{type:'open',y:2024,m:1,br:'경기남양주',mgr:'장민경',name:'IGSE동두천지행',src:'학원',code:'7668'},
+{type:'transfer',y:2023,m:12,br:'경기시흥',mgr:'윤길한',name:'IGSE배곧',src:'학원',code:'5568'},
+{type:'open',y:2025,m:11,br:'경기시흥',mgr:'윤길한',name:'IGSE시흥산현',src:'학원',code:'7803'},
+{type:'transfer',y:2025,m:2,br:'경기시흥',mgr:'윤길한',name:'IGSE시흥장곡',src:'학원',code:'2792'},
+{type:'open',y:2023,m:10,br:'기타/해지된 본부',mgr:'황지애',name:'IGSE진주가좌',src:'학원',code:'7637'},
+{type:'open',y:2025,m:2,br:'대구경북',mgr:'윤길한',name:'IGSE대구새론',src:'학원',code:'7759'},
+{type:'transfer',y:2024,m:12,br:'대구경북',mgr:'윤길한',name:'IGSE영주',src:'학원',code:'5406'},
+{type:'open',y:2026,m:3,br:'대구달서',mgr:'윤길한',name:'IGSE대곡한실',src:'학원',code:'7832'},
+{type:'open',y:2024,m:10,br:'대구달서',mgr:'윤길한',name:'IGSE대구연경',src:'학원',code:'7736'},
+{type:'open',y:2026,m:2,br:'대구달서',mgr:'윤길한',name:'IGSE예미지',src:'학원',code:'7822'},
+{type:'open',y:2024,m:1,br:'대구달서',mgr:'윤길한',name:'IGSE대구원대',src:'학원',code:'7672'},
+{type:'transfer',y:2023,m:12,br:'부산광안',mgr:'황지애',name:'IGSE부산감만',src:'학원',code:'5281'},
+{type:'transfer',y:2023,m:12,br:'부산광안',mgr:'황지애',name:'IGSE부산문현',src:'학원',code:'5847'},
+{type:'transfer',y:2026,m:8,br:'부산광안',mgr:'황지애',name:'IGSE부산괘법',src:'학원',code:'3817'},
+{type:'transfer',y:2026,m:2,br:'부산양산',mgr:'황지애',name:'IGSE부산화명',src:'학원',code:'5893'},
+{type:'transfer',y:2025,m:7,br:'부산양산',mgr:'황지애',name:'IGSE북부산',src:'학원',code:'5905'},
+{type:'open',y:2026,m:5,br:'부산양산',mgr:'황지애',name:'IGSE울산선암',src:'학원',code:'7842'},
+{type:'open',y:2024,m:7,br:'부산양산',mgr:'황지애',name:'IGSE울산옥현',src:'학원',code:'7715'},
+{type:'open',y:2024,m:2,br:'부산양산',mgr:'황지애',name:'IGSE울산중산',src:'학원',code:'7674'},
+{type:'open',y:2025,m:1,br:'부산양산',mgr:'황지애',name:'IGSE부산구서금샘',src:'학원',code:'7749'},
+{type:'transfer',y:2024,m:1,br:'부산양산',mgr:'황지애',name:'IGSE부산장전',src:'학원',code:'5378'},
+{type:'transfer',y:2023,m:7,br:'부산양산',mgr:'황지애',name:'IGSE양산가촌',src:'학원',code:'6387'},
+{type:'open',y:2026,m:7,br:'부산양산',mgr:'황지애',name:'IGSE양산회야',src:'학원',code:'7844'},
+{type:'transfer',y:2023,m:3,br:'부산해운대',mgr:'황지애',name:'IGSE부산개금',src:'학원',code:'5578'},
+{type:'transfer',y:2024,m:4,br:'부산해운대',mgr:'황지애',name:'IGSE부산동거제',src:'학원',code:'5326'},
+{type:'transfer',y:2025,m:12,br:'서울도봉',mgr:'윤길한',name:'IGSE길음뉴타운',src:'학원',code:'5135'},
+{type:'transfer',y:2025,m:1,br:'서울서대문',mgr:'윤길한',name:'IGSE서대문연가',src:'학원',code:'3835'},
+{type:'transfer',y:2024,m:5,br:'서울서초',mgr:'김혜림',name:'IGSE대방남부',src:'학원',code:'5380'},
+{type:'transfer',y:2026,m:5,br:'서울송파',mgr:'김혜림',name:'IGSE강동중앙',src:'학원',code:'5804'},
+{type:'open',y:2025,m:7,br:'서울송파',mgr:'김혜림',name:'IGSE고덕',src:'학원',code:'7787'},
+{type:'open',y:2024,m:11,br:'서울송파',mgr:'김혜림',name:'IGSE송파가락',src:'학원',code:'7742'},
+{type:'transfer',y:2025,m:1,br:'용인수지',mgr:'황성연',name:'IGSE용인죽전',src:'학원',code:'5924'},
+{type:'open',y:2024,m:4,br:'인천김포',mgr:'김혜림',name:'IGSE인천구월',src:'학원',code:'7701'},
+{type:'open',y:2024,m:1,br:'인천김포',mgr:'김혜림',name:'IGSE미추홀용현',src:'학원',code:'7670'},
+{type:'open',y:2024,m:4,br:'인천김포',mgr:'김혜림',name:'IGSE주안',src:'학원',code:'7698'},
+{type:'transfer',y:2024,m:6,br:'전남광주',mgr:'황성연',name:'IGSE광주풍암',src:'학원',code:'5892'},
+{type:'transfer',y:2025,m:7,br:'전남광주',mgr:'황성연',name:'IGSE영광',src:'학원',code:'5623'},
+{type:'transfer',y:2025,m:2,br:'전북',mgr:'황성연',name:'IGSE효자효문',src:'학원',code:'5577'},
+{type:'transfer',y:2026,m:3,br:'충남세종',mgr:'황성연',name:'IGSE서산성연',src:'학원',code:'6268'},
+{type:'transfer',y:2026,m:3,br:'충남세종',mgr:'황성연',name:'IGSE홍성홍남',src:'학원',code:'2810'},
+{type:'open',y:2024,m:7,br:'충북청주',mgr:'황성연',name:'IGSE오송스퀘어',src:'학원',code:'7716'},
+{type:'open',y:2025,m:6,br:'화성평택',mgr:'윤길한',name:'IGSE봉담상리',src:'학원',code:'7782'},
+{type:'transfer',y:2024,m:3,br:'전남순천',mgr:'황성연',name:'숲순천연향',src:'학원',code:'2799'},
+{type:'open',y:2024,m:10,br:'전남순천',mgr:'황성연',name:'IGSE신대중흥7,8차',src:'학원',code:'7734'},
+{type:'transfer',y:2024,m:4,br:'수원영통',mgr:'윤길한',name:'IGSE동수원',src:'학원',code:'5686'},
+{type:'close',y:2023,m:12,br:'경기고양',mgr:'장민경',name:'숲일산후곡',src:'학원',code:'5666'},
+{type:'transfer',y:2023,m:1,br:'경기광주',mgr:'윤길한',name:'숲광주벌원',src:'학원',code:'5555'},
+{type:'close',y:2024,m:11,br:'경기광주',mgr:'윤길한',name:'숲광주벌원',src:'학원',code:'5555'},
+{type:'close',y:2025,m:4,br:'경기광주',mgr:'윤길한',name:'숲광주태전',src:'학원',code:'5390'},
+{type:'open',y:2025,m:8,br:'경기광주',mgr:'윤길한',name:'숲초월',src:'학원',code:'7788'},
+{type:'close',y:2026,m:6,br:'경기광주',mgr:'윤길한',name:'숲초월',src:'학원',code:'7788'},
+{type:'close',y:2025,m:6,br:'경기남양주',mgr:'장민경',name:'숲동두천',src:'학원',code:'6626'},
+{type:'close',y:2024,m:6,br:'경기안양',mgr:'윤길한',name:'숲안양평촌(구)',src:'학원',code:'5628'},
+{type:'close',y:2024,m:6,br:'경기안양',mgr:'윤길한',name:'숲안양한가람',src:'학원',code:'5767'},
+{type:'close',y:2024,m:5,br:'경기안양',mgr:'윤길한',name:'숲안양호계',src:'학원',code:'4035'},
+{type:'close',y:2023,m:12,br:'경기오산',mgr:'김혜림',name:'숲오산',src:'학원',code:'5936'},
+{type:'transfer',y:2023,m:2,br:'경기이천',mgr:'김혜림',name:'숲이천갈산',src:'학원',code:'4355'},
+{type:'close',y:2024,m:12,br:'경기이천',mgr:'김혜림',name:'숲이천갈산',src:'학원',code:'4355'},
+{type:'close',y:2025,m:12,br:'경기이천',mgr:'김혜림',name:'숲이천송정',src:'학원',code:'4455'},
+{type:'transfer',y:2023,m:8,br:'경기이천',mgr:'김혜림',name:'숲이천아미',src:'학원',code:'6006'},
+{type:'close',y:2024,m:12,br:'경기이천',mgr:'김혜림',name:'숲이천아미',src:'학원',code:'6006'},
+{type:'close',y:2023,m:6,br:'경기이천',mgr:'김혜림',name:'숲이천증포',src:'학원',code:'4315'},
+{type:'close',y:2023,m:6,br:'경남김해',mgr:'황지애',name:'숲통영',src:'학원',code:'5894'},
+{type:'close',y:2023,m:1,br:'경남김해',mgr:'황지애',name:'숲김해삼계',src:'학원',code:'5878'},
+{type:'open',y:2024,m:2,br:'경남김해',mgr:'황지애',name:'숲연지',src:'학원',code:'7678'},
+{type:'close',y:2024,m:12,br:'경남김해',mgr:'황지애',name:'숲연지',src:'학원',code:'7678'},
+{type:'close',y:2023,m:8,br:'경남창원',mgr:'황지애',name:'숲진해용원',src:'학원',code:'2777'},
+{type:'close',y:2024,m:8,br:'대구경북',mgr:'윤길한',name:'숲경산',src:'학원',code:'5750'},
+{type:'close',y:2024,m:8,br:'대구경북',mgr:'윤길한',name:'숲경주남부',src:'학원',code:'5755'},
+{type:'close',y:2023,m:8,br:'대구경북',mgr:'윤길한',name:'숲경주안강',src:'학원',code:'2795'},
+{type:'close',y:2026,m:6,br:'대구경북',mgr:'윤길한',name:'숲경주용강',src:'학원',code:'5470'},
+{type:'close',y:2024,m:4,br:'대구경북',mgr:'윤길한',name:'숲청도',src:'학원',code:'2731'},
+{type:'close',y:2026,m:5,br:'대구경북',mgr:'윤길한',name:'숲왜관',src:'학원',code:'2274'},
+{type:'close',y:2025,m:12,br:'대구경북',mgr:'윤길한',name:'숲김천혁신',src:'학원',code:'6007'},
+{type:'close',y:2024,m:12,br:'대구경북',mgr:'윤길한',name:'숲상주남성',src:'학원',code:'5371'},
+{type:'close',y:2024,m:12,br:'대구경북',mgr:'윤길한',name:'숲예천',src:'학원',code:'5262'},
+{type:'close',y:2023,m:10,br:'대구경북',mgr:'윤길한',name:'숲울진',src:'학원',code:'5776'},
+{type:'close',y:2024,m:12,br:'대구달서',mgr:'윤길한',name:'숲대구대천',src:'학원',code:'5643'},
+{type:'close',y:2025,m:9,br:'대전',mgr:'황성연',name:'숲도안',src:'학원',code:'5583'},
+{type:'close',y:2024,m:12,br:'대전',mgr:'황성연',name:'숲유성새미래',src:'학원',code:'7389'},
+{type:'close',y:2024,m:12,br:'부산양산',mgr:'황지애',name:'숲울산삼산중앙',src:'학원',code:'5563'},
+{type:'close',y:2023,m:12,br:'부산양산',mgr:'황지애',name:'숲울산온양',src:'학원',code:'5542'},
+{type:'close',y:2025,m:12,br:'부산해운대',mgr:'황지애',name:'숲부산정관신도시',src:'학원',code:'4555'},
+{type:'close',y:2025,m:11,br:'부산해운대',mgr:'황지애',name:'숲부산반여',src:'학원',code:'2606'},
+{type:'close',y:2025,m:5,br:'부산해운대',mgr:'황지애',name:'숲부산재송',src:'학원',code:'5478'},
+{type:'close',y:2025,m:5,br:'서울강북',mgr:'윤길한',name:'숲장안',src:'학원',code:'5762'},
+{type:'close',y:2023,m:12,br:'서울강서',mgr:'김혜림',name:'숲구로동부',src:'학원',code:'5383'},
+{type:'close',y:2025,m:8,br:'서울강서',mgr:'김혜림',name:'숲상암',src:'학원',code:'2697'},
+{type:'close',y:2023,m:8,br:'서울서대문',mgr:'윤길한',name:'숲은평진관',src:'학원',code:'5467'},
+{type:'close',y:2023,m:7,br:'서울서초',mgr:'김혜림',name:'숲신림북부',src:'학원',code:'5650'},
+{type:'transfer',y:2023,m:1,br:'서울송파',mgr:'김혜림',name:'숲가락',src:'학원',code:'5694'},
+{type:'close',y:2024,m:1,br:'서울송파',mgr:'김혜림',name:'숲가락',src:'학원',code:'5694'},
+{type:'close',y:2026,m:5,br:'서울용산',mgr:'윤길한',name:'숲신용산',src:'학원',code:'5706'},
+{type:'close',y:2024,m:3,br:'서울중랑',mgr:'윤길한',name:'숲광장',src:'학원',code:'5736'},
+{type:'close',y:2023,m:11,br:'서울중랑',mgr:'윤길한',name:'숲광진',src:'학원',code:'5688'},
+{type:'close',y:2023,m:8,br:'용인수지',mgr:'황성연',name:'숲동백중동',src:'학원',code:'6002'},
+{type:'close',y:2025,m:11,br:'용인수지',mgr:'황성연',name:'숲용인동천',src:'학원',code:'5821'},
+{type:'close',y:2024,m:2,br:'인천김포',mgr:'김혜림',name:'숲서구동부',src:'학원',code:'5875'},
+{type:'close',y:2023,m:4,br:'인천김포',mgr:'김혜림',name:'숲인천신현',src:'학원',code:'3316'},
+{type:'close',y:2025,m:7,br:'전남광주',mgr:'황성연',name:'숲광주선운',src:'학원',code:'7493'},
+{type:'close',y:2023,m:10,br:'전남광주',mgr:'황성연',name:'숲광주수완동',src:'학원',code:'5305'},
+{type:'close',y:2024,m:9,br:'전남광주',mgr:'황성연',name:'숲광주신창',src:'학원',code:'7390'},
+{type:'close',y:2025,m:1,br:'전남광주',mgr:'황성연',name:'숲광주월계동',src:'학원',code:'2936'},
+{type:'close',y:2023,m:3,br:'전남광주',mgr:'황성연',name:'숲나주혁신빛가람',src:'학원',code:'6085'},
+{type:'close',y:2024,m:9,br:'전남광주',mgr:'황성연',name:'숲담양',src:'학원',code:'5898'},
+{type:'close',y:2023,m:6,br:'전남광주',mgr:'황성연',name:'숲장성',src:'학원',code:'5932'},
+{type:'close',y:2023,m:12,br:'전남광주',mgr:'황성연',name:'숲광주각화',src:'학원',code:'4799'},
+{type:'close',y:2024,m:12,br:'전남광주',mgr:'황성연',name:'숲완도',src:'학원',code:'5635'},
+{type:'close',y:2024,m:3,br:'전남광주',mgr:'황성연',name:'숲진도',src:'학원',code:'5975'},
+{type:'close',y:2023,m:12,br:'전북',mgr:'황성연',name:'숲군산지곡',src:'학원',code:'5988'},
+{type:'close',y:2026,m:3,br:'전북',mgr:'황성연',name:'숲익산영등',src:'학원',code:'3076'},
+{type:'close',y:2023,m:5,br:'전북',mgr:'황성연',name:'숲부안',src:'학원',code:'5837'},
+{type:'close',y:2023,m:6,br:'전북',mgr:'황성연',name:'숲전주송천',src:'학원',code:'2322'},
+{type:'close',y:2024,m:12,br:'전북',mgr:'황성연',name:'숲전주조촌',src:'학원',code:'6666'},
+{type:'close',y:2025,m:12,br:'전북',mgr:'황성연',name:'숲전주혁신장동',src:'학원',code:'5832'},
+{type:'close',y:2023,m:8,br:'전북',mgr:'황성연',name:'숲전주호성',src:'학원',code:'2807'},
+{type:'transfer',y:2023,m:6,br:'충남세종',mgr:'황성연',name:'숲금산',src:'학원',code:'2706'},
+{type:'close',y:2024,m:1,br:'충남세종',mgr:'황성연',name:'숲금산',src:'학원',code:'2706'},
+{type:'transfer',y:2023,m:6,br:'충남세종',mgr:'황성연',name:'숲당진',src:'학원',code:'5730'},
+{type:'close',y:2024,m:11,br:'충남세종',mgr:'황성연',name:'숲당진',src:'학원',code:'5730'},
+{type:'close',y:2024,m:2,br:'충남세종',mgr:'황성연',name:'숲서산동문코아루',src:'학원',code:'5964'},
+{type:'close',y:2026,m:2,br:'충남세종',mgr:'황성연',name:'숲서산삼성',src:'학원',code:'5994'},
+{type:'close',y:2023,m:9,br:'충남천안',mgr:'황성연',name:'숲아산배방',src:'학원',code:'5400'},
+{type:'close',y:2025,m:7,br:'충북청주',mgr:'황성연',name:'숲청주개신',src:'학원',code:'5428'},
+{type:'close',y:2025,m:12,br:'충북청주',mgr:'황성연',name:'숲청주분평',src:'학원',code:'6613'},
+{type:'close',y:2025,m:8,br:'충북청주',mgr:'황성연',name:'숲청주서현',src:'학원',code:'6014'},
+{type:'close',y:2023,m:4,br:'화성평택',mgr:'윤길한',name:'숲평택원평',src:'학원',code:'5690'},
+{type:'close',y:2025,m:2,br:'화성평택',mgr:'윤길한',name:'숲화성동탄',src:'학원',code:'5700'},
+{type:'close',y:2025,m:12,br:'강원',mgr:'장민경',name:'IGSE간성',src:'학원',code:'6426'},
+{type:'close',y:2024,m:12,br:'강원',mgr:'장민경',name:'IGSE양구',src:'학원',code:'6457'},
+{type:'close',y:2025,m:12,br:'강원',mgr:'장민경',name:'IGSE춘천장학',src:'학원',code:'6802'},
+{type:'open',y:2023,m:6,br:'경기남양주',mgr:'장민경',name:'IGSE양주덕현',src:'학원',code:'7600'},
+{type:'close',y:2024,m:4,br:'경기남양주',mgr:'장민경',name:'IGSE양주덕현',src:'학원',code:'7600'},
+{type:'close',y:2023,m:12,br:'경기남양주',mgr:'장민경',name:'IGSE구리수택',src:'학원',code:'4638'},
+{type:'close',y:2025,m:12,br:'경기남양주',mgr:'장민경',name:'IGSE남양주다산한강',src:'학원',code:'7541'},
+{type:'close',y:2023,m:2,br:'경기시흥',mgr:'윤길한',name:'IGSE부천서',src:'학원',code:'5682'},
+{type:'open',y:2024,m:3,br:'경기안양',mgr:'윤길한',name:'IGSE군포송정',src:'학원',code:'7688'},
+{type:'transfer',y:2024,m:6,br:'경기안양',mgr:'윤길한',name:'IGSE군포송정',src:'학원',code:'7688'},
+{type:'close',y:2025,m:12,br:'경기안양',mgr:'윤길한',name:'IGSE군포송정',src:'학원',code:'7688'},
+{type:'transfer',y:2024,m:8,br:'경기안양',mgr:'윤길한',name:'IGSE안산원곡',src:'학원',code:'2956'},
+{type:'close',y:2025,m:12,br:'경기안양',mgr:'윤길한',name:'IGSE안산원곡',src:'학원',code:'2956'},
+{type:'close',y:2025,m:2,br:'경기안양',mgr:'윤길한',name:'IGSE안양양지',src:'학원',code:'5861'},
+{type:'close',y:2024,m:9,br:'경기오산',mgr:'김혜림',name:'IGSE오산세교',src:'학원',code:'5553'},
+{type:'close',y:2023,m:11,br:'경기이천',mgr:'김혜림',name:'IGSE여주가남',src:'학원',code:'6440'},
+{type:'open',y:2023,m:7,br:'경기하남',mgr:'윤길한',name:'IGSE하남신장',src:'학원',code:'7626'},
+{type:'close',y:2024,m:12,br:'경기하남',mgr:'윤길한',name:'IGSE하남신장',src:'학원',code:'7626'},
+{type:'close',y:2023,m:7,br:'경남창원',mgr:'황지애',name:'IGSE거제',src:'학원',code:'5890'},
+{type:'close',y:2025,m:12,br:'경남창원',mgr:'황지애',name:'IGSE마산삼계광려',src:'학원',code:'5385'},
+{type:'close',y:2023,m:11,br:'경남창원',mgr:'황지애',name:'IGSE마산전안',src:'학원',code:'6627'},
+{type:'close',y:2025,m:9,br:'경남창원',mgr:'황지애',name:'IGSE마산호계',src:'학원',code:'5871'},
+{type:'transfer',y:2025,m:2,br:'경남창원',mgr:'황지애',name:'IGSE창원동읍',src:'학원',code:'5225'},
+{type:'close',y:2025,m:12,br:'경남창원',mgr:'황지애',name:'IGSE창원동읍',src:'학원',code:'5225'},
+{type:'close',y:2025,m:11,br:'경남창원',mgr:'황지애',name:'IGSE창원반림',src:'학원',code:'5728'},
+{type:'close',y:2025,m:10,br:'경남창원',mgr:'황지애',name:'IGSE창원사파',src:'학원',code:'5257'},
+{type:'close',y:2025,m:12,br:'대구경북',mgr:'윤길한',name:'IGSE구미문성',src:'학원',code:'6677'},
+{type:'close',y:2023,m:12,br:'대구경북',mgr:'윤길한',name:'IGSE구미산동',src:'학원',code:'6950'},
+{type:'close',y:2023,m:11,br:'대구경북',mgr:'윤길한',name:'IGSE구미신옥계',src:'학원',code:'6586'},
+{type:'close',y:2024,m:4,br:'대구경북',mgr:'윤길한',name:'IGSE구미오태',src:'학원',code:'4635'},
+{type:'open',y:2024,m:9,br:'대구경북',mgr:'윤길한',name:'IGSE칠곡남율',src:'학원',code:'7724'},
+{type:'close',y:2026,m:7,br:'대구경북',mgr:'윤길한',name:'IGSE칠곡남율',src:'학원',code:'7724'},
+{type:'close',y:2024,m:1,br:'대구경북',mgr:'윤길한',name:'IGSE칠곡북삼',src:'학원',code:'6932'},
+{type:'close',y:2023,m:12,br:'대구경북',mgr:'윤길한',name:'IGSE김천신음서부',src:'학원',code:'6366'},
+{type:'close',y:2026,m:7,br:'대구달서',mgr:'윤길한',name:'IGSE대구성당',src:'학원',code:'4576'},
+{type:'close',y:2026,m:3,br:'대구달서',mgr:'윤길한',name:'IGSE대구학정',src:'학원',code:'5354'},
+{type:'close',y:2024,m:12,br:'대구수성',mgr:'윤길한',name:'IGSE대구지산',src:'학원',code:'2210'},
+{type:'close',y:2024,m:3,br:'부산양산',mgr:'황지애',name:'IGSE부산명지',src:'학원',code:'7484'},
+{type:'transfer',y:2023,m:12,br:'부산양산',mgr:'황지애',name:'IGSE부산화명중앙',src:'학원',code:'5453'},
+{type:'close',y:2025,m:12,br:'부산양산',mgr:'황지애',name:'IGSE부산화명중앙',src:'학원',code:'5453'},
+{type:'close',y:2023,m:12,br:'부산양산',mgr:'황지애',name:'IGSE부산낙민',src:'학원',code:'5559'},
+{type:'close',y:2025,m:7,br:'부산양산',mgr:'황지애',name:'IGSE부산동안락',src:'학원',code:'5320'},
+{type:'close',y:2026,m:5,br:'부산해운대',mgr:'황지애',name:'IGSE부산해운마린',src:'학원',code:'5300'},
+{type:'close',y:2025,m:10,br:'부산해운대',mgr:'황지애',name:'IGSE부산해운좌동',src:'학원',code:'5272'},
+{type:'close',y:2025,m:2,br:'부산해운대',mgr:'황지애',name:'IGSE부산영도',src:'학원',code:'5851'},
+{type:'close',y:2025,m:1,br:'부산해운대',mgr:'황지애',name:'IGSE부산당감동',src:'학원',code:'2797'},
+{type:'close',y:2026,m:1,br:'서울강서',mgr:'김혜림',name:'IGSE마포상암',src:'학원',code:'5346'},
+{type:'transfer',y:2024,m:5,br:'서울강서',mgr:'김혜림',name:'IGSE상암상지',src:'학원',code:'7494'},
+{type:'close',y:2026,m:1,br:'서울강서',mgr:'김혜림',name:'IGSE상암상지',src:'학원',code:'7494'},
+{type:'close',y:2025,m:11,br:'서울도봉',mgr:'윤길한',name:'IGSE창동',src:'학원',code:'5579'},
+{type:'close',y:2023,m:12,br:'서울도봉',mgr:'윤길한',name:'IGSE장위',src:'학원',code:'6335'},
+{type:'close',y:2025,m:4,br:'서울서대문',mgr:'윤길한',name:'IGSE불광녹번',src:'학원',code:'5678'},
+{type:'transfer',y:2023,m:9,br:'서울서대문',mgr:'윤길한',name:'IGSE은평녹번',src:'학원',code:'4736'},
+{type:'close',y:2024,m:7,br:'서울서대문',mgr:'윤길한',name:'IGSE은평녹번',src:'학원',code:'4736'},
+{type:'close',y:2023,m:4,br:'서울서초',mgr:'김혜림',name:'IGSE사당',src:'학원',code:'4895'},
+{type:'close',y:2025,m:1,br:'서울송파',mgr:'김혜림',name:'IGSE도곡',src:'학원',code:'5793'},
+{type:'close',y:2025,m:3,br:'서울송파',mgr:'김혜림',name:'IGSE청담2관',src:'학원',code:'6698'},
+{type:'open',y:2023,m:12,br:'서울송파',mgr:'김혜림',name:'IGSE가락',src:'학원',code:'7662'},
+{type:'close',y:2024,m:12,br:'서울송파',mgr:'김혜림',name:'IGSE가락',src:'학원',code:'7662'},
+{type:'open',y:2023,m:8,br:'서울용산',mgr:'윤길한',name:'IGSE용산후암',src:'학원',code:'7629'},
+{type:'close',y:2024,m:4,br:'서울용산',mgr:'윤길한',name:'IGSE용산후암',src:'학원',code:'7629'},
+{type:'close',y:2023,m:6,br:'서울용산',mgr:'윤길한',name:'IGSE종로창신',src:'학원',code:'3818'},
+{type:'close',y:2023,m:2,br:'용인수지',mgr:'황성연',name:'IGSE용인구성',src:'학원',code:'6683'},
+{type:'close',y:2023,m:10,br:'용인수지',mgr:'황성연',name:'IGSE용인동문',src:'학원',code:'5746'},
+{type:'close',y:2026,m:2,br:'용인수지',mgr:'황성연',name:'IGSE용인상현',src:'학원',code:'5817'},
+{type:'transfer',y:2023,m:8,br:'용인수지',mgr:'황성연',name:'IGSE용인성복',src:'학원',code:'6548'},
+{type:'close',y:2024,m:12,br:'용인수지',mgr:'황성연',name:'IGSE용인성복',src:'학원',code:'6548'},
+{type:'close',y:2024,m:12,br:'용인수지',mgr:'황성연',name:'IGSE용인양지',src:'학원',code:'6628'},
+{type:'close',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'IGSE인천원당',src:'학원',code:'6667'},
+{type:'open',y:2024,m:11,br:'인천김포',mgr:'김혜림',name:'IGSE김포사우',src:'학원',code:'7739'},
+{type:'close',y:2026,m:1,br:'인천김포',mgr:'김혜림',name:'IGSE김포사우',src:'학원',code:'7739'},
+{type:'open',y:2023,m:12,br:'인천김포',mgr:'김혜림',name:'IGSE김포풍무',src:'학원',code:'7656'},
+{type:'close',y:2024,m:12,br:'인천김포',mgr:'김혜림',name:'IGSE김포풍무',src:'학원',code:'7656'},
+{type:'close',y:2023,m:2,br:'인천김포',mgr:'김혜림',name:'IGSE학익신동아',src:'학원',code:'6373'},
+{type:'open',y:2025,m:2,br:'인천김포',mgr:'김혜림',name:'IGSE산곡부마',src:'학원',code:'7764'},
+{type:'close',y:2025,m:6,br:'인천김포',mgr:'김혜림',name:'IGSE산곡부마',src:'학원',code:'7764'},
+{type:'close',y:2024,m:12,br:'전남광주',mgr:'황성연',name:'IGSE광주소촌',src:'학원',code:'6382'},
+{type:'transfer',y:2024,m:10,br:'전남광주',mgr:'황성연',name:'IGSE광양마동',src:'학원',code:'5723'},
+{type:'close',y:2026,m:7,br:'전남광주',mgr:'황성연',name:'IGSE광양마동',src:'학원',code:'5723'},
+{type:'open',y:2023,m:11,br:'전남광주',mgr:'황성연',name:'IGSE광양중동',src:'학원',code:'7643'},
+{type:'close',y:2025,m:12,br:'전남광주',mgr:'황성연',name:'IGSE광양중동',src:'학원',code:'7643'},
+{type:'close',y:2024,m:12,br:'전남광주',mgr:'황성연',name:'IGSE나주중앙',src:'학원',code:'7403'},
+{type:'open',y:2025,m:6,br:'전남광주',mgr:'황성연',name:'IGSE장성중앙',src:'학원',code:'7780'},
+{type:'close',y:2025,m:12,br:'전남광주',mgr:'황성연',name:'IGSE장성중앙',src:'학원',code:'7780'},
+{type:'close',y:2024,m:7,br:'전남광주',mgr:'황성연',name:'IGSE화순',src:'학원',code:'6545'},
+{type:'close',y:2024,m:7,br:'전남광주',mgr:'황성연',name:'IGSE광주효덕',src:'학원',code:'7102'},
+{type:'close',y:2025,m:2,br:'전남광주',mgr:'황성연',name:'IGSE광주효천',src:'학원',code:'6490'},
+{type:'close',y:2023,m:1,br:'전남광주',mgr:'황성연',name:'IGSE광주금호',src:'학원',code:'6580'},
+{type:'close',y:2023,m:6,br:'전남광주',mgr:'황성연',name:'IGSE목포서부',src:'학원',code:'5828'},
+{type:'close',y:2023,m:7,br:'전북',mgr:'황성연',name:'IGSE군산수송',src:'학원',code:'3195'},
+{type:'close',y:2024,m:12,br:'전북',mgr:'황성연',name:'IGSE만성양현',src:'학원',code:'6433'},
+{type:'close',y:2025,m:7,br:'전북',mgr:'황성연',name:'IGSE전주평화일성',src:'학원',code:'7203'},
+{type:'close',y:2024,m:7,br:'제주',mgr:'김혜림',name:'IGSE제주함덕',src:'학원',code:'5963'},
+{type:'close',y:2025,m:1,br:'충남세종',mgr:'황성연',name:'IGSE서천중앙',src:'학원',code:'5642'},
+{type:'open',y:2024,m:3,br:'충남세종',mgr:'황성연',name:'IGSE당진탑동',src:'학원',code:'7690'},
+{type:'close',y:2025,m:9,br:'충남세종',mgr:'황성연',name:'IGSE당진탑동',src:'학원',code:'7690'},
+{type:'close',y:2025,m:1,br:'충남천안',mgr:'황성연',name:'IGSE천안청당',src:'학원',code:'5284'},
+{type:'close',y:2025,m:12,br:'충남천안',mgr:'황성연',name:'IGSE천안백석',src:'학원',code:'5919'},
+{type:'close',y:2024,m:1,br:'충남천안',mgr:'황성연',name:'IGSE천안차암',src:'학원',code:'5995'},
+{type:'close',y:2024,m:8,br:'충북청주',mgr:'황성연',name:'IGSE청원오송',src:'학원',code:'5566'},
+{type:'close',y:2023,m:12,br:'화성평택',mgr:'윤길한',name:'IGSE평택용죽',src:'학원',code:'6434'},
+{type:'open',y:2023,m:1,br:'화성평택',mgr:'윤길한',name:'IGSE동탄호수',src:'학원',code:'7544'},
+{type:'close',y:2024,m:7,br:'화성평택',mgr:'윤길한',name:'IGSE동탄호수',src:'학원',code:'7544'},
+{type:'open',y:2023,m:3,br:'화성평택',mgr:'윤길한',name:'IGSE화성봉담',src:'학원',code:'7582'},
+{type:'close',y:2024,m:1,br:'화성평택',mgr:'윤길한',name:'IGSE화성봉담',src:'학원',code:'7582'},
+{type:'transfer',y:2024,m:11,br:'화성평택',mgr:'윤길한',name:'IGSE화성향남',src:'학원',code:'5697'},
+{type:'close',y:2024,m:12,br:'화성평택',mgr:'윤길한',name:'IGSE화성향남',src:'학원',code:'5697'},
+{type:'close',y:2024,m:9,br:'전남순천',mgr:'황지애',name:'숲순천조례동',src:'학원',code:'5336'},
+{type:'close',y:2024,m:4,br:'전남순천',mgr:'황지애',name:'숲순천조례북',src:'학원',code:'5353'},
+{type:'close',y:2024,m:1,br:'전남순천',mgr:'황지애',name:'숲여수무선',src:'학원',code:'7448'},
+{type:'close',y:2023,m:3,br:'전남순천',mgr:'황지애',name:'IGSE여수학동',src:'학원',code:'6441'},
+{type:'close',y:2024,m:2,br:'기타/해지된 본부',mgr:'황지애',name:'숲분당야탑',src:'학원',code:'5292'},
+{type:'close',y:2023,m:8,br:'직영학원',mgr:'황지애',name:'숲양천',src:'학원',code:'5732'},
+{type:'close',y:2024,m:12,br:'기타/해지된 본부',mgr:'황지애',name:'IGSE성남하대원',src:'학원',code:'6589'},
+{type:'close',y:2024,m:2,br:'직영학원',mgr:'황지애',name:'IGSE의정부신곡',src:'학원',code:'7101'},
+{type:'transfer',y:2023,m:9,br:'강원',mgr:'장민경',name:'(H)조양청봉',src:'우영',code:'7453'},
+{type:'open',y:2023,m:12,br:'경기광주',mgr:'윤길한',name:'(H)광명초',src:'우영',code:'7654'},
+{type:'open',y:2025,m:12,br:'경기광주',mgr:'윤길한',name:'(H)두산위브광주',src:'우영',code:'7810'},
+{type:'open',y:2023,m:11,br:'경기오산',mgr:'김혜림',name:'(H)오산호반써밋라포레',src:'우영',code:'7646'},
+{type:'open',y:2023,m:1,br:'경기이천',mgr:'김혜림',name:'(H)이천마장',src:'우영',code:'7553'},
+{type:'open',y:2026,m:5,br:'경기이천',mgr:'김혜림',name:'(H)이천밤나무',src:'우영',code:'7838'},
+{type:'open',y:2026,m:2,br:'경기이천',mgr:'김혜림',name:'(H)이천설봉',src:'우영',code:'7825'},
+{type:'open',y:2023,m:6,br:'경기하남',mgr:'윤길한',name:'(H)미사중앙',src:'우영',code:'7616'},
+{type:'open',y:2023,m:2,br:'경기하남',mgr:'윤길한',name:'(H)위례롯데캐슬',src:'우영',code:'7558'},
+{type:'open',y:2023,m:12,br:'경기하남',mgr:'윤길한',name:'(H)위례포레자이',src:'우영',code:'7666'},
+{type:'open',y:2025,m:8,br:'경기하남',mgr:'윤길한',name:'(H)하남꿈동산신안',src:'우영',code:'7790'},
+{type:'open',y:2026,m:4,br:'용인수지',mgr:'황성연',name:'(H)성남도촌초',src:'우영',code:'7833'},
+{type:'open',y:2024,m:5,br:'용인수지',mgr:'황성연',name:'(H)용인보평서희스타힐스',src:'우영',code:'7702'},
+{type:'open',y:2024,m:3,br:'경기과천',mgr:'윤길한',name:'(H)과천갈현초캠퍼스',src:'우영',code:'7694'},
+{type:'transfer',y:2025,m:12,br:'경기과천',mgr:'윤길한',name:'(H)과천별양',src:'우영',code:'7009'},
+{type:'open',y:2024,m:7,br:'경기과천',mgr:'윤길한',name:'(H)과천자이캠퍼스',src:'우영',code:'7718'},
+{type:'open',y:2025,m:9,br:'경기과천',mgr:'윤길한',name:'(H)광일초',src:'우영',code:'7795'},
+{type:'open',y:2025,m:3,br:'경기과천',mgr:'윤길한',name:'(H)안양어반포레',src:'우영',code:'7766'},
+{type:'transfer',y:2026,m:2,br:'경기시흥',mgr:'윤길한',name:'(H)약대아이파크1차',src:'우영',code:'6999'},
+{type:'open',y:2023,m:3,br:'경기시흥',mgr:'윤길한',name:'(H)시화나래금강',src:'우영',code:'7580'},
+{type:'open',y:2025,m:12,br:'경기시흥',mgr:'윤길한',name:'(H)시흥신천역에피트',src:'우영',code:'7807'},
+{type:'open',y:2024,m:2,br:'경기시흥',mgr:'윤길한',name:'(H)시흥월곶공부방',src:'우영',code:'7679'},
+{type:'open',y:2025,m:2,br:'경기시흥',mgr:'윤길한',name:'(H)시흥정왕서해',src:'우영',code:'7757'},
+{type:'open',y:2025,m:8,br:'경기안양',mgr:'윤길한',name:'(H)해모로이연',src:'우영',code:'7789'},
+{type:'open',y:2026,m:2,br:'경기안양',mgr:'윤길한',name:'(H)안산힐스테이트중앙',src:'우영',code:'7824'},
+{type:'transfer',y:2026,m:6,br:'경기안양',mgr:'윤길한',name:'(H)귀인',src:'우영',code:'7141'},
+{type:'transfer',y:2026,m:5,br:'경기안양',mgr:'윤길한',name:'(H)샛별',src:'우영',code:'6991'},
+{type:'open',y:2023,m:12,br:'경기안양',mgr:'윤길한',name:'(H)안양센텀퍼스트',src:'우영',code:'7661'},
+{type:'open',y:2024,m:8,br:'경기안양',mgr:'윤길한',name:'(H)평촌더샵',src:'우영',code:'7719'},
+{type:'open',y:2024,m:10,br:'경기안양',mgr:'윤길한',name:'(H)평촌센트럴',src:'우영',code:'7735'},
+{type:'open',y:2025,m:6,br:'경기안양',mgr:'윤길한',name:'(H)안양푸르지오더샵',src:'우영',code:'7783'},
+{type:'open',y:2026,m:8,br:'경기안양',mgr:'윤길한',name:'(H)인덕원퍼스비엘',src:'우영',code:'7848'},
+{type:'open',y:2023,m:8,br:'수원장안',mgr:'윤길한',name:'(H)금곡엘지빌리지',src:'우영',code:'7630'},
+{type:'open',y:2024,m:1,br:'수원장안',mgr:'윤길한',name:'(H)호매실모아미래도',src:'우영',code:'7665'},
+{type:'open',y:2023,m:7,br:'수원장안',mgr:'윤길한',name:'(H)광교월드마크',src:'우영',code:'7621'},
+{type:'transfer',y:2023,m:6,br:'수원장안',mgr:'윤길한',name:'(H)팔달교습소',src:'우영',code:'7187'},
+{type:'open',y:2024,m:7,br:'화성평택',mgr:'윤길한',name:'(H)공도초',src:'우영',code:'7713'},
+{type:'open',y:2023,m:3,br:'화성평택',mgr:'윤길한',name:'(H)고덕제일풍경채2차에듀캠퍼스',src:'우영',code:'7575'},
+{type:'open',y:2025,m:5,br:'화성평택',mgr:'윤길한',name:'(H)용이푸르지오1차',src:'우영',code:'7775'},
+{type:'transfer',y:2023,m:1,br:'화성평택',mgr:'윤길한',name:'(H)장안하늘채',src:'우영',code:'7296'},
+{type:'open',y:2025,m:8,br:'화성평택',mgr:'윤길한',name:'(H)동탄베라체',src:'우영',code:'7791'},
+{type:'open',y:2023,m:2,br:'경기고양',mgr:'장민경',name:'(H)덕은지구',src:'우영',code:'7569'},
+{type:'open',y:2024,m:4,br:'경기고양',mgr:'장민경',name:'(H)도래울파크뷰6단지',src:'우영',code:'7696'},
+{type:'open',y:2023,m:6,br:'경기고양',mgr:'장민경',name:'(H)한강호반써밋',src:'우영',code:'7606'},
+{type:'open',y:2024,m:9,br:'경기고양',mgr:'장민경',name:'(H)화정별빛9단지',src:'우영',code:'7725'},
+{type:'open',y:2025,m:12,br:'경기고양',mgr:'장민경',name:'(H)양일위시티',src:'우영',code:'7806'},
+{type:'open',y:2023,m:5,br:'경기고양',mgr:'장민경',name:'(H)파주동패초',src:'우영',code:'7598'},
+{type:'open',y:2025,m:12,br:'경기고양',mgr:'장민경',name:'(H)파주운정벽산블루밍',src:'우영',code:'7815'},
+{type:'open',y:2025,m:12,br:'경기남양주',mgr:'장민경',name:'(H)구리초',src:'우영',code:'7809'},
+{type:'open',y:2025,m:7,br:'경기남양주',mgr:'장민경',name:'(H)다산꿈에그린',src:'우영',code:'7784'},
+{type:'open',y:2023,m:6,br:'경기남양주',mgr:'장민경',name:'(H)다산아이파크',src:'우영',code:'7615'},
+{type:'transfer',y:2025,m:11,br:'경기남양주',mgr:'장민경',name:'(H)다산아이파크',src:'우영',code:'7615'},
+{type:'open',y:2026,m:1,br:'경기남양주',mgr:'장민경',name:'(H)덕소코오롱',src:'우영',code:'7820'},
+{type:'transfer',y:2024,m:5,br:'경기남양주',mgr:'장민경',name:'(H)별내한별영어교습소',src:'우영',code:'7439'},
+{type:'open',y:2025,m:3,br:'경기남양주',mgr:'장민경',name:'(H)옥정옥빛초',src:'우영',code:'7765'},
+{type:'transfer',y:2024,m:3,br:'경남김해',mgr:'황지애',name:'(H)구산이진캐스빌',src:'우영',code:'7428'},
+{type:'open',y:2026,m:1,br:'경남김해',mgr:'황지애',name:'(H)김해계동초',src:'우영',code:'7818'},
+{type:'open',y:2023,m:5,br:'경남김해',mgr:'황지애',name:'(H)김해삼계분성캠퍼스',src:'우영',code:'7603'},
+{type:'open',y:2023,m:1,br:'경남김해',mgr:'황지애',name:'(H)김해삼계캠퍼스',src:'우영',code:'7554'},
+{type:'transfer',y:2026,m:2,br:'경남김해',mgr:'황지애',name:'(H)김해수남',src:'우영',code:'7113'},
+{type:'transfer',y:2024,m:3,br:'경남김해',mgr:'황지애',name:'(H)김해율하',src:'우영',code:'7206'},
+{type:'open',y:2025,m:9,br:'경남김해',mgr:'황지애',name:'(H)김해율하시티프라디움',src:'우영',code:'7796'},
+{type:'open',y:2025,m:6,br:'경남김해',mgr:'황지애',name:'(H)삼계이안',src:'우영',code:'7778'},
+{type:'open',y:2025,m:3,br:'경남김해',mgr:'황지애',name:'(H)스카이시티캠퍼스',src:'우영',code:'7769'},
+{type:'open',y:2024,m:12,br:'경남창원',mgr:'황지애',name:'(H)거제용산초',src:'우영',code:'7745'},
+{type:'open',y:2026,m:1,br:'경남창원',mgr:'황지애',name:'(H)현동중흥',src:'우영',code:'7821'},
+{type:'open',y:2023,m:6,br:'경남창원',mgr:'황지애',name:'(H)창원안민학원',src:'우영',code:'7607'},
+{type:'open',y:2026,m:4,br:'경남창원',mgr:'황지애',name:'(H)팔용벽산',src:'우영',code:'7831'},
+{type:'open',y:2023,m:4,br:'경남창원',mgr:'황지애',name:'(H)호암학원',src:'우영',code:'7594'},
+{type:'open',y:2023,m:2,br:'부산광안',mgr:'황지애',name:'(H)더샵명지',src:'우영',code:'7567'},
+{type:'open',y:2023,m:12,br:'부산광안',mgr:'황지애',name:'(H)명지명일초',src:'우영',code:'7655'},
+{type:'open',y:2023,m:12,br:'부산광안',mgr:'황지애',name:'(H)부산배산',src:'우영',code:'7657'},
+{type:'open',y:2025,m:12,br:'부산양산',mgr:'황지애',name:'(H)양산가양초',src:'우영',code:'7811'},
+{type:'open',y:2024,m:5,br:'부산양산',mgr:'황지애',name:'(H)양산대운초',src:'우영',code:'7706'},
+{type:'open',y:2023,m:3,br:'부산양산',mgr:'황지애',name:'(H)양산사송',src:'우영',code:'7572'},
+{type:'transfer',y:2025,m:7,br:'부산양산',mgr:'황지애',name:'(H)양산양우',src:'우영',code:'7496'},
+{type:'open',y:2024,m:3,br:'부산양산',mgr:'황지애',name:'(H)명문초',src:'우영',code:'7693'},
+{type:'open',y:2023,m:3,br:'부산양산',mgr:'황지애',name:'(H)구서학원',src:'우영',code:'7579'},
+{type:'transfer',y:2026,m:4,br:'부산양산',mgr:'황지애',name:'(H)구서학원',src:'우영',code:'7579'},
+{type:'open',y:2023,m:1,br:'부산양산',mgr:'황지애',name:'(H)부산운산캠퍼스',src:'우영',code:'7545'},
+{type:'open',y:2023,m:6,br:'부산양산',mgr:'황지애',name:'(H)부산연제데시앙',src:'우영',code:'7614'},
+{type:'transfer',y:2024,m:9,br:'부산해운대',mgr:'황지애',name:'(H)부산연포초',src:'우영',code:'7425'},
+{type:'open',y:2023,m:6,br:'부산해운대',mgr:'황지애',name:'(H)부산성남초',src:'우영',code:'7608'},
+{type:'open',y:2023,m:2,br:'부산해운대',mgr:'황지애',name:'(H)동래SK3차',src:'우영',code:'7564'},
+{type:'open',y:2023,m:10,br:'부산해운대',mgr:'황지애',name:'(H)몰운대초',src:'우영',code:'7640'},
+{type:'transfer',y:2026,m:2,br:'부산해운대',mgr:'황지애',name:'(H)몰운대초',src:'우영',code:'7640'},
+{type:'transfer',y:2026,m:8,br:'부산해운대',mgr:'황지애',name:'(H)광남초',src:'우영',code:'7405'},
+{type:'open',y:2023,m:10,br:'부산해운대',mgr:'황지애',name:'(H)호암초',src:'우영',code:'7639'},
+{type:'open',y:2025,m:7,br:'부산해운대',mgr:'황지애',name:'(H)부산송수초',src:'우영',code:'7786'},
+{type:'open',y:2023,m:1,br:'부산해운대',mgr:'황지애',name:'(H)부산해송초',src:'우영',code:'7550'},
+{type:'transfer',y:2026,m:3,br:'부산해운대',mgr:'황지애',name:'(H)해운대초',src:'우영',code:'6807'},
+{type:'open',y:2023,m:4,br:'대구경북',mgr:'윤길한',name:'(H)경산사동',src:'우영',code:'7589'},
+{type:'open',y:2023,m:6,br:'대구경북',mgr:'윤길한',name:'(H)경산하양학원',src:'우영',code:'7609'},
+{type:'open',y:2024,m:2,br:'대구경북',mgr:'윤길한',name:'(H)구미중흥에듀포레',src:'우영',code:'7675'},
+{type:'open',y:2025,m:6,br:'대구경북',mgr:'윤길한',name:'(H)구미형남두산',src:'우영',code:'7781'},
+{type:'transfer',y:2026,m:6,br:'대구경북',mgr:'윤길한',name:'(H)김천덕일한마음',src:'우영',code:'6895'},
+{type:'open',y:2024,m:8,br:'대구경북',mgr:'윤길한',name:'(H)상주냉림',src:'우영',code:'7720'},
+{type:'open',y:2026,m:4,br:'대구경북',mgr:'윤길한',name:'(H)포레나이인',src:'우영',code:'7835'},
+{type:'open',y:2025,m:2,br:'대구경북',mgr:'윤길한',name:'(H)대구해모로이스트',src:'우영',code:'7758'},
+{type:'transfer',y:2024,m:1,br:'대구달서',mgr:'윤길한',name:'(H)대구도원',src:'우영',code:'6824'},
+{type:'open',y:2023,m:12,br:'대구달서',mgr:'윤길한',name:'(H)대구삼정그린코아카운티',src:'우영',code:'7650'},
+{type:'open',y:2025,m:2,br:'대구달서',mgr:'윤길한',name:'(H)대구상인',src:'우영',code:'7761'},
+{type:'open',y:2023,m:1,br:'대구달서',mgr:'윤길한',name:'(H)대구월배학원',src:'우영',code:'7555'},
+{type:'open',y:2023,m:5,br:'대구달서',mgr:'윤길한',name:'(H)월배아이파크',src:'우영',code:'7597'},
+{type:'open',y:2024,m:11,br:'대구달서',mgr:'윤길한',name:'(H)대구구지초',src:'우영',code:'7740'},
+{type:'open',y:2025,m:8,br:'대구달서',mgr:'윤길한',name:'(H)대구비슬',src:'우영',code:'7792'},
+{type:'open',y:2026,m:2,br:'대구달서',mgr:'윤길한',name:'(H)대실청아람2단지',src:'우영',code:'7823'},
+{type:'transfer',y:2026,m:1,br:'대구달서',mgr:'윤길한',name:'(H)칠곡학남초',src:'우영',code:'7531'},
+{type:'open',y:2025,m:12,br:'대구달서',mgr:'윤길한',name:'(H)중리롯데캐슬',src:'우영',code:'7812'},
+{type:'open',y:2024,m:2,br:'대구수성',mgr:'윤길한',name:'(H)중산자이1단지',src:'우영',code:'7682'},
+{type:'open',y:2024,m:4,br:'대구수성',mgr:'윤길한',name:'(H)안지랑로8길',src:'우영',code:'7699'},
+{type:'open',y:2023,m:2,br:'서울강서',mgr:'김혜림',name:'(H)구로항동초',src:'우영',code:'7562'},
+{type:'open',y:2024,m:4,br:'서울강서',mgr:'김혜림',name:'(H)덕의',src:'우영',code:'7697'},
+{type:'open',y:2026,m:1,br:'서울강서',mgr:'김혜림',name:'(H)상암상지',src:'우영',code:'7819'},
+{type:'transfer',y:2023,m:7,br:'서울서초',mgr:'김혜림',name:'(H)봉현초',src:'우영',code:'7605'},
+{type:'open',y:2026,m:7,br:'서울서초',mgr:'김혜림',name:'(H)상도위브',src:'우영',code:'7843'},
+{type:'transfer',y:2023,m:1,br:'서울서초',mgr:'김혜림',name:'(H)반포서래',src:'우영',code:'7523'},
+{type:'open',y:2024,m:3,br:'서울서초',mgr:'김혜림',name:'(H)양재우성',src:'우영',code:'7691'},
+{type:'transfer',y:2024,m:11,br:'서울송파',mgr:'김혜림',name:'(H)강남자곡',src:'우영',code:'7291'},
+{type:'open',y:2024,m:11,br:'서울송파',mgr:'김혜림',name:'(H)개포현대',src:'우영',code:'7738'},
+{type:'open',y:2023,m:3,br:'서울송파',mgr:'김혜림',name:'(H)거여교습소',src:'우영',code:'7573'},
+{type:'transfer',y:2026,m:1,br:'서울송파',mgr:'김혜림',name:'(H)위례별교습소',src:'우영',code:'7158'},
+{type:'open',y:2024,m:7,br:'서울송파',mgr:'김혜림',name:'(H)잠실송전초',src:'우영',code:'7712'},
+{type:'open',y:2023,m:3,br:'서울송파',mgr:'김혜림',name:'(H)헬리오학원',src:'우영',code:'7581'},
+{type:'open',y:2026,m:3,br:'서울강북',mgr:'윤길한',name:'(H)삼각산아이원',src:'우영',code:'7828'},
+{type:'open',y:2025,m:12,br:'서울강북',mgr:'윤길한',name:'(H)상계보람',src:'우영',code:'7808'},
+{type:'open',y:2026,m:1,br:'서울강북',mgr:'윤길한',name:'(H)선곡초',src:'우영',code:'7817'},
+{type:'open',y:2024,m:9,br:'서울강북',mgr:'윤길한',name:'(H)중계8단지',src:'우영',code:'7723'},
+{type:'transfer',y:2025,m:10,br:'서울강북',mgr:'윤길한',name:'(H)중평',src:'우영',code:'7259'},
+{type:'open',y:2024,m:6,br:'서울강북',mgr:'윤길한',name:'(H)이문래미안',src:'우영',code:'7707'},
+{type:'open',y:2023,m:6,br:'서울강북',mgr:'윤길한',name:'(H)길음초공부방',src:'우영',code:'7610'},
+{type:'open',y:2023,m:5,br:'서울강북',mgr:'윤길한',name:'(H)동소문',src:'우영',code:'7596'},
+{type:'open',y:2026,m:3,br:'서울도봉',mgr:'윤길한',name:'(H)백운초',src:'우영',code:'7829'},
+{type:'open',y:2024,m:7,br:'서울도봉',mgr:'윤길한',name:'(H)쌍문한양6차',src:'우영',code:'7717'},
+{type:'transfer',y:2024,m:6,br:'서울도봉',mgr:'윤길한',name:'(H)크레시티영어',src:'우영',code:'7269'},
+{type:'open',y:2023,m:6,br:'서울도봉',mgr:'윤길한',name:'(H)고려학원',src:'우영',code:'7619'},
+{type:'open',y:2025,m:2,br:'서울도봉',mgr:'윤길한',name:'(H)길음동부센트레빌',src:'우영',code:'7763'},
+{type:'open',y:2025,m:2,br:'서울서대문',mgr:'윤길한',name:'(H)백련산sk뷰아이파크',src:'우영',code:'7756'},
+{type:'open',y:2025,m:2,br:'서울서대문',mgr:'윤길한',name:'(H)역촌초',src:'우영',code:'7760'},
+{type:'open',y:2026,m:5,br:'서울서대문',mgr:'윤길한',name:'(H)은평초',src:'우영',code:'7840'},
+{type:'open',y:2026,m:3,br:'서울용산',mgr:'윤길한',name:'(H)중구충무초',src:'우영',code:'7830'},
+{type:'open',y:2023,m:8,br:'서울중랑',mgr:'윤길한',name:'(H)상봉두드림',src:'우영',code:'7634'},
+{type:'open',y:2026,m:4,br:'인천김포',mgr:'김혜림',name:'(H)고촌캐슬앤파밀리에',src:'우영',code:'7837'},
+{type:'open',y:2023,m:5,br:'인천김포',mgr:'김혜림',name:'(H)대방엘리움',src:'우영',code:'7599'},
+{type:'open',y:2023,m:5,br:'인천김포',mgr:'김혜림',name:'(H)은솔교습소',src:'우영',code:'7601'},
+{type:'open',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'(H)부현초',src:'우영',code:'7814'},
+{type:'open',y:2024,m:11,br:'인천김포',mgr:'김혜림',name:'(H)주안더월드스테이트',src:'우영',code:'7743'},
+{type:'transfer',y:2025,m:1,br:'인천김포',mgr:'김혜림',name:'(H)주안더월드스테이트',src:'우영',code:'7743'},
+{type:'open',y:2023,m:4,br:'인천김포',mgr:'김혜림',name:'(H)학산초캠퍼스',src:'우영',code:'7592'},
+{type:'open',y:2024,m:1,br:'인천김포',mgr:'김혜림',name:'(H)검단한별초',src:'우영',code:'7669'},
+{type:'open',y:2025,m:3,br:'인천김포',mgr:'김혜림',name:'(H)경연초',src:'우영',code:'7767'},
+{type:'open',y:2026,m:4,br:'인천김포',mgr:'김혜림',name:'(H)신검단우미린클래스원',src:'우영',code:'7834'},
+{type:'open',y:2025,m:10,br:'인천김포',mgr:'김혜림',name:'(H)신검단풍경채2차',src:'우영',code:'7802'},
+{type:'open',y:2026,m:8,br:'인천김포',mgr:'김혜림',name:'(H)송도송원초',src:'우영',code:'7847'},
+{type:'open',y:2025,m:1,br:'인천김포',mgr:'김혜림',name:'(H)송도자이더스타',src:'우영',code:'7751'},
+{type:'open',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'(H)송도퍼스트파크',src:'우영',code:'7813'},
+{type:'open',y:2026,m:3,br:'인천김포',mgr:'김혜림',name:'(H)송도호반써밋',src:'우영',code:'7826'},
+{type:'open',y:2026,m:1,br:'인천김포',mgr:'김혜림',name:'(H)은송초',src:'우영',code:'7816'},
+{type:'open',y:2023,m:12,br:'전남광주',mgr:'황성연',name:'(H)일곡청솔2차',src:'우영',code:'7651'},
+{type:'open',y:2024,m:11,br:'전남광주',mgr:'황성연',name:'(H)금호남양파크',src:'우영',code:'7741'},
+{type:'open',y:2025,m:9,br:'전남광주',mgr:'황성연',name:'(H)남악오룡1차',src:'우영',code:'7797'},
+{type:'transfer',y:2023,m:1,br:'전북',mgr:'황성연',name:'(H)군산대명',src:'우영',code:'6791'},
+{type:'open',y:2024,m:7,br:'전북',mgr:'황성연',name:'(H)부송제일',src:'우영',code:'7714'},
+{type:'open',y:2024,m:12,br:'전북',mgr:'황성연',name:'(H)전주화산초',src:'우영',code:'7746'},
+{type:'transfer',y:2025,m:6,br:'전북',mgr:'황성연',name:'(H)평화동신',src:'우영',code:'6913'},
+{type:'open',y:2025,m:9,br:'제주',mgr:'김혜림',name:'(H)삼성초',src:'우영',code:'7794'},
+{type:'open',y:2023,m:8,br:'제주',mgr:'김혜림',name:'(H)하귀Choi\'sEnglish',src:'우영',code:'7628'},
+{type:'open',y:2025,m:9,br:'대전',mgr:'황성연',name:'(H)대전신흥초',src:'우영',code:'7799'},
+{type:'open',y:2023,m:3,br:'대전',mgr:'황성연',name:'(H)내동맑은아침',src:'우영',code:'7574'},
+{type:'open',y:2026,m:8,br:'대전',mgr:'황성연',name:'(H)대전목운',src:'우영',code:'7849'},
+{type:'open',y:2023,m:11,br:'대전',mgr:'황성연',name:'(H)도안아이파크',src:'우영',code:'7645'},
+{type:'open',y:2026,m:7,br:'대전',mgr:'황성연',name:'(H)유성열매8단지',src:'우영',code:'7846'},
+{type:'open',y:2026,m:5,br:'대전',mgr:'황성연',name:'(H)유성용산호반써밋',src:'우영',code:'7839'},
+{type:'open',y:2023,m:12,br:'충남세종',mgr:'황성연',name:'(H)세종나성풍경채',src:'우영',code:'7660'},
+{type:'open',y:2023,m:5,br:'충남세종',mgr:'황성연',name:'(H)세종어진더샵',src:'우영',code:'7595'},
+{type:'open',y:2024,m:6,br:'충남세종',mgr:'황성연',name:'(H)세종해밀마스터힐스',src:'우영',code:'7710'},
+{type:'open',y:2026,m:4,br:'충남세종',mgr:'황성연',name:'(H)조치원세종e편한',src:'우영',code:'7836'},
+{type:'open',y:2025,m:1,br:'충남세종',mgr:'황성연',name:'(H)서천중앙',src:'우영',code:'7752'},
+{type:'open',y:2023,m:3,br:'충남세종',mgr:'황성연',name:'(H)내포학재대방',src:'우영',code:'7585'},
+{type:'transfer',y:2023,m:9,br:'충남세종',mgr:'황성연',name:'(H)내포중흥',src:'우영',code:'7108'},
+{type:'open',y:2023,m:3,br:'충남세종',mgr:'황성연',name:'(H)홍성홍동공부방',src:'우영',code:'7571'},
+{type:'transfer',y:2023,m:11,br:'충남천안',mgr:'황성연',name:'(H)배방자이1차',src:'우영',code:'7104'},
+{type:'open',y:2024,m:1,br:'충남천안',mgr:'황성연',name:'(H)아산음봉더샾레이크3차',src:'우영',code:'7667'},
+{type:'open',y:2023,m:11,br:'충남천안',mgr:'황성연',name:'(H)아산음봉해링턴',src:'우영',code:'7649'},
+{type:'open',y:2024,m:1,br:'충남천안',mgr:'황성연',name:'(H)아산탕정호반써밋2차',src:'우영',code:'7671'},
+{type:'transfer',y:2024,m:5,br:'충남천안',mgr:'황성연',name:'(H)아산탕정호반써밋2차',src:'우영',code:'7671'},
+{type:'open',y:2023,m:11,br:'충남천안',mgr:'황성연',name:'(H)청당서희스타힐스',src:'우영',code:'7644'},
+{type:'transfer',y:2024,m:10,br:'충남천안',mgr:'황성연',name:'(H)천안백석그린빌',src:'우영',code:'7344'},
+{type:'open',y:2023,m:2,br:'충남천안',mgr:'황성연',name:'(H)천안신불당리더힐스',src:'우영',code:'7559'},
+{type:'open',y:2023,m:2,br:'충북청주',mgr:'황성연',name:'(H)청주오창모아',src:'우영',code:'7560'},
+{type:'open',y:2024,m:8,br:'충북청주',mgr:'황성연',name:'(H)옥산자이',src:'우영',code:'7721'},
+{type:'transfer',y:2025,m:12,br:'충북청주',mgr:'황성연',name:'(H)옥산자이',src:'우영',code:'7721'},
+{type:'transfer',y:2025,m:12,br:'충북청주',mgr:'황성연',name:'(H)청주테크노',src:'우영',code:'7176'},
+{type:'open',y:2025,m:1,br:'충북충주',mgr:'황성연',name:'(H)서충주신우희가로',src:'우영',code:'7748'},
+{type:'open',y:2025,m:4,br:'수원영통',mgr:'윤길한',name:'(H)영통글빛',src:'우영',code:'7772'},
+{type:'open',y:2024,m:2,br:'우영직영본부',mgr:'황지애',name:'(H)의정부센트럴자이',src:'우영',code:'7683'},
+{type:'open',y:2025,m:2,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산용연초',src:'우영',code:'7753'},
+{type:'open',y:2023,m:2,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산동대초',src:'우영',code:'7563'},
+{type:'transfer',y:2024,m:3,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산청량',src:'우영',code:'7459'},
+{type:'open',y:2025,m:9,br:'울산(직영우본)',mgr:'황지애',name:'(H)복산초',src:'우영',code:'7798'},
+{type:'open',y:2024,m:5,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산태화초',src:'우영',code:'7704'},
+{type:'open',y:2025,m:4,br:'서울양천',mgr:'김혜림',name:'(H)대방초',src:'우영',code:'7773'},
+{type:'close',y:2025,m:4,br:'강원',mgr:'장민경',name:'(H)교동택지',src:'우영',code:'6838'},
+{type:'close',y:2025,m:12,br:'강원',mgr:'장민경',name:'(H)무실1호',src:'우영',code:'7272'},
+{type:'close',y:2026,m:2,br:'강원',mgr:'장민경',name:'(H)원주롯데캐슬',src:'우영',code:'7355'},
+{type:'open',y:2024,m:10,br:'강원',mgr:'장민경',name:'(H)이지더원',src:'우영',code:'7731'},
+{type:'close',y:2024,m:11,br:'강원',mgr:'장민경',name:'(H)이지더원',src:'우영',code:'7731'},
+{type:'close',y:2024,m:12,br:'강원',mgr:'장민경',name:'(H)춘천거두',src:'우영',code:'7145'},
+{type:'close',y:2025,m:4,br:'강원',mgr:'장민경',name:'(H)춘천부안',src:'우영',code:'6872'},
+{type:'open',y:2023,m:3,br:'강원',mgr:'장민경',name:'(H)춘천소양',src:'우영',code:'7587'},
+{type:'close',y:2024,m:8,br:'강원',mgr:'장민경',name:'(H)춘천소양',src:'우영',code:'7587'},
+{type:'close',y:2023,m:6,br:'강원',mgr:'장민경',name:'(H)춘천우두롯데인벤스',src:'우영',code:'6892'},
+{type:'close',y:2024,m:8,br:'강원',mgr:'장민경',name:'(H)퇴계금호',src:'우영',code:'7097'},
+{type:'close',y:2026,m:2,br:'강원',mgr:'장민경',name:'(H)퇴계남부',src:'우영',code:'7345'},
+{type:'open',y:2024,m:1,br:'경기광주',mgr:'윤길한',name:'(H)광주도곡캠퍼스',src:'우영',code:'7664'},
+{type:'transfer',y:2025,m:2,br:'경기광주',mgr:'윤길한',name:'(H)광주도곡캠퍼스',src:'우영',code:'7664'},
+{type:'close',y:2025,m:7,br:'경기광주',mgr:'윤길한',name:'(H)광주도곡캠퍼스',src:'우영',code:'7664'},
+{type:'close',y:2024,m:12,br:'경기광주',mgr:'윤길한',name:'(H)삼리',src:'우영',code:'6979'},
+{type:'open',y:2023,m:2,br:'경기광주',mgr:'윤길한',name:'(H)태평오거리',src:'우영',code:'7568'},
+{type:'close',y:2024,m:12,br:'경기광주',mgr:'윤길한',name:'(H)태평오거리',src:'우영',code:'7568'},
+{type:'open',y:2023,m:2,br:'경기이천',mgr:'김혜림',name:'(H)서종교습소',src:'우영',code:'7557'},
+{type:'transfer',y:2024,m:5,br:'경기이천',mgr:'김혜림',name:'(H)서종교습소',src:'우영',code:'7557'},
+{type:'close',y:2026,m:4,br:'경기이천',mgr:'김혜림',name:'(H)서종교습소',src:'우영',code:'7557'},
+{type:'close',y:2026,m:7,br:'경기하남',mgr:'윤길한',name:'(H)감일스윗시티2단지',src:'우영',code:'6720'},
+{type:'close',y:2026,m:6,br:'경기하남',mgr:'윤길한',name:'(H)감일중앙',src:'우영',code:'6755'},
+{type:'open',y:2024,m:10,br:'용인수지',mgr:'황성연',name:'(H)신흥역하늘채랜더스원',src:'우영',code:'7732'},
+{type:'close',y:2026,m:7,br:'용인수지',mgr:'황성연',name:'(H)신흥역하늘채랜더스원',src:'우영',code:'7732'},
+{type:'close',y:2024,m:12,br:'용인수지',mgr:'황성연',name:'(H)교동',src:'우영',code:'7148'},
+{type:'close',y:2024,m:12,br:'용인수지',mgr:'황성연',name:'(H)대주피오레',src:'우영',code:'7054'},
+{type:'transfer',y:2023,m:9,br:'용인수지',mgr:'황성연',name:'(H)동백동일',src:'우영',code:'7482'},
+{type:'close',y:2025,m:4,br:'용인수지',mgr:'황성연',name:'(H)동백동일',src:'우영',code:'7482'},
+{type:'close',y:2023,m:7,br:'용인수지',mgr:'황성연',name:'(H)용인신일',src:'우영',code:'7376'},
+{type:'close',y:2024,m:12,br:'용인수지',mgr:'황성연',name:'(H)서원심곡',src:'우영',code:'7387'},
+{type:'close',y:2024,m:11,br:'용인수지',mgr:'황성연',name:'(H)수지래미안5차',src:'우영',code:'7409'},
+{type:'close',y:2024,m:9,br:'용인수지',mgr:'황성연',name:'(H)역북보성',src:'우영',code:'7354'},
+{type:'open',y:2025,m:5,br:'용인수지',mgr:'황성연',name:'(H)용인양지경남아너스빌',src:'우영',code:'7776'},
+{type:'close',y:2025,m:12,br:'용인수지',mgr:'황성연',name:'(H)용인양지경남아너스빌',src:'우영',code:'7776'},
+{type:'open',y:2023,m:4,br:'용인수지',mgr:'황성연',name:'(H)용인한숲써니공부방',src:'우영',code:'7591'},
+{type:'close',y:2025,m:2,br:'용인수지',mgr:'황성연',name:'(H)용인한숲써니공부방',src:'우영',code:'7591'},
+{type:'close',y:2024,m:12,br:'경기과천',mgr:'윤길한',name:'(H)군포송안초',src:'우영',code:'6997'},
+{type:'transfer',y:2023,m:12,br:'경기과천',mgr:'윤길한',name:'(H)금강펜테리움1차',src:'우영',code:'7449'},
+{type:'close',y:2024,m:3,br:'경기과천',mgr:'윤길한',name:'(H)금강펜테리움1차',src:'우영',code:'7449'},
+{type:'close',y:2024,m:12,br:'경기과천',mgr:'윤길한',name:'(H)산본금강1차영어교습소',src:'우영',code:'7481'},
+{type:'close',y:2024,m:12,br:'경기과천',mgr:'윤길한',name:'(H)안산초지',src:'우영',code:'7490'},
+{type:'open',y:2024,m:2,br:'경기과천',mgr:'윤길한',name:'(H)안산성포캠퍼스',src:'우영',code:'7677'},
+{type:'close',y:2024,m:12,br:'경기과천',mgr:'윤길한',name:'(H)안산성포캠퍼스',src:'우영',code:'7677'},
+{type:'close',y:2024,m:12,br:'경기과천',mgr:'윤길한',name:'(H)평촌어바인퍼스트1호',src:'우영',code:'7383'},
+{type:'close',y:2023,m:7,br:'경기시흥',mgr:'윤길한',name:'(H)부천옥길',src:'우영',code:'7191'},
+{type:'open',y:2023,m:3,br:'경기시흥',mgr:'윤길한',name:'(H)부천고강공부방',src:'우영',code:'7584'},
+{type:'close',y:2024,m:8,br:'경기시흥',mgr:'윤길한',name:'(H)부천고강공부방',src:'우영',code:'7584'},
+{type:'open',y:2023,m:11,br:'경기시흥',mgr:'윤길한',name:'(H)범박힐스테이트3교습소',src:'우영',code:'7648'},
+{type:'close',y:2024,m:7,br:'경기시흥',mgr:'윤길한',name:'(H)범박힐스테이트3교습소',src:'우영',code:'7648'},
+{type:'close',y:2025,m:12,br:'경기시흥',mgr:'윤길한',name:'(H)부천도당',src:'우영',code:'6774'},
+{type:'close',y:2023,m:12,br:'경기시흥',mgr:'윤길한',name:'(H)부천상동다정한캠퍼스',src:'우영',code:'7371'},
+{type:'open',y:2024,m:2,br:'경기시흥',mgr:'윤길한',name:'(H)배곧이지더원2',src:'우영',code:'7685'},
+{type:'close',y:2024,m:12,br:'경기시흥',mgr:'윤길한',name:'(H)배곧이지더원2',src:'우영',code:'7685'},
+{type:'close',y:2025,m:1,br:'경기시흥',mgr:'윤길한',name:'(H)배곧한라3차캠퍼스',src:'우영',code:'7534'},
+{type:'open',y:2025,m:2,br:'경기시흥',mgr:'윤길한',name:'(H)배곧한라비발디3차',src:'우영',code:'7754'},
+{type:'close',y:2026,m:1,br:'경기시흥',mgr:'윤길한',name:'(H)배곧한라비발디3차',src:'우영',code:'7754'},
+{type:'close',y:2026,m:6,br:'경기시흥',mgr:'윤길한',name:'(H)시흥능곡',src:'우영',code:'6900'},
+{type:'close',y:2025,m:11,br:'경기시흥',mgr:'윤길한',name:'(H)시흥산현',src:'우영',code:'7295'},
+{type:'close',y:2025,m:4,br:'경기시흥',mgr:'윤길한',name:'(H)시흥장현미래도',src:'우영',code:'6902'},
+{type:'close',y:2023,m:12,br:'경기시흥',mgr:'윤길한',name:'(H)장현한여울',src:'우영',code:'7450'},
+{type:'close',y:2023,m:10,br:'경기안양',mgr:'윤길한',name:'(H)광명하안교습소',src:'우영',code:'7309'},
+{type:'close',y:2023,m:10,br:'경기안양',mgr:'윤길한',name:'(H)해모로이연',src:'우영',code:'7181'},
+{type:'close',y:2025,m:4,br:'경기안양',mgr:'윤길한',name:'(H)군포당정',src:'우영',code:'7028'},
+{type:'close',y:2023,m:12,br:'경기안양',mgr:'윤길한',name:'(H)수암드림',src:'우영',code:'7379'},
+{type:'open',y:2023,m:11,br:'경기안양',mgr:'윤길한',name:'(H)안산해솔',src:'우영',code:'7642'},
+{type:'close',y:2026,m:7,br:'경기안양',mgr:'윤길한',name:'(H)안산해솔',src:'우영',code:'7642'},
+{type:'close',y:2023,m:12,br:'경기안양',mgr:'윤길한',name:'(H)공작공부방',src:'우영',code:'6956'},
+{type:'close',y:2023,m:12,br:'경기안양',mgr:'윤길한',name:'(H)동편마을',src:'우영',code:'6994'},
+{type:'close',y:2025,m:11,br:'경기안양',mgr:'윤길한',name:'(H)부림영어',src:'우영',code:'6754'},
+{type:'open',y:2023,m:11,br:'경기안양',mgr:'윤길한',name:'(H)안양샘모루공부방',src:'우영',code:'7647'},
+{type:'close',y:2024,m:9,br:'경기안양',mgr:'윤길한',name:'(H)안양샘모루공부방',src:'우영',code:'7647'},
+{type:'close',y:2025,m:3,br:'경기안양',mgr:'윤길한',name:'(H)안양중앙',src:'우영',code:'6765'},
+{type:'close',y:2025,m:7,br:'경기안양',mgr:'윤길한',name:'(H)평촌엘프라우드',src:'우영',code:'7040'},
+{type:'open',y:2023,m:8,br:'경기안양',mgr:'윤길한',name:'(H)씨엘포레자이',src:'우영',code:'7631'},
+{type:'transfer',y:2023,m:11,br:'경기안양',mgr:'윤길한',name:'(H)씨엘포레자이',src:'우영',code:'7631'},
+{type:'close',y:2025,m:12,br:'경기안양',mgr:'윤길한',name:'(H)씨엘포레자이',src:'우영',code:'7631'},
+{type:'open',y:2023,m:2,br:'경기안양',mgr:'윤길한',name:'(H)안양진흥공부방',src:'우영',code:'7565'},
+{type:'close',y:2023,m:10,br:'경기안양',mgr:'윤길한',name:'(H)안양진흥공부방',src:'우영',code:'7565'},
+{type:'open',y:2023,m:2,br:'수원장안',mgr:'윤길한',name:'(H)오목천지엔에스',src:'우영',code:'7556'},
+{type:'close',y:2024,m:12,br:'수원장안',mgr:'윤길한',name:'(H)오목천지엔에스',src:'우영',code:'7556'},
+{type:'close',y:2024,m:9,br:'수원장안',mgr:'윤길한',name:'(H)탑동초',src:'우영',code:'7392'},
+{type:'close',y:2023,m:4,br:'수원장안',mgr:'윤길한',name:'(H)수원효천',src:'우영',code:'6926'},
+{type:'close',y:2024,m:6,br:'수원장안',mgr:'윤길한',name:'(H)매교학원',src:'우영',code:'7475'},
+{type:'close',y:2023,m:12,br:'화성평택',mgr:'윤길한',name:'(H)금산',src:'우영',code:'7519'},
+{type:'open',y:2024,m:4,br:'화성평택',mgr:'윤길한',name:'(H)안성당왕금호어울림',src:'우영',code:'7700'},
+{type:'close',y:2024,m:12,br:'화성평택',mgr:'윤길한',name:'(H)안성당왕금호어울림',src:'우영',code:'7700'},
+{type:'close',y:2023,m:7,br:'화성평택',mgr:'윤길한',name:'(H)부영1차점',src:'우영',code:'7283'},
+{type:'open',y:2023,m:5,br:'화성평택',mgr:'윤길한',name:'(H)안중동신',src:'우영',code:'7602'},
+{type:'close',y:2024,m:4,br:'화성평택',mgr:'윤길한',name:'(H)안중동신',src:'우영',code:'7602'},
+{type:'close',y:2026,m:1,br:'화성평택',mgr:'윤길한',name:'(H)용이e편한세상',src:'우영',code:'7508'},
+{type:'close',y:2023,m:12,br:'화성평택',mgr:'윤길한',name:'(H)청북부영캠퍼스',src:'우영',code:'7488'},
+{type:'close',y:2025,m:12,br:'화성평택',mgr:'윤길한',name:'(H)평택동문새빛',src:'우영',code:'7543'},
+{type:'open',y:2023,m:1,br:'화성평택',mgr:'윤길한',name:'(H)평택청북대우이안',src:'우영',code:'7551'},
+{type:'close',y:2023,m:10,br:'화성평택',mgr:'윤길한',name:'(H)평택청북대우이안',src:'우영',code:'7551'},
+{type:'close',y:2025,m:3,br:'화성평택',mgr:'윤길한',name:'(H)기산',src:'우영',code:'7316'},
+{type:'open',y:2023,m:1,br:'화성평택',mgr:'윤길한',name:'(H)기안우방아이유쉘',src:'우영',code:'7552'},
+{type:'close',y:2024,m:12,br:'화성평택',mgr:'윤길한',name:'(H)기안우방아이유쉘',src:'우영',code:'7552'},
+{type:'open',y:2025,m:2,br:'화성평택',mgr:'윤길한',name:'(H)더모스트서연',src:'우영',code:'7755'},
+{type:'close',y:2025,m:12,br:'화성평택',mgr:'윤길한',name:'(H)더모스트서연',src:'우영',code:'7755'},
+{type:'close',y:2024,m:10,br:'화성평택',mgr:'윤길한',name:'(H)동탄대원칸타빌',src:'우영',code:'7315'},
+{type:'close',y:2023,m:5,br:'화성평택',mgr:'윤길한',name:'(H)동탄반도10차',src:'우영',code:'6923'},
+{type:'close',y:2025,m:12,br:'화성평택',mgr:'윤길한',name:'(H)동탄역모아미래도',src:'우영',code:'7495'},
+{type:'close',y:2024,m:11,br:'화성평택',mgr:'윤길한',name:'(H)동탄영천',src:'우영',code:'7414'},
+{type:'open',y:2025,m:6,br:'화성평택',mgr:'윤길한',name:'(H)동탄한빛삼부르네상스',src:'우영',code:'7779'},
+{type:'close',y:2025,m:12,br:'화성평택',mgr:'윤길한',name:'(H)동탄한빛삼부르네상스',src:'우영',code:'7779'},
+{type:'close',y:2024,m:6,br:'화성평택',mgr:'윤길한',name:'(H)동탄힐스테이트',src:'우영',code:'7039'},
+{type:'open',y:2023,m:4,br:'화성평택',mgr:'윤길한',name:'(H)반정글빛',src:'우영',code:'7593'},
+{type:'close',y:2025,m:4,br:'화성평택',mgr:'윤길한',name:'(H)반정글빛',src:'우영',code:'7593'},
+{type:'transfer',y:2023,m:6,br:'화성평택',mgr:'윤길한',name:'(H)오색마을화원',src:'우영',code:'7373'},
+{type:'close',y:2023,m:12,br:'화성평택',mgr:'윤길한',name:'(H)오색마을화원',src:'우영',code:'7373'},
+{type:'close',y:2025,m:6,br:'화성평택',mgr:'윤길한',name:'(H)와우해밀',src:'우영',code:'7160'},
+{type:'close',y:2023,m:12,br:'화성평택',mgr:'윤길한',name:'(H)호반2차',src:'우영',code:'7521'},
+{type:'close',y:2024,m:3,br:'화성평택',mgr:'윤길한',name:'(H)SK뷰파크',src:'우영',code:'6957'},
+{type:'close',y:2025,m:7,br:'경기고양',mgr:'장민경',name:'(H)소만초',src:'우영',code:'6805'},
+{type:'close',y:2025,m:11,br:'경기고양',mgr:'장민경',name:'(H)구_양일위시티',src:'우영',code:'7089'},
+{type:'close',y:2026,m:6,br:'경기고양',mgr:'장민경',name:'(H)저동초',src:'우영',code:'7063'},
+{type:'close',y:2025,m:11,br:'경기고양',mgr:'장민경',name:'(H)정발학원',src:'우영',code:'7144'},
+{type:'close',y:2024,m:5,br:'경기고양',mgr:'장민경',name:'(H)오마초',src:'우영',code:'7314'},
+{type:'close',y:2024,m:3,br:'경기고양',mgr:'장민경',name:'(H)도농부영2단지',src:'우영',code:'7024'},
+{type:'close',y:2024,m:11,br:'경기고양',mgr:'장민경',name:'(H)동양엔파트',src:'우영',code:'6945'},
+{type:'close',y:2023,m:10,br:'경기고양',mgr:'장민경',name:'(H)송내주공',src:'우영',code:'7342'},
+{type:'close',y:2024,m:4,br:'경기고양',mgr:'장민경',name:'(H)덕계신우',src:'우영',code:'6930'},
+{type:'close',y:2025,m:4,br:'경기고양',mgr:'장민경',name:'(H)삼숭자이',src:'우영',code:'7485'},
+{type:'close',y:2024,m:11,br:'경기고양',mgr:'장민경',name:'(H)양주율정',src:'우영',code:'7282'},
+{type:'close',y:2025,m:4,br:'경기고양',mgr:'장민경',name:'(H)청담',src:'우영',code:'7147'},
+{type:'open',y:2023,m:8,br:'경기고양',mgr:'장민경',name:'(H)하늘빛마을',src:'우영',code:'7633'},
+{type:'close',y:2025,m:5,br:'경기고양',mgr:'장민경',name:'(H)하늘빛마을',src:'우영',code:'7633'},
+{type:'close',y:2023,m:11,br:'경기고양',mgr:'장민경',name:'(H)적성',src:'우영',code:'7413'},
+{type:'close',y:2023,m:11,br:'경기고양',mgr:'장민경',name:'(H)파주운정해솔마을',src:'우영',code:'7422'},
+{type:'open',y:2025,m:3,br:'경기고양',mgr:'장민경',name:'(H)파주운정해오름마을',src:'우영',code:'7768'},
+{type:'close',y:2025,m:8,br:'경기고양',mgr:'장민경',name:'(H)파주운정해오름마을',src:'우영',code:'7768'},
+{type:'close',y:2023,m:6,br:'경기고양',mgr:'장민경',name:'(H)파주지에이',src:'우영',code:'7214'},
+{type:'open',y:2024,m:2,br:'경기남양주',mgr:'장민경',name:'(H)구리구지초',src:'우영',code:'7684'},
+{type:'close',y:2025,m:12,br:'경기남양주',mgr:'장민경',name:'(H)구리구지초',src:'우영',code:'7684'},
+{type:'open',y:2023,m:1,br:'경기남양주',mgr:'장민경',name:'(H)별내학원',src:'우영',code:'7548'},
+{type:'close',y:2025,m:6,br:'경기남양주',mgr:'장민경',name:'(H)별내학원',src:'우영',code:'7548'},
+{type:'close',y:2023,m:4,br:'경기남양주',mgr:'장민경',name:'(H)창현경향',src:'우영',code:'6837'},
+{type:'close',y:2024,m:12,br:'경기남양주',mgr:'장민경',name:'(H)호평금강',src:'우영',code:'6691'},
+{type:'close',y:2026,m:5,br:'경남김해',mgr:'황지애',name:'(H)관동캠퍼스',src:'우영',code:'7480'},
+{type:'close',y:2024,m:12,br:'경남김해',mgr:'황지애',name:'(H)김해어방',src:'우영',code:'6897'},
+{type:'close',y:2023,m:6,br:'경남김해',mgr:'황지애',name:'(H)김해율하자이힐스테이트',src:'우영',code:'6893'},
+{type:'close',y:2023,m:1,br:'경남김해',mgr:'황지애',name:'(H)김해팔판신안',src:'우영',code:'6883'},
+{type:'open',y:2023,m:1,br:'경남김해',mgr:'황지애',name:'(H)김해팔판이그린',src:'우영',code:'7547'},
+{type:'close',y:2024,m:12,br:'경남김해',mgr:'황지애',name:'(H)김해팔판이그린',src:'우영',code:'7547'},
+{type:'close',y:2024,m:12,br:'경남김해',mgr:'황지애',name:'(H)삼계부영2차',src:'우영',code:'6990'},
+{type:'close',y:2023,m:8,br:'경남김해',mgr:'황지애',name:'(H)남해캠퍼스',src:'우영',code:'7341'},
+{type:'close',y:2024,m:4,br:'경남김해',mgr:'황지애',name:'(H)미리벌',src:'우영',code:'7302'},
+{type:'close',y:2024,m:10,br:'경남김해',mgr:'황지애',name:'(H)벌용',src:'우영',code:'7382'},
+{type:'close',y:2025,m:1,br:'경남김해',mgr:'황지애',name:'(H)가좌캠퍼스',src:'우영',code:'7156'},
+{type:'close',y:2024,m:7,br:'경남김해',mgr:'황지애',name:'(H)진주평거',src:'우영',code:'7085'},
+{type:'close',y:2025,m:4,br:'경남김해',mgr:'황지애',name:'(H)죽림초',src:'우영',code:'7516'},
+{type:'close',y:2024,m:8,br:'경남창원',mgr:'황지애',name:'(H)거제두산위브',src:'우영',code:'7455'},
+{type:'close',y:2025,m:5,br:'경남창원',mgr:'황지애',name:'(H)거제상동',src:'우영',code:'7056'},
+{type:'close',y:2024,m:3,br:'경남창원',mgr:'황지애',name:'(H)마산무학맨션',src:'우영',code:'7323'},
+{type:'close',y:2024,m:2,br:'경남창원',mgr:'황지애',name:'(H)마산해운교습소',src:'우영',code:'7050'},
+{type:'close',y:2026,m:2,br:'경남창원',mgr:'황지애',name:'(H)월영캠퍼스',src:'우영',code:'7239'},
+{type:'close',y:2024,m:12,br:'경남창원',mgr:'황지애',name:'(H)현동중흥2차',src:'우영',code:'6891'},
+{type:'close',y:2026,m:7,br:'경남창원',mgr:'황지애',name:'(H)마산양덕',src:'우영',code:'6875'},
+{type:'close',y:2024,m:7,br:'경남창원',mgr:'황지애',name:'(H)성원2단지',src:'우영',code:'6757'},
+{type:'close',y:2025,m:6,br:'경남창원',mgr:'황지애',name:'(H)창원가음센텀',src:'우영',code:'6760'},
+{type:'open',y:2024,m:3,br:'경남창원',mgr:'황지애',name:'(H)창원대원캠퍼스',src:'우영',code:'7686'},
+{type:'close',y:2024,m:12,br:'경남창원',mgr:'황지애',name:'(H)창원대원캠퍼스',src:'우영',code:'7686'},
+{type:'close',y:2023,m:10,br:'경남창원',mgr:'황지애',name:'(H)봉림휴먼시아',src:'우영',code:'6944'},
+{type:'close',y:2023,m:10,br:'경남창원',mgr:'황지애',name:'(H)창원감계',src:'우영',code:'7304'},
+{type:'close',y:2024,m:11,br:'경남창원',mgr:'황지애',name:'(H)팔용벽산캠퍼스',src:'우영',code:'6818'},
+{type:'close',y:2024,m:4,br:'경남창원',mgr:'황지애',name:'(H)경화포스코',src:'우영',code:'7370'},
+{type:'close',y:2023,m:9,br:'경남창원',mgr:'황지애',name:'(H)덕산공부방',src:'우영',code:'6746'},
+{type:'close',y:2023,m:9,br:'경남창원',mgr:'황지애',name:'(H)도천초',src:'우영',code:'6823'},
+{type:'close',y:2024,m:5,br:'경남창원',mgr:'황지애',name:'(H)석동그린빌공부방',src:'우영',code:'7372'},
+{type:'open',y:2023,m:10,br:'경남창원',mgr:'황지애',name:'(H)진해용원',src:'우영',code:'7641'},
+{type:'close',y:2025,m:12,br:'경남창원',mgr:'황지애',name:'(H)진해용원',src:'우영',code:'7641'},
+{type:'close',y:2023,m:2,br:'경남창원',mgr:'황지애',name:'(H)진해자은프라임',src:'우영',code:'7022'},
+{type:'close',y:2023,m:9,br:'부산광안',mgr:'황지애',name:'(H)부산달북',src:'우영',code:'7017'},
+{type:'close',y:2024,m:1,br:'부산광안',mgr:'황지애',name:'(H)부산장산',src:'우영',code:'6863'},
+{type:'close',y:2023,m:6,br:'부산광안',mgr:'황지애',name:'부산대신1',src:'우영',code:'186599'},
+{type:'close',y:2023,m:6,br:'부산양산',mgr:'황지애',name:'(H)양산가양',src:'우영',code:'6798'},
+{type:'close',y:2024,m:1,br:'부산양산',mgr:'황지애',name:'(H)양산대운',src:'우영',code:'7196'},
+{type:'close',y:2024,m:3,br:'부산양산',mgr:'황지애',name:'(H)양산증산초',src:'우영',code:'6831'},
+{type:'open',y:2024,m:8,br:'부산양산',mgr:'황지애',name:'(H)양산청어람',src:'우영',code:'7722'},
+{type:'close',y:2025,m:12,br:'부산양산',mgr:'황지애',name:'(H)양산청어람',src:'우영',code:'7722'},
+{type:'close',y:2024,m:3,br:'부산양산',mgr:'황지애',name:'(H)오션',src:'우영',code:'7385'},
+{type:'close',y:2025,m:1,br:'부산양산',mgr:'황지애',name:'(H)부산장전초',src:'우영',code:'6810'},
+{type:'close',y:2024,m:12,br:'부산양산',mgr:'황지애',name:'(H)교동초',src:'우영',code:'7502'},
+{type:'open',y:2023,m:2,br:'부산양산',mgr:'황지애',name:'(H)부산당평학원',src:'우영',code:'7566'},
+{type:'close',y:2024,m:11,br:'부산양산',mgr:'황지애',name:'(H)부산당평학원',src:'우영',code:'7566'},
+{type:'close',y:2023,m:2,br:'부산양산',mgr:'황지애',name:'(H)연제데시앙',src:'우영',code:'7135'},
+{type:'close',y:2025,m:12,br:'부산양산',mgr:'황지애',name:'(H)부산상당교습소',src:'우영',code:'6963'},
+{type:'close',y:2026,m:7,br:'부산해운대',mgr:'황지애',name:'(H)부암초',src:'우영',code:'7440'},
+{type:'open',y:2024,m:2,br:'부산해운대',mgr:'황지애',name:'(H)양정스위첸',src:'우영',code:'7673'},
+{type:'close',y:2025,m:7,br:'부산해운대',mgr:'황지애',name:'(H)양정스위첸',src:'우영',code:'7673'},
+{type:'close',y:2024,m:12,br:'부산해운대',mgr:'황지애',name:'(H)상학학원',src:'우영',code:'7539'},
+{type:'close',y:2025,m:5,br:'부산해운대',mgr:'황지애',name:'(H)부산송수',src:'우영',code:'6859'},
+{type:'open',y:2025,m:7,br:'부산해운대',mgr:'황지애',name:'(H)우동푸르지오더원',src:'우영',code:'7785'},
+{type:'close',y:2026,m:2,br:'부산해운대',mgr:'황지애',name:'(H)우동푸르지오더원',src:'우영',code:'7785'},
+{type:'close',y:2026,m:4,br:'대구경북',mgr:'윤길한',name:'(H)경주현곡푸르지오',src:'우영',code:'6776'},
+{type:'close',y:2023,m:12,br:'대구경북',mgr:'윤길한',name:'(H)경주황남초',src:'우영',code:'7066'},
+{type:'open',y:2024,m:3,br:'대구경북',mgr:'윤길한',name:'(H)구미산동골드클래스',src:'우영',code:'7695'},
+{type:'close',y:2025,m:6,br:'대구경북',mgr:'윤길한',name:'(H)구미산동골드클래스',src:'우영',code:'7695'},
+{type:'close',y:2023,m:12,br:'대구경북',mgr:'윤길한',name:'(H)안동옥동휴먼시아',src:'우영',code:'6952'},
+{type:'close',y:2023,m:1,br:'대구경북',mgr:'윤길한',name:'(H)석적효성1단지',src:'우영',code:'7478'},
+{type:'close',y:2024,m:10,br:'대구경북',mgr:'윤길한',name:'(H)포항상도',src:'우영',code:'7460'},
+{type:'close',y:2025,m:12,br:'대구경북',mgr:'윤길한',name:'(H)용흥우방',src:'우영',code:'6769'},
+{type:'close',y:2023,m:9,br:'대구경북',mgr:'윤길한',name:'(H)포항양덕',src:'우영',code:'6821'},
+{type:'open',y:2023,m:3,br:'대구경북',mgr:'윤길한',name:'(H)포항초곡삼구',src:'우영',code:'7588'},
+{type:'close',y:2024,m:12,br:'대구경북',mgr:'윤길한',name:'(H)포항초곡삼구',src:'우영',code:'7588'},
+{type:'close',y:2024,m:12,br:'대구경북',mgr:'윤길한',name:'(H)각산',src:'우영',code:'7294'},
+{type:'open',y:2025,m:1,br:'대구경북',mgr:'윤길한',name:'(H)대구뉴웰시티',src:'우영',code:'7747'},
+{type:'close',y:2026,m:6,br:'대구경북',mgr:'윤길한',name:'(H)대구뉴웰시티',src:'우영',code:'7747'},
+{type:'close',y:2025,m:2,br:'대구경북',mgr:'윤길한',name:'(H)대구새론초',src:'우영',code:'7404'},
+{type:'close',y:2023,m:12,br:'대구달서',mgr:'윤길한',name:'(H)경산정평',src:'우영',code:'6906'},
+{type:'close',y:2026,m:3,br:'대구달서',mgr:'윤길한',name:'(H)대곡한실초',src:'우영',code:'7524'},
+{type:'transfer',y:2023,m:12,br:'대구달서',mgr:'윤길한',name:'(H)대구센트로밸리',src:'우영',code:'6793'},
+{type:'close',y:2025,m:7,br:'대구달서',mgr:'윤길한',name:'(H)대구센트로밸리',src:'우영',code:'6793'},
+{type:'open',y:2023,m:3,br:'대구달서',mgr:'윤길한',name:'(H)대구송현공부방',src:'우영',code:'7576'},
+{type:'close',y:2025,m:3,br:'대구달서',mgr:'윤길한',name:'(H)대구송현공부방',src:'우영',code:'7576'},
+{type:'close',y:2024,m:8,br:'대구달서',mgr:'윤길한',name:'(H)대구장기초',src:'우영',code:'7438'},
+{type:'transfer',y:2024,m:1,br:'대구달서',mgr:'윤길한',name:'(H)대천힐스테이트',src:'우영',code:'7366'},
+{type:'close',y:2024,m:12,br:'대구달서',mgr:'윤길한',name:'(H)대천힐스테이트',src:'우영',code:'7366'},
+{type:'close',y:2024,m:12,br:'대구달서',mgr:'윤길한',name:'(H)신월성영어교습소',src:'우영',code:'7005'},
+{type:'close',y:2024,m:7,br:'대구달서',mgr:'윤길한',name:'(H)구지세현',src:'우영',code:'6792'},
+{type:'close',y:2024,m:9,br:'대구달서',mgr:'윤길한',name:'(H)비슬',src:'우영',code:'7015'},
+{type:'open',y:2024,m:2,br:'대구달서',mgr:'윤길한',name:'(H)유가예미지',src:'우영',code:'7676'},
+{type:'close',y:2026,m:1,br:'대구달서',mgr:'윤길한',name:'(H)유가예미지',src:'우영',code:'7676'},
+{type:'close',y:2024,m:12,br:'대구달서',mgr:'윤길한',name:'(H)유가호반',src:'우영',code:'7421'},
+{type:'close',y:2023,m:12,br:'대구달서',mgr:'윤길한',name:'(H)대구강동초',src:'우영',code:'6787'},
+{type:'close',y:2024,m:1,br:'대구달서',mgr:'윤길한',name:'(H)대구강북초',src:'우영',code:'6788'},
+{type:'close',y:2024,m:1,br:'대구달서',mgr:'윤길한',name:'(H)대구노원천년나무',src:'우영',code:'7011'},
+{type:'close',y:2023,m:12,br:'대구달서',mgr:'윤길한',name:'(H)동변동선수촌공부방',src:'우영',code:'6836'},
+{type:'close',y:2024,m:8,br:'대구달서',mgr:'윤길한',name:'(H)대구수성이지스',src:'우영',code:'7520'},
+{type:'close',y:2023,m:12,br:'대구수성',mgr:'윤길한',name:'(H)경산펜타힐즈더샵1차',src:'우영',code:'6820'},
+{type:'close',y:2023,m:12,br:'대구수성',mgr:'윤길한',name:'(H)장산',src:'우영',code:'6835'},
+{type:'close',y:2023,m:1,br:'대구수성',mgr:'윤길한',name:'황금',src:'우영',code:'186698'},
+{type:'close',y:2025,m:11,br:'서울강서',mgr:'김혜림',name:'(H)비산롯데캐슬',src:'우영',code:'7250'},
+{type:'close',y:2026,m:6,br:'서울강서',mgr:'김혜림',name:'(H)한진',src:'우영',code:'7292'},
+{type:'close',y:2023,m:1,br:'서울강서',mgr:'김혜림',name:'(H)상암상지',src:'우영',code:'7184'},
+{type:'open',y:2024,m:3,br:'서울서초',mgr:'김혜림',name:'(H)관악봉천',src:'우영',code:'7689'},
+{type:'close',y:2024,m:7,br:'서울서초',mgr:'김혜림',name:'(H)관악봉천',src:'우영',code:'7689'},
+{type:'open',y:2024,m:12,br:'서울서초',mgr:'김혜림',name:'(H)관악초',src:'우영',code:'7744'},
+{type:'close',y:2025,m:11,br:'서울서초',mgr:'김혜림',name:'(H)관악초',src:'우영',code:'7744'},
+{type:'open',y:2024,m:10,br:'서울서초',mgr:'김혜림',name:'(H)봉천초',src:'우영',code:'7733'},
+{type:'close',y:2025,m:10,br:'서울서초',mgr:'김혜림',name:'(H)봉천초',src:'우영',code:'7733'},
+{type:'open',y:2023,m:1,br:'서울서초',mgr:'김혜림',name:'(H)서초교습소',src:'우영',code:'7549'},
+{type:'close',y:2024,m:2,br:'서울서초',mgr:'김혜림',name:'(H)서초교습소',src:'우영',code:'7549'},
+{type:'close',y:2023,m:9,br:'서울서초',mgr:'김혜림',name:'(H)서초우면',src:'우영',code:'7489'},
+{type:'close',y:2023,m:8,br:'서울서초',mgr:'김혜림',name:'(H)양재언남',src:'우영',code:'7332'},
+{type:'close',y:2024,m:9,br:'서울송파',mgr:'김혜림',name:'(H)위례한빛캠퍼스',src:'우영',code:'7093'},
+{type:'close',y:2025,m:7,br:'서울송파',mgr:'김혜림',name:'(H)강명초',src:'우영',code:'7143'},
+{type:'close',y:2023,m:4,br:'서울송파',mgr:'김혜림',name:'(H)명일',src:'우영',code:'7408'},
+{type:'close',y:2023,m:2,br:'서울송파',mgr:'김혜림',name:'(H)거여',src:'우영',code:'7202'},
+{type:'open',y:2023,m:9,br:'서울강북',mgr:'윤길한',name:'(H)SK북한산시티',src:'우영',code:'7636'},
+{type:'close',y:2024,m:12,br:'서울강북',mgr:'윤길한',name:'(H)SK북한산시티',src:'우영',code:'7636'},
+{type:'open',y:2024,m:6,br:'서울강북',mgr:'윤길한',name:'(H)화양현대',src:'우영',code:'7708'},
+{type:'close',y:2025,m:2,br:'서울강북',mgr:'윤길한',name:'(H)화양현대',src:'우영',code:'7708'},
+{type:'close',y:2026,m:2,br:'서울강북',mgr:'윤길한',name:'(H)월계사슴',src:'우영',code:'7275'},
+{type:'close',y:2023,m:10,br:'서울강북',mgr:'윤길한',name:'(H)하계건영',src:'우영',code:'6879'},
+{type:'close',y:2025,m:2,br:'서울강북',mgr:'윤길한',name:'(H)제기홍파',src:'우영',code:'7200'},
+{type:'close',y:2025,m:12,br:'서울강북',mgr:'윤길한',name:'(H)장위꿈의숲아이파크',src:'우영',code:'6852'},
+{type:'open',y:2023,m:7,br:'서울강북',mgr:'윤길한',name:'(H)종로창신',src:'우영',code:'7618'},
+{type:'close',y:2024,m:12,br:'서울강북',mgr:'윤길한',name:'(H)종로창신',src:'우영',code:'7618'},
+{type:'close',y:2023,m:7,br:'서울도봉',mgr:'윤길한',name:'(H)불암산',src:'우영',code:'7321'},
+{type:'close',y:2023,m:6,br:'서울도봉',mgr:'윤길한',name:'(H)다산학원',src:'우영',code:'7285'},
+{type:'close',y:2024,m:1,br:'서울도봉',mgr:'윤길한',name:'(H)전곡',src:'우영',code:'6921'},
+{type:'close',y:2023,m:8,br:'서울도봉',mgr:'윤길한',name:'(H)옥수공부방',src:'우영',code:'7525'},
+{type:'close',y:2023,m:7,br:'서울도봉',mgr:'윤길한',name:'(H)정릉3동청덕',src:'우영',code:'6797'},
+{type:'close',y:2024,m:12,br:'서울도봉',mgr:'윤길한',name:'(H)한진돈암',src:'우영',code:'6910'},
+{type:'close',y:2025,m:7,br:'서울서대문',mgr:'윤길한',name:'(H)금화',src:'우영',code:'6889'},
+{type:'close',y:2023,m:2,br:'서울서대문',mgr:'윤길한',name:'(H)북아현',src:'우영',code:'7299'},
+{type:'close',y:2025,m:8,br:'서울서대문',mgr:'윤길한',name:'(H)상신',src:'우영',code:'7248'},
+{type:'close',y:2025,m:9,br:'서울서대문',mgr:'윤길한',name:'(H)연은교습소',src:'우영',code:'7537'},
+{type:'close',y:2025,m:9,br:'서울중랑',mgr:'윤길한',name:'(H)보람',src:'우영',code:'7276'},
+{type:'close',y:2023,m:12,br:'서울중랑',mgr:'윤길한',name:'(H)상계상원',src:'우영',code:'7417'},
+{type:'close',y:2023,m:12,br:'서울중랑',mgr:'윤길한',name:'(H)상승학원',src:'우영',code:'7288'},
+{type:'close',y:2023,m:12,br:'서울중랑',mgr:'윤길한',name:'(H)하계우성',src:'우영',code:'7367'},
+{type:'close',y:2023,m:11,br:'서울중랑',mgr:'윤길한',name:'(H)면동',src:'우영',code:'6853'},
+{type:'close',y:2023,m:3,br:'서울중랑',mgr:'윤길한',name:'(H)묵현',src:'우영',code:'7266'},
+{type:'open',y:2023,m:1,br:'서울중랑',mgr:'윤길한',name:'(H)중화한신',src:'우영',code:'7546'},
+{type:'close',y:2023,m:9,br:'서울중랑',mgr:'윤길한',name:'(H)중화한신',src:'우영',code:'7546'},
+{type:'open',y:2024,m:5,br:'인천김포',mgr:'김혜림',name:'(H)김포고촌양우',src:'우영',code:'7703'},
+{type:'close',y:2024,m:6,br:'인천김포',mgr:'김혜림',name:'(H)김포고촌양우',src:'우영',code:'7703'},
+{type:'close',y:2024,m:12,br:'인천김포',mgr:'김혜림',name:'(H)사우1호',src:'우영',code:'6688'},
+{type:'close',y:2024,m:3,br:'인천김포',mgr:'김혜림',name:'(H)은여울교습소',src:'우영',code:'7411'},
+{type:'open',y:2025,m:10,br:'인천김포',mgr:'김혜림',name:'(H)장기초풍경채',src:'우영',code:'7800'},
+{type:'close',y:2026,m:7,br:'인천김포',mgr:'김혜림',name:'(H)장기초풍경채',src:'우영',code:'7800'},
+{type:'close',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'(H)풍무센트럴파크',src:'우영',code:'7320'},
+{type:'close',y:2023,m:5,br:'인천김포',mgr:'김혜림',name:'(H)한강반도유보라',src:'우영',code:'6700'},
+{type:'close',y:2023,m:2,br:'인천김포',mgr:'김혜림',name:'(H)효성1호',src:'우영',code:'7124'},
+{type:'close',y:2024,m:4,br:'인천김포',mgr:'김혜림',name:'(H)구월힐스테이트',src:'우영',code:'6809'},
+{type:'close',y:2025,m:6,br:'인천김포',mgr:'김혜림',name:'(H)만석1호점',src:'우영',code:'7308'},
+{type:'close',y:2024,m:6,br:'인천김포',mgr:'김혜림',name:'(H)세림하우스',src:'우영',code:'7073'},
+{type:'close',y:2024,m:12,br:'인천김포',mgr:'김혜림',name:'(H)용현금호2차',src:'우영',code:'6777'},
+{type:'close',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'(H)용현한양공부방',src:'우영',code:'6764'},
+{type:'close',y:2023,m:10,br:'인천김포',mgr:'김혜림',name:'(H)부마초캠퍼스',src:'우영',code:'7416'},
+{type:'close',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'(H)부평1호',src:'우영',code:'6748'},
+{type:'close',y:2024,m:6,br:'인천김포',mgr:'김혜림',name:'(H)인천갈산1호',src:'우영',code:'6687'},
+{type:'open',y:2023,m:12,br:'인천김포',mgr:'김혜림',name:'(H)검단예미지예일',src:'우영',code:'7663'},
+{type:'close',y:2025,m:4,br:'인천김포',mgr:'김혜림',name:'(H)검단예미지예일',src:'우영',code:'7663'},
+{type:'close',y:2023,m:7,br:'인천김포',mgr:'김혜림',name:'(H)검단유승한내들',src:'우영',code:'6903'},
+{type:'open',y:2025,m:4,br:'인천김포',mgr:'김혜림',name:'(H)검단이음',src:'우영',code:'7771'},
+{type:'close',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'(H)검단이음',src:'우영',code:'7771'},
+{type:'close',y:2024,m:6,br:'인천김포',mgr:'김혜림',name:'(H)경서초캠퍼스',src:'우영',code:'6911'},
+{type:'close',y:2026,m:5,br:'인천김포',mgr:'김혜림',name:'(H)봉수초',src:'우영',code:'7462'},
+{type:'close',y:2023,m:7,br:'인천김포',mgr:'김혜림',name:'(H)원당호반써밋',src:'우영',code:'6775'},
+{type:'close',y:2024,m:7,br:'인천김포',mgr:'김혜림',name:'(H)청라호반2호',src:'우영',code:'6695'},
+{type:'close',y:2025,m:2,br:'인천김포',mgr:'김혜림',name:'(H)sk반도',src:'우영',code:'7212'},
+{type:'close',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'(H)동춘무지개',src:'우영',code:'7265'},
+{type:'close',y:2023,m:7,br:'인천김포',mgr:'김혜림',name:'(H)성지캠퍼스',src:'우영',code:'7368'},
+{type:'close',y:2025,m:12,br:'인천김포',mgr:'김혜림',name:'(H)신정캠퍼스',src:'우영',code:'7058'},
+{type:'open',y:2023,m:7,br:'인천김포',mgr:'김혜림',name:'(H)영흥',src:'우영',code:'7625'},
+{type:'close',y:2026,m:7,br:'인천김포',mgr:'김혜림',name:'(H)영흥',src:'우영',code:'7625'},
+{type:'close',y:2024,m:3,br:'인천김포',mgr:'김혜림',name:'(H)영종kcc스위첸',src:'우영',code:'6813'},
+{type:'close',y:2023,m:2,br:'인천김포',mgr:'김혜림',name:'(H)운서푸르지오',src:'우영',code:'6772'},
+{type:'close',y:2026,m:5,br:'전남광주',mgr:'황성연',name:'(H)첨단대우교습소',src:'우영',code:'6864'},
+{type:'open',y:2024,m:11,br:'전남광주',mgr:'황성연',name:'(H)봉선삼익',src:'우영',code:'7737'},
+{type:'close',y:2026,m:3,br:'전남광주',mgr:'황성연',name:'(H)봉선삼익',src:'우영',code:'7737'},
+{type:'close',y:2025,m:4,br:'전남광주',mgr:'황성연',name:'(H)봉선유안',src:'우영',code:'6960'},
+{type:'close',y:2026,m:2,br:'전남광주',mgr:'황성연',name:'(H)양림3호',src:'우영',code:'7162'},
+{type:'open',y:2024,m:2,br:'전남광주',mgr:'황성연',name:'(H)더샵광주포레스트각화',src:'우영',code:'7680'},
+{type:'close',y:2024,m:11,br:'전남광주',mgr:'황성연',name:'(H)더샵광주포레스트각화',src:'우영',code:'7680'},
+{type:'open',y:2023,m:6,br:'전남광주',mgr:'황성연',name:'(H)일곡서일',src:'우영',code:'7620'},
+{type:'close',y:2024,m:7,br:'전남광주',mgr:'황성연',name:'(H)일곡서일',src:'우영',code:'7620'},
+{type:'open',y:2023,m:2,br:'전남광주',mgr:'황성연',name:'(H)보성벌교',src:'우영',code:'7570'},
+{type:'close',y:2025,m:7,br:'전남광주',mgr:'황성연',name:'(H)보성벌교',src:'우영',code:'7570'},
+{type:'close',y:2023,m:7,br:'전남광주',mgr:'황성연',name:'(H)영암대불중흥',src:'우영',code:'6920'},
+{type:'close',y:2023,m:9,br:'전남광주',mgr:'황성연',name:'(H)영암삼호중앙',src:'우영',code:'6884'},
+{type:'close',y:2024,m:2,br:'전북',mgr:'황성연',name:'(H)고창현대',src:'우영',code:'6924'},
+{type:'close',y:2025,m:12,br:'전북',mgr:'황성연',name:'(H)군산나운',src:'우영',code:'6942'},
+{type:'close',y:2023,m:9,br:'전북',mgr:'황성연',name:'(H)순창신천',src:'우영',code:'7226'},
+{type:'close',y:2026,m:3,br:'전북',mgr:'황성연',name:'(H)완주봉서초',src:'우영',code:'7007'},
+{type:'close',y:2025,m:5,br:'전북',mgr:'황성연',name:'(H)완주상관',src:'우영',code:'7122'},
+{type:'open',y:2023,m:2,br:'대전',mgr:'황성연',name:'(H)신탄진학원',src:'우영',code:'7561'},
+{type:'close',y:2023,m:11,br:'대전',mgr:'황성연',name:'(H)신탄진학원',src:'우영',code:'7561'},
+{type:'transfer',y:2023,m:1,br:'대전',mgr:'황성연',name:'(H)내동롯데',src:'우영',code:'7311'},
+{type:'close',y:2024,m:12,br:'대전',mgr:'황성연',name:'(H)내동롯데',src:'우영',code:'7311'},
+{type:'close',y:2025,m:11,br:'대전',mgr:'황성연',name:'(H)대전갈마',src:'우영',code:'6907'},
+{type:'close',y:2025,m:6,br:'대전',mgr:'황성연',name:'(H)둔산향촌',src:'우영',code:'6873'},
+{type:'open',y:2023,m:6,br:'대전',mgr:'황성연',name:'(H)문지해링턴',src:'우영',code:'7611'},
+{type:'close',y:2024,m:12,br:'대전',mgr:'황성연',name:'(H)문지해링턴',src:'우영',code:'7611'},
+{type:'open',y:2023,m:4,br:'대전',mgr:'황성연',name:'(H)신성두레',src:'우영',code:'7590'},
+{type:'close',y:2026,m:2,br:'대전',mgr:'황성연',name:'(H)신성두레',src:'우영',code:'7590'},
+{type:'close',y:2024,m:12,br:'대전',mgr:'황성연',name:'(H)유등',src:'우영',code:'7068'},
+{type:'close',y:2023,m:3,br:'대전',mgr:'황성연',name:'도안아이파크',src:'우영',code:'23378'},
+{type:'open',y:2023,m:3,br:'충남세종',mgr:'황성연',name:'(H)세종반곡더샵',src:'우영',code:'7577'},
+{type:'close',y:2023,m:10,br:'충남세종',mgr:'황성연',name:'(H)세종반곡더샵',src:'우영',code:'7577'},
+{type:'open',y:2024,m:3,br:'충남세종',mgr:'황성연',name:'(H)세종반곡더샵',src:'우영',code:'7687'},
+{type:'close',y:2024,m:8,br:'충남세종',mgr:'황성연',name:'(H)세종반곡더샵',src:'우영',code:'7687'},
+{type:'close',y:2024,m:2,br:'충남세종',mgr:'황성연',name:'(H)소담에듀마크',src:'우영',code:'6830'},
+{type:'close',y:2023,m:8,br:'충남세종',mgr:'황성연',name:'(H)종촌리버파크',src:'우영',code:'6995'},
+{type:'close',y:2023,m:1,br:'충남세종',mgr:'황성연',name:'(H)공주신관해링턴',src:'우영',code:'6928'},
+{type:'close',y:2026,m:1,br:'충남세종',mgr:'황성연',name:'(H)부여',src:'우영',code:'7330'},
+{type:'close',y:2023,m:1,br:'충남세종',mgr:'황성연',name:'(H)청양읍내공부방',src:'우영',code:'6819'},
+{type:'close',y:2025,m:9,br:'충남천안',mgr:'황성연',name:'(H)아산북수',src:'우영',code:'7331'},
+{type:'close',y:2023,m:12,br:'충남천안',mgr:'황성연',name:'(H)아산초원설화',src:'우영',code:'6975'},
+{type:'close',y:2026,m:2,br:'충남천안',mgr:'황성연',name:'(H)아산풍기',src:'우영',code:'7256'},
+{type:'close',y:2025,m:10,br:'충남천안',mgr:'황성연',name:'(H)천안신용',src:'우영',code:'7583'},
+{type:'close',y:2023,m:6,br:'충남천안',mgr:'황성연',name:'(H)천안청당서희',src:'우영',code:'7060'},
+{type:'close',y:2025,m:4,br:'충남천안',mgr:'황성연',name:'(H)천안불당대원칸타빌',src:'우영',code:'7167'},
+{type:'close',y:2025,m:1,br:'충남천안',mgr:'황성연',name:'(H)천안불당이안',src:'우영',code:'7461'},
+{type:'close',y:2024,m:6,br:'충남천안',mgr:'황성연',name:'(H)천안용암',src:'우영',code:'7057'},
+{type:'close',y:2023,m:3,br:'충남천안',mgr:'황성연',name:'천안신용',src:'우영',code:'187601'},
+{type:'close',y:2023,m:10,br:'충북청주',mgr:'황성연',name:'(H)청주방서',src:'우영',code:'7163'},
+{type:'close',y:2026,m:6,br:'충북청주',mgr:'황성연',name:'(H)청주용암',src:'우영',code:'6934'},
+{type:'close',y:2023,m:5,br:'충북충주',mgr:'황성연',name:'(H)괴산',src:'우영',code:'7363'},
+{type:'close',y:2024,m:12,br:'충북충주',mgr:'황성연',name:'(H)강저코아루',src:'우영',code:'7084'},
+{type:'close',y:2025,m:8,br:'충북충주',mgr:'황성연',name:'(H)충주남산',src:'우영',code:'7474'},
+{type:'open',y:2024,m:3,br:'충북충주',mgr:'황성연',name:'(H)충주남산캠퍼스',src:'우영',code:'7692'},
+{type:'close',y:2024,m:9,br:'충북충주',mgr:'황성연',name:'(H)충주남산캠퍼스',src:'우영',code:'7692'},
+{type:'close',y:2025,m:12,br:'충북충주',mgr:'황성연',name:'(H)충주호암',src:'우영',code:'7019'},
+{type:'close',y:2023,m:11,br:'전남순천',mgr:'황성연',name:'(H)광양덕례',src:'우영',code:'7435'},
+{type:'close',y:2024,m:7,br:'전남순천',mgr:'황성연',name:'(H)대석',src:'우영',code:'7351'},
+{type:'close',y:2023,m:4,br:'전남순천',mgr:'황성연',name:'(H)순천연향동성',src:'우영',code:'7486'},
+{type:'close',y:2025,m:2,br:'전남순천',mgr:'황성연',name:'(H)연향3지구',src:'우영',code:'6899'},
+{type:'close',y:2024,m:10,br:'전남순천',mgr:'황성연',name:'(H)중흥7차',src:'우영',code:'6851'},
+{type:'close',y:2024,m:9,br:'전남순천',mgr:'황성연',name:'(H)중흥메가타운1호점',src:'우영',code:'6987'},
+{type:'open',y:2025,m:1,br:'전남순천',mgr:'황성연',name:'(H)여수죽림부영',src:'우영',code:'7750'},
+{type:'close',y:2026,m:6,br:'전남순천',mgr:'황성연',name:'(H)여수죽림부영',src:'우영',code:'7750'},
+{type:'close',y:2023,m:3,br:'기타/해지된 본부',mgr:'윤길한',name:'센트럴타운',src:'우영',code:'187118'},
+{type:'close',y:2025,m:12,br:'수원영통',mgr:'윤길한',name:'(H)광교센트럴뷰',src:'우영',code:'7505'},
+{type:'close',y:2025,m:12,br:'수원영통',mgr:'윤길한',name:'(H)광교아이파크',src:'우영',code:'7186'},
+{type:'close',y:2024,m:3,br:'수원영통',mgr:'윤길한',name:'(H)광교자연앤자이',src:'우영',code:'7528'},
+{type:'close',y:2026,m:5,br:'울산(직영우본)',mgr:'황지애',name:'(H)개운초',src:'우영',code:'7035'},
+{type:'close',y:2023,m:12,br:'울산(직영우본)',mgr:'황지애',name:'(H)신정초캠퍼스',src:'우영',code:'7613'},
+{type:'open',y:2023,m:6,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산삼산',src:'우영',code:'7604'},
+{type:'close',y:2025,m:12,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산삼산',src:'우영',code:'7604'},
+{type:'close',y:2023,m:5,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산반도유보라',src:'우영',code:'7307'},
+{type:'close',y:2024,m:12,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산월드',src:'우영',code:'6827'},
+{type:'close',y:2026,m:5,br:'울산(직영우본)',mgr:'황지애',name:'(H)울산남창',src:'우영',code:'6826'},
+{type:'close',y:2023,m:6,br:'울산(직영우본)',mgr:'황지애',name:'신정초캠퍼스',src:'우영',code:'186621'},
+{type:'close',y:2023,m:6,br:'기타/해지된 본부',mgr:'김혜림',name:'봉현초',src:'우영',code:'212400'},
+{type:'close',y:2025,m:11,br:'서울양천',mgr:'김혜림',name:'(H)신정3동신기',src:'우영',code:'7064'},
+{type:'close',y:2025,m:12,br:'서울양천',mgr:'김혜림',name:'(H)양목캠퍼스',src:'우영',code:'7103'},
+{type:'open',y:2024,m:5,br:'서울양천',mgr:'김혜림',name:'(H)신영초',src:'우영',code:'7705'},
+{type:'close',y:2024,m:12,br:'서울양천',mgr:'김혜림',name:'(H)신영초',src:'우영',code:'7705'}
+];
+
 const NEWMEM_DATA = {
   '한진':[0,0,0,0,0,0,0,0],
   'igse상암상지':[0,0,0,0,0,0,0,0],
@@ -5276,10 +6187,9 @@ function renderDoc(){
 const MENU = [
   { id:'home', label:'🏠 홈', type:'group', expanded:true, navigable:true,
     children: () => [
-      {id:'home:mem', label:'[영어] 실회원 추이'},
-      {id:'home:engrev', label:'[영어] 매출 추이'},
-      {id:'home:new', label:'[영어] 신규회원 추이'},
-      {id:'home:curi', label:'[수학] 큐리매쓰 현황'}
+      {id:'home:mem', label:'[영어] 실적 현황'},
+      {id:'home:network', label:'[영어] 개설·해지 현황'},
+      {id:'home:curi', label:'[큐리매쓰] 실적 현황'}
     ]},
   { id:'mgr',  label:'👤 매니저', type:'group', expanded:true,
     children: () => DATA.managers.map(m => ({ id:'mgr:'+m.name, label:m.name })) },
@@ -5288,7 +6198,12 @@ const MENU = [
       {id:'hq:eng', label:'영어'},
       {id:'hq:curi', label:'큐리매쓰'}
     ]},
-  { id:'allcenters', label:'📋 전체 센터 현황', type:'single' },
+  { id:'allcenters', label:'📋 전체 현황', type:'group', expanded:false, navigable:true,
+    children: () => [
+      {id:'allcenters:eng', label:'🔤 영어'},
+      {id:'allcenters:math', label:'🧮 수학'},
+      {id:'allcenters:lc', label:'🏗️ 개설·해지'}
+    ]},
   { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
     children: () => DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name })) },
   { id:'doc',  label:'🔗 외부 문서', type:'group', expanded:true,
@@ -5318,6 +6233,7 @@ function menuItemRoute(id){
     return {view:'voc', mgr:DATA.managers.findIndex(m=>m.name===name)};
   }
   if(id.startsWith('doc:')) return {view:'doc', doc:id.slice(4)};
+  if(id.startsWith('allcenters:')) return {view:'allcenterslist', brand:id.slice(11)};
   return {view:'home'};
 }
 function renderSidebar(){
@@ -5569,7 +6485,7 @@ function engRevSeriesForScope(scope){
   return cats;
 }
 function curiSeriesForScope(scope){
-  const out = {mem:new Array(8).fill(0), workbook:new Array(8).fill(0), textbook:new Array(8).fill(0)};
+  const out = {mem:new Array(9).fill(0), workbook:new Array(9).fill(0), textbook:new Array(9).fill(0), textbookQty:new Array(9).fill(0)};
   CURI_DATA.forEach(r=>{
     let include=false;
     if(scope.mgr===null) include=true;
@@ -5578,8 +6494,9 @@ function curiSeriesForScope(scope){
     } else {
       if(r.mgr===scope.mgr){ include = (!scope.br||scope.br==='합산') ? true : r.region===scope.br; }
     }
-    if(include) for(let i=0;i<8;i++){
+    if(include) for(let i=0;i<9;i++){
       out.mem[i]+=(r.mem[i]||0); out.workbook[i]+=(r.workbook[i]||0); out.textbook[i]+=(r.textbook[i]||0);
+      out.textbookQty[i]+=(r.textbookQty ? (r.textbookQty[i]||0) : 0);
     }
   });
   return out;
@@ -5626,9 +6543,37 @@ const unitLabelPlugin = {
   }
 };
 let _homeChart2=null;
+/* --- 홈 화면: [영어] 실적 탭(실회원|매출|신규회원) --- */
+let _homeEngTab = 'mem';
+const HOME_ENG_TAB_META = {
+  mem:{label:'실회원', title:'📈 실회원 추이'},
+  rev:{label:'매출', title:'💰 매출 추이'},
+  new:{label:'신규회원', title:'🆕 신규회원 추이'}
+};
+function renderHomeEngSection(){
+  const tabs = ['mem','rev','new'];
+  const tabBtns = tabs.map(t=>`<button class="lc-tab-btn ${_homeEngTab===t?'active':''}" onclick="homeEngTabChanged('${t}')">${HOME_ENG_TAB_META[t].label}</button>`).join('');
+  return `<div id="homeEngWrap">
+    <div class="lc-tab-bar">${tabBtns}</div>
+    <div class="trend-wrap" style="height:280px;margin-top:10px"><canvas id="homeEngChart"></canvas></div>
+  </div>`;
+}
+function homeEngTabChanged(tab){
+  _homeEngTab = tab;
+  const wrap = document.getElementById('homeEngWrap');
+  if(wrap) wrap.outerHTML = renderHomeEngSection();
+  const titleEl = document.getElementById('homeEngTitle');
+  if(titleEl) titleEl.textContent = HOME_ENG_TAB_META[tab].title.replace(/^(\S+) /, '$1 [영어] ');
+  drawHomeEngActiveChart();
+}
+function drawHomeEngActiveChart(){
+  if(_homeEngTab==='mem') drawHomeBmChart();
+  else if(_homeEngTab==='rev') drawEngRevChart();
+  else drawNewMemChart();
+}
 function drawHomeBmChart(){
   if(typeof Chart==='undefined')return;
-  const el=document.getElementById('homeBmChart'); if(!el)return;
+  const el=document.getElementById('homeEngChart'); if(!el)return;
   if(_homeChart2)_homeChart2.destroy();
   const cats = homeSeriesForScope(_scope);
   const maxV = Math.max(1, ...cats['전체']);
@@ -5654,7 +6599,7 @@ function drawHomeBmChart(){
 let _engRevChart=null;
 function drawEngRevChart(){
   if(typeof Chart==='undefined')return;
-  const el=document.getElementById('engRevChart'); if(!el)return;
+  const el=document.getElementById('homeEngChart'); if(!el)return;
   if(_engRevChart)_engRevChart.destroy();
   const cats = engRevSeriesForScope(_scope);
   const forest=cats['숲'], igse=cats['IGSE'], op=cats['우영'], total=cats['전체']; // 원본이 이미 천원 단위
@@ -5681,7 +6626,7 @@ function drawEngRevChart(){
 let _newChart=null;
 function drawNewMemChart(){
   if(typeof Chart==='undefined')return;
-  const el=document.getElementById('newMemChart'); if(!el)return;
+  const el=document.getElementById('homeEngChart'); if(!el)return;
   if(_newChart)_newChart.destroy();
   const cats = newSeriesForScope(_scope);
   const maxV = Math.max(1, ...cats['전체']);
@@ -5704,39 +6649,72 @@ function drawNewMemChart(){
         tooltip:{enabled:false}, unitLabel:{text:'[단위: 명]'}}
     }});
 }
-let _curiChartMem=null, _curiChartRev=null;
+/* --- 홈 화면: [수학] 큐리매쓰 탭(교재 판매량|실회원|매출) --- */
+let _homeCuriTab = 'qty';
+const HOME_CURI_TAB_META = {
+  qty:{label:'교재 판매량', title:'📕 교재 판매량 추이'},
+  mem:{label:'실회원', title:'📈 실회원 추이'},
+  rev:{label:'매출', title:'💰 매출 추이 — 문제은행+교재매출 합산'}
+};
+function renderHomeCuriSection(){
+  const tabs = ['qty','mem','rev'];
+  const tabBtns = tabs.map(t=>`<button class="lc-tab-btn ${_homeCuriTab===t?'active':''}" onclick="homeCuriTabChanged('${t}')">${HOME_CURI_TAB_META[t].label}</button>`).join('');
+  return `<div id="homeCuriWrap">
+    <div class="lc-tab-bar">${tabBtns}</div>
+    <div class="trend-wrap" style="height:280px;margin-top:10px"><canvas id="homeCuriChart"></canvas></div>
+  </div>`;
+}
+function homeCuriTabChanged(tab){
+  _homeCuriTab = tab;
+  const wrap = document.getElementById('homeCuriWrap');
+  if(wrap) wrap.outerHTML = renderHomeCuriSection();
+  const titleEl = document.getElementById('homeCuriTitle');
+  if(titleEl) titleEl.textContent = '🧮 [큐리매쓰] ' + HOME_CURI_TAB_META[tab].title.replace(/^\S+ /,'');
+  drawCuriCharts();
+}
+let _curiHomeChart=null;
 function drawCuriCharts(){
   if(typeof Chart==='undefined')return;
   const s = curiSeriesForScope(_scope);
-  const elM=document.getElementById('curiMemberChart');
-  if(elM){
-    if(_curiChartMem)_curiChartMem.destroy();
+  const el=document.getElementById('homeCuriChart'); if(!el)return;
+  if(_curiHomeChart)_curiHomeChart.destroy();
+  if(_homeCuriTab==='qty'){
+    const qty = s.textbookQty;
+    const maxQ = Math.max(1, ...qty);
+    _curiHomeChart = new Chart(el,{type:'line',
+      data:{labels:CURI_MONTHS, datasets:[
+        {label:'교재 판매량', data:qty, borderColor:'#2563eb', backgroundColor:'#2563eb', tension:.3, borderWidth:2.5, pointRadius:3}
+      ]},
+      plugins:[barValueLabelPlugin, unitLabelPlugin],
+      options:{responsive:true,maintainAspectRatio:false,
+        layout:{padding:{top:30, right:34}},
+        scales:{y:{beginAtZero:true,suggestedMax:maxQ*1.22,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},
+          x:{ticks:{font:{size:11}},grid:{display:false}}},
+        plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}, unitLabel:{text:'[단위: 권]'}}}});
+  } else if(_homeCuriTab==='mem'){
     const maxM = Math.max(1, ...s.mem);
-    _curiChartMem = new Chart(elM,{type:'line',
-      data:{labels:MONTH_LABELS.slice(0,8), datasets:[
+    _curiHomeChart = new Chart(el,{type:'line',
+      data:{labels:CURI_MONTHS, datasets:[
         {label:'실회원', data:s.mem, borderColor:'#f97316', backgroundColor:'#f97316', tension:.3, borderWidth:2.5, pointRadius:3}
       ]},
       plugins:[barValueLabelPlugin, unitLabelPlugin],
       options:{responsive:true,maintainAspectRatio:false,
         layout:{padding:{top:30, right:34}},
-        scales:{y:{beginAtZero:true,suggestedMax:maxM*1.22,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},
+        scales:{y:{beginAtZero:true,suggestedMax:maxM*1.22,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},
           x:{ticks:{font:{size:11}},grid:{display:false}}},
         plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}, unitLabel:{text:'[단위: 명]'}}}});
-  }
-  const elR=document.getElementById('curiRevenueChart');
-  if(elR){
-    if(_curiChartRev)_curiChartRev.destroy();
+  } else {
     const revTotalK = s.workbook.map((v,i)=>toWonK((v||0)+(s.textbook[i]||0)));
     const maxR = Math.max(1, ...revTotalK);
-    _curiChartRev = new Chart(elR,{type:'line',
-      data:{labels:MONTH_LABELS.slice(0,8), datasets:[
+    _curiHomeChart = new Chart(el,{type:'line',
+      data:{labels:CURI_MONTHS, datasets:[
         {label:'매출 합계(문제은행+교재매출)', data:revTotalK, borderColor:'#dc2626', backgroundColor:'#dc2626',
           tension:.3, borderWidth:2.5, pointRadius:4, fill:false}
       ]},
       plugins:[barValueLabelPlugin, unitLabelPlugin],
       options:{responsive:true,maintainAspectRatio:false,
         layout:{padding:{top:30, right:38}},
-        scales:{y:{beginAtZero:true,suggestedMax:maxR*1.25,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},
+        scales:{y:{beginAtZero:true,suggestedMax:maxR*1.25,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},
           x:{ticks:{font:{size:11}},grid:{display:false}}},
         plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},tooltip:{enabled:false}, unitLabel:{text:'[단위: 천원]'}}}});
   }
@@ -5782,8 +6760,8 @@ function kpiRowData(scope){
   const curi = curiSeriesForScope(scope);
   const curiCnt = kpiCuriCenterCount(scope);
   const na = scope.mgr!==null && !DATA.managers.find(m=>m.name===scope.mgr); // HQ, 정은희 등 학원·우영 미보유 매니저
-  const curiRev = (curi.workbook[7]||0)+(curi.textbook[7]||0);
-  const curiRevPrev = (curi.workbook[6]||0)+(curi.textbook[6]||0);
+  const curiRev = (curi.workbook[8]||0)+(curi.textbook[8]||0);
+  const curiRevPrev = (curi.workbook[7]||0)+(curi.textbook[7]||0);
   return {
     na,
     academy:{
@@ -5805,7 +6783,8 @@ function kpiRowData(scope){
       centers:cnt.total
     },
     curi:{
-      mem:curi.mem[7]||0, memPrev:curi.mem[6]||0,
+      mem:curi.mem[8]||0, memPrev:curi.mem[7]||0,
+      qty:curi.textbookQty[8]||0, qtyPrev:curi.textbookQty[7]||0,
       rev:curiRev, revPrev:curiRevPrev,
       centers:curiCnt
     }
@@ -5857,6 +6836,7 @@ function renderUnifiedKpiGrid(){
       <td class="num eng-cell">${d.na?'—':`${fmtEngWon(d.total.rev)}${uniDeltaEngWon(d.total.rev,d.total.revPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':`${fmtNum(d.total.new)}명${uniDelta(d.total.new,d.total.newPrev)}`}</td>
       <td class="num eng-cell">${d.na?'—':fmtNum(d.total.centers)+'개'}</td>
+      <td class="num curi-cell">${fmtNum(d.curi.qty)}권${uniDelta(d.curi.qty,d.curi.qtyPrev)}</td>
       <td class="num curi-cell mem-cell">${fmtNum(d.curi.mem)}명${uniDelta(d.curi.mem,d.curi.memPrev)}</td>
       <td class="num curi-cell">${fmtCuriWon(d.curi.rev)}${uniDeltaCuriWon(d.curi.rev,d.curi.revPrev)}</td>
       <td class="num curi-cell">${fmtNum(d.curi.centers)}개</td>
@@ -5867,13 +6847,13 @@ function renderUnifiedKpiGrid(){
         <td class="num eng-cell">${fmtEngWon(d.academy.rev)}${uniDeltaEngWon(d.academy.rev,d.academy.revPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.new)}명${uniDelta(d.academy.new,d.academy.newPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.academy.centers)}개</td>
-        <td colspan="3" class="curi-cell"></td></tr>`;
+        <td colspan="4" class="curi-cell"></td></tr>`;
       body += `<tr class="uni-row-sub"><td class="uni-row-sublabel">└ 우영</td>
         <td class="num eng-cell mem-cell">${fmtNum(d.op.mem)}명${uniDelta(d.op.mem,d.op.memPrev)}</td>
         <td class="num eng-cell">${fmtEngWon(d.op.rev)}${uniDeltaEngWon(d.op.rev,d.op.revPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.new)}명${uniDelta(d.op.new,d.op.newPrev)}</td>
         <td class="num eng-cell">${fmtNum(d.op.centers)}개</td>
-        <td colspan="3" class="curi-cell"></td></tr>`;
+        <td colspan="4" class="curi-cell"></td></tr>`;
     }
   });
 
@@ -5881,15 +6861,15 @@ function renderUnifiedKpiGrid(){
     <div class="uni-kpi-asof">📅 ${DATA_AS_OF_LABEL} 기준 데이터 <span class="uni-kpi-asof-sep">·</span> 최종 업데이트: ${LAST_UPDATED_LABEL}</div>
     <table class="uni-kpi-table2">
       <thead>
-        <tr><th rowspan="2" class="uni-corner">구분</th><th colspan="4" class="grp-eng">영어</th><th colspan="3" class="grp-curi">큐리매쓰</th></tr>
+        <tr><th rowspan="2" class="uni-corner">구분</th><th colspan="4" class="grp-eng">영어</th><th colspan="4" class="grp-curi">큐리매쓰</th></tr>
         <tr>
           <th class="num eng-cell">실회원</th><th class="num eng-cell">매출</th><th class="num eng-cell">신규</th><th class="num eng-cell">센터수</th>
-          <th class="num curi-cell">실회원</th><th class="num curi-cell">매출(합)</th><th class="num curi-cell">센터수</th>
+          <th class="num curi-cell">교재 판매량</th><th class="num curi-cell">실회원</th><th class="num curi-cell">매출(합)</th><th class="num curi-cell">센터수</th>
         </tr>
       </thead>
       <tbody>${body}</tbody>
     </table>
-    <p class="uni-kpi-note">학원·우영 센터수 = 폐업 처리되지 않은 센터 기준 · 큐리매쓰 센터수 = 센터명에 "(해지)"가 없는 기준(8월 값) · 색 숫자는 전월(7월) 대비 증감</p>
+    <p class="uni-kpi-note">학원·우영 센터수 = 폐업 처리되지 않은 센터 기준 · 큐리매쓰 센터수 = 센터명에 "(해지)"가 없는 기준(9월 값) · 색 숫자는 전월(8월) 대비 증감</p>
   </div>`;
 }
 
@@ -5923,9 +6903,7 @@ function refreshUnifiedPanel(){
   if(bar) bar.outerHTML = renderUnifiedScopePicker();
   const grid = document.getElementById('uniKpiGrid');
   if(grid) grid.outerHTML = renderUnifiedKpiGrid();
-  drawHomeBmChart();
-  drawEngRevChart();
-  drawNewMemChart();
+  drawHomeEngActiveChart();
   drawCuriCharts();
 }
 function uniMgrChanged(v){
@@ -5945,10 +6923,9 @@ function uniReset(){
 // 사이드바 메뉴를 홈 화면 상단에도 동일하게 노출(빠른 이동용)
 function renderHomeQuickNav(){
   const items = [
-    {label:'[영어] 실회원 추이', action:"go({view:'home',scrollTo:'mem'})"},
-    {label:'[영어] 매출 추이', action:"go({view:'home',scrollTo:'engrev'})"},
-    {label:'[영어] 신규회원 추이', action:"go({view:'home',scrollTo:'new'})"},
-    {label:'[수학] 큐리매쓰 현황', action:"go({view:'home',scrollTo:'curi'})"},
+    {label:'[영어] 실적 현황', action:"go({view:'home',scrollTo:'mem'})"},
+    {label:'[영어] 개설·해지 현황', action:"go({view:'home',scrollTo:'network'})"},
+    {label:'[큐리매쓰] 실적 현황', action:"go({view:'home',scrollTo:'curi'})"},
   ].concat(DATA.managers.map((m,i)=>({label:m.name, action:`go({view:'mgr',mgr:${i}})`})))
    .concat([{label:'본사 직영', action:"go({view:'hq',section:'curi'})"}]);
   return `<div class="home-quicknav">${items.map(it=>`<button class="qn-pill" onclick="${it.action}">${it.label}</button>`).join('')}</div>`;
@@ -6035,11 +7012,11 @@ function toggleCuriListExpand(key){
   render();
 }
 function curiRegionAgg(mgr, region){
-  const mem = new Array(8).fill(0), rev = new Array(8).fill(0);
+  const mem = new Array(9).fill(0), rev = new Array(9).fill(0);
   CURI_DATA.forEach(r=>{
     const match = mgr==='본사' ? (r.mgr==='본사' && r.sub===region) : (r.mgr===mgr && r.region===region);
     if(!match || r.center.includes('(해지)')) return;
-    for(let i=0;i<8;i++){ mem[i]+=(r.mem[i]||0); rev[i]+=(r.workbook[i]||0)+(r.textbook[i]||0); }
+    for(let i=0;i<9;i++){ mem[i]+=(r.mem[i]||0); rev[i]+=(r.workbook[i]||0)+(r.textbook[i]||0); }
   });
   return {mem, rev};
 }
@@ -6066,12 +7043,12 @@ function renderHqCuriList(){
 
   let body = '';
   orderedNames.forEach(mgrName=>{
-    body += `<tr class="curi-mgr-row"><td colspan="17" class="curi-mgr-label">▸ ${mgrName}</td></tr>`;
+    body += `<tr class="curi-mgr-row"><td colspan="18" class="curi-mgr-label">▸ ${mgrName}</td></tr>`;
     byMgr[mgrName].forEach(region=>{ body += curiRegionRowsHtml(mgrName, region); });
   });
   const hqSubs = curiHqSubGroupsSorted();
   if(hqSubs.length){
-    body += `<tr class="curi-mgr-row"><td colspan="17" class="curi-mgr-label">▸ 본사 직영</td></tr>`;
+    body += `<tr class="curi-mgr-row"><td colspan="18" class="curi-mgr-label">▸ 본사 직영</td></tr>`;
     hqSubs.forEach(sub=>{ body += curiRegionRowsHtml('본사', sub); });
   }
 
@@ -6083,8 +7060,8 @@ function renderHqCuriList(){
     <div class="uni-kpi-wrap" id="hqCuriListMainScroll">
       <table class="uni-kpi-table2">
         <thead>
-          <tr><th rowspan="2" class="uni-corner">구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th colspan="2" class="grp-curi">${l}</th>`).join('')}</tr>
-          <tr>${MONTH_LABELS.slice(0,8).map(()=>`<th class="num curi-cell">실회원</th><th class="num curi-cell">매출</th>`).join('')}</tr>
+          <tr><th rowspan="2" class="uni-corner">구분</th>${CURI_MONTHS.map(l=>`<th colspan="2" class="grp-curi">${l}</th>`).join('')}</tr>
+          <tr>${CURI_MONTHS.map(()=>`<th class="num curi-cell">실회원</th><th class="num curi-cell">매출</th>`).join('')}</tr>
         </thead>
         <tbody>${body}</tbody>
       </table>
@@ -6163,21 +7140,24 @@ function renderHqCuri(){
   const mgrLabel = mgr==='본사' ? '본사' : mgr;
   const br = '큐리매쓰:'+region;
 
-  const totalMem8 = rows.reduce((s,r)=>s+(r.mem[7]||0),0);
-  const totalWb8 = rows.reduce((s,r)=>s+(r.workbook[7]||0),0);
-  const totalTb8 = rows.reduce((s,r)=>s+(r.textbook[7]||0),0);
-  const noData = `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">등록된 센터가 없습니다.</td></tr>`;
+  const totalMem9 = rows.reduce((s,r)=>s+(r.mem[8]||0),0);
+  const totalWb9 = rows.reduce((s,r)=>s+(r.workbook[8]||0),0);
+  const totalTb9 = rows.reduce((s,r)=>s+(r.textbook[8]||0),0);
+  const totalQty9 = rows.reduce((s,r)=>s+((r.textbookQty&&r.textbookQty[8])||0),0);
+  const noData = `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:16px">등록된 센터가 없습니다.</td></tr>`;
 
-  // 센터 1개당 3행(실회원·문제은행·교재매출)을 하나의 표로 묶고, 센터명 칸은 rowspan으로 병합
+  // 센터 1개당 4행(실회원·교재·문제은행·교재매출)을 하나의 표로 묶고, 센터명 칸은 rowspan으로 병합
   const metricRows = rows.map(r=>{
     const cnt = memoCount(mgrLabel, br, r.center);
-    const nameCell = `<td rowspan="3" class="curi-center-cell">
+    const nameCell = `<td rowspan="4" class="curi-center-cell">
         <a class="center-link" onclick="openCuriMemo('${jsq(mgrLabel)}','${jsq(region)}','${jsq(r.center)}',${r.idx})">${r.center}<span class="memo-badge" id="curimemobadge-${r.idx}">${cnt?`📝${cnt}`:''}</span></a>
       </td>`;
-    const memCells = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num mem-cell">${r.mem[i]===null?'-':r.mem[i]}</td>`).join('');
-    const wbCells  = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.workbook[i]===null?'-':fmtNum(r.workbook[i])}</td>`).join('');
-    const tbCells  = MONTH_LABELS.slice(0,8).map((_,i)=>`<td class="num">${r.textbook[i]===null?'-':fmtNum(r.textbook[i])}</td>`).join('');
+    const memCells = CURI_MONTHS.map((_,i)=>`<td class="num mem-cell">${r.mem[i]===null?'-':r.mem[i]}</td>`).join('');
+    const qtyCells = CURI_MONTHS.map((_,i)=>{ const v=(r.textbookQty&&r.textbookQty[i]); return `<td class="num">${v===null||v===undefined?'-':fmtNum(v)}</td>`; }).join('');
+    const wbCells  = CURI_MONTHS.map((_,i)=>`<td class="num">${r.workbook[i]===null?'-':fmtNum(r.workbook[i])}</td>`).join('');
+    const tbCells  = CURI_MONTHS.map((_,i)=>`<td class="num">${r.textbook[i]===null?'-':fmtNum(r.textbook[i])}</td>`).join('');
     return `<tr class="curi-group-start">${nameCell}<td class="curi-metric">실회원</td>${memCells}</tr>
+      <tr><td class="curi-metric">교재(권)</td>${qtyCells}</tr>
       <tr><td class="curi-metric">문제은행</td>${wbCells}</tr>
       <tr class="curi-group-end"><td class="curi-metric">교재매출</td>${tbCells}</tr>`;
   }).join('');
@@ -6186,18 +7166,19 @@ function renderHqCuri(){
     <button class="back-btn" style="margin:0 0 14px" onclick="go({view:'hq',section:'curi'})">‹ 큐리매쓰 목록으로</button>
     <h2 class="mgr">🧮 큐리매쓰 · ${mgr==='본사'?'본사 직영':mgr}</h2>
     <h3 class="hb">${region} — 센터별 실적 <span style="font-size:12px;font-weight:400;color:var(--muted)">(해지 센터 제외 · 센터명 클릭 시 메모)</span></h3>
-    <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr;max-width:520px;margin:12px 0">
-      <div class="kpi" style="border-top-color:var(--amber)"><div class="k-label">실회원(8월)</div><div class="k-val">${fmtNum(totalMem8)}명</div></div>
-      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">문제은행(8월)</div><div class="k-val">${fmtCuriWon(totalWb8)}</div></div>
-      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재매출(8월)</div><div class="k-val">${fmtCuriWon(totalTb8)}</div></div>
+    <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr 1fr;max-width:680px;margin:12px 0">
+      <div class="kpi" style="border-top-color:var(--amber)"><div class="k-label">실회원(${CURI_MONTHS[8]})</div><div class="k-val">${fmtNum(totalMem9)}명</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재(${CURI_MONTHS[8]})</div><div class="k-val">${fmtNum(totalQty9)}권</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">문제은행(${CURI_MONTHS[8]})</div><div class="k-val">${fmtCuriWon(totalWb9)}</div></div>
+      <div class="kpi" style="border-top-color:var(--pine)"><div class="k-label">교재매출(${CURI_MONTHS[8]})</div><div class="k-val">${fmtCuriWon(totalTb9)}</div></div>
     </div>
 
     <div class="track">
-      <div class="t-head"><span class="badge">실적</span><h4>센터별 월별 실적 — 실회원 · 문제은행 · 교재매출</h4></div>
+      <div class="t-head"><span class="badge">실적</span><h4>센터별 월별 실적 — 실회원 · 교재(권) · 문제은행 · 교재매출</h4></div>
       <div class="mirror-scroll-top" id="hqCuriTopScroll"><div></div></div>
       <div class="uni-kpi-wrap" id="hqCuriMainScroll">
         <table class="curi-merged-table">
-          <thead><tr><th>센터명</th><th>구분</th>${MONTH_LABELS.slice(0,8).map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
+          <thead><tr><th>센터명</th><th>구분</th>${CURI_MONTHS.map(l=>`<th class="num">${l}</th>`).join('')}</tr></thead>
           <tbody>${metricRows || noData}</tbody>
         </table>
       </div>
@@ -6211,9 +7192,10 @@ function renderHqCuri(){
 function renderAllCenters(){
   let engTotal=0; DATA.managers.forEach(m=>m.branches.forEach(b=>engTotal+=b.centers.filter(c=>!c.closed).length));
   const mathTotal = CURI_DATA.filter(r=>!r.center.includes('(해지)')).length;
+  const lcTotal = LIFECYCLE_DATA.filter(e=>e.y===2026).length;
   app.innerHTML = `
-    <h2 class="mgr">📋 전체 센터 현황</h2>
-    <p class="hint" style="margin:10px 0 16px">브랜드를 선택한 뒤 매니저·본부·센터를 순서대로 골라 조회합니다.</p>
+    <h2 class="mgr">📋 전체 현황</h2>
+    <p class="hint" style="margin:10px 0 16px">항목을 선택한 뒤 매니저·본부·센터를 순서대로 골라 조회합니다.</p>
     <div class="br-grid">
       <div class="br-card" onclick="go({view:'allcenterslist',brand:'eng'})">
         <div class="bc-name">🔤 영어 (학원·우영)</div>
@@ -6222,6 +7204,10 @@ function renderAllCenters(){
       <div class="br-card" onclick="go({view:'allcenterslist',brand:'math'})">
         <div class="bc-name">🧮 수학 (큐리매쓰)</div>
         <div class="bc-meta">센터 ${fmtNum(mathTotal)}개(해지 제외)</div>
+      </div>
+      <div class="br-card" onclick="go({view:'allcenterslist',brand:'lc'})">
+        <div class="bc-name">🏗️ 개설·해지 (영어)</div>
+        <div class="bc-meta">2026년 ${fmtNum(lcTotal)}건</div>
       </div>
     </div>`;
 }
@@ -6248,9 +7234,10 @@ function acCenterOptions(mgrName, brName){
 }
 function renderAllCentersList(){
   const brand = route.brand;
+  if(brand==='lc'){ renderLcAllCentersList(); return; }
   _acScope = {mgr:'', br:'', center:''};
   app.innerHTML = `
-    <button class="back-btn" style="margin:0 0 14px" onclick="go({view:'allcenters'})">‹ 전체 센터 현황으로</button>
+    <button class="back-btn" style="margin:0 0 14px" onclick="go({view:'allcenters'})">‹ 전체 현황으로</button>
     <h2 class="mgr">${brand==='eng'?'🔤 영어':'🧮 수학'} 전체 센터 현황</h2>
     <div id="acPickerWrap">${acPickerHtml()}</div>
     <div id="acDetailWrap"></div>`;
@@ -6396,7 +7383,7 @@ function acDrawEngDetailCharts(){
 // ── 수학(큐리매쓰) 센터 상세(페이지형) ──
 function acMathDetailHtml(){
   const r = CURI_DATA.find(x=>x.mgr===_acScope.mgr && x.region===_acScope.br && x.center===_acScope.center);
-  const mem8 = r.mem[7]||0, rev8 = (r.workbook[7]||0)+(r.textbook[7]||0);
+  const mem9 = r.mem[8]||0, rev9 = (r.workbook[8]||0)+(r.textbook[8]||0);
   return `
     <div class="card-box section-gap">
       <div class="dm-head">
@@ -6405,8 +7392,10 @@ function acMathDetailHtml(){
           <div class="dm-sub">큐리매쓰 · ${r.region} · 담당 ${r.mgr}</div>
         </div>
       </div>
-      <div class="dm-trend" style="margin:8px 0">실회원(8월) <b>${fmtNum(mem8)}명</b> · 매출(8월) <b>${fmtCuriWon(rev8)}</b></div>
+      <div class="dm-trend" style="margin:8px 0">실회원(9월) <b>${fmtNum(mem9)}명</b> · 매출(9월) <b>${fmtCuriWon(rev9)}</b></div>
     </div>
+    <div class="card-box section-gap"><h4>📕 교재 판매량 추이</h4>
+      <div class="trend-wrap" style="height:220px"><canvas id="acMathQtyChart"></canvas></div></div>
     <div class="card-box section-gap"><h4>📈 실회원 추이</h4>
       <div class="trend-wrap" style="height:220px"><canvas id="acMathMemChart"></canvas></div></div>
     <div class="card-box section-gap"><h4>💰 매출 추이 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 문제은행+교재매출 합산</span></h4>
@@ -6422,17 +7411,27 @@ function acMathDetailHtml(){
         <div id="curiMemoLog" class="dm-memo-log"></div></div>`; })()}
     </div>`;
 }
-let _acMathMemChart=null,_acMathRevChart=null;
+let _acMathMemChart=null,_acMathRevChart=null,_acMathQtyChart=null;
 function acDrawMathDetailCharts(){
   if(typeof Chart==='undefined')return;
   const r = CURI_DATA.find(x=>x.mgr===_acScope.mgr && x.region===_acScope.br && x.center===_acScope.center);
   const idx = CURI_DATA.indexOf(r);
   _curiModalCtx = {mgr:r.mgr, region:r.region, center:r.center, idx};
+  const elQ=document.getElementById('acMathQtyChart');
+  if(_acMathQtyChart)_acMathQtyChart.destroy();
+  const qtyArr = r.textbookQty || [];
+  const qtyMax = Math.max(1, ...qtyArr.filter(v=>v!==null&&v!==undefined));
+  if(elQ) _acMathQtyChart=new Chart(elQ,{type:'line',
+    data:{labels:CURI_MONTHS,datasets:[{label:'교재 판매량',data:qtyArr,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    plugins:[barValueLabelPlugin, unitLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:26}},
+      scales:{y:{beginAtZero:true,suggestedMax:qtyMax*1.25,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{enabled:false}, unitLabel:{text:'[단위: 권]'}}}});
   const elM=document.getElementById('acMathMemChart');
   if(_acMathMemChart)_acMathMemChart.destroy();
   const memMax = Math.max(1, ...r.mem.filter(v=>v!==null&&v!==undefined));
   if(elM) _acMathMemChart=new Chart(elM,{type:'line',
-    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'실회원',data:r.mem,borderColor:'#f97316',backgroundColor:'rgba(249,115,22,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    data:{labels:CURI_MONTHS,datasets:[{label:'실회원',data:r.mem,borderColor:'#f97316',backgroundColor:'rgba(249,115,22,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
     plugins:[barValueLabelPlugin, unitLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:26}},
       scales:{y:{beginAtZero:true,suggestedMax:memMax*1.25,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},
@@ -6442,7 +7441,7 @@ function acDrawMathDetailCharts(){
   const revK = r.workbook.map((v,i)=>toWonK((v||0)+(r.textbook[i]||0)));
   const revMax = Math.max(1, ...revK.filter(v=>v!==null&&v!==undefined));
   if(elR) _acMathRevChart=new Chart(elR,{type:'line',
-    data:{labels:MONTH_LABELS.slice(0,8),datasets:[{label:'매출(천원)',data:revK,borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
+    data:{labels:CURI_MONTHS,datasets:[{label:'매출(천원)',data:revK,borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:3,spanGaps:true}]},
     plugins:[barValueLabelPlugin, unitLabelPlugin],
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,right:30}},
       scales:{y:{beginAtZero:true,suggestedMax:revMax*1.28,ticks:{precision:0,font:{size:10},callback:v=>fmtNum(v)},grid:{color:'#eef0ea'}},x:{ticks:{font:{size:11}},grid:{display:false}}},
@@ -6452,6 +7451,237 @@ function acDrawMathDetailCharts(){
 
 
 let _homeRange = null;
+/* ===== [영어] 개설·명의변경·해지 라이프사이클 분석 ===== */
+const LC_TYPE_LABEL = {open:'개설', transfer:'명의변경', close:'해지'};
+const LC_TYPE_COLOR = {open:'#2f5d50', transfer:'#b4762a', close:'#c0392b'};
+function lcAllYears(){
+  const ys = new Set(LIFECYCLE_DATA.map(e=>e.y));
+  return Array.from(ys).sort((a,b)=>a-b);
+}
+function lcFindActiveCenter(code){
+  for(let mi=0; mi<DATA.managers.length; mi++){
+    const m = DATA.managers[mi];
+    for(let bi=0; bi<m.branches.length; bi++){
+      const b = m.branches[bi];
+      for(let ci=0; ci<b.centers.length; ci++){
+        const c = b.centers[ci];
+        if(c.code===code && !c.closed) return {mi,bi,ci};
+      }
+    }
+  }
+  return null;
+}
+
+/* --- 홈 화면: 탭 + 그래프만(2026년, 학원/우영 분리) --- */
+let _lcHomeTab = 'open';
+function renderLifecycleHomeSection(){
+  const tabs = ['open','transfer','close'];
+  const tabBtns = tabs.map(t=>`<button class="lc-tab-btn ${_lcHomeTab===t?'active':''}" onclick="lcHomeTabChanged('${t}')">${LC_TYPE_LABEL[t]}</button>`).join('');
+  return `<div id="lcHomeWrap">
+    <div class="lc-tab-bar">${tabBtns}</div>
+    <div class="trend-wrap" style="height:280px;margin-top:10px"><canvas id="lifecycleHomeChart"></canvas></div>
+  </div>`;
+}
+function lcHomeTabChanged(tab){
+  _lcHomeTab = tab;
+  const wrap = document.getElementById('lcHomeWrap');
+  if(wrap) wrap.outerHTML = renderLifecycleHomeSection();
+  drawLifecycleHomeChart();
+}
+let _lifecycleHomeChart=null;
+function drawLifecycleHomeChart(){
+  if(typeof Chart==='undefined')return;
+  const el=document.getElementById('lifecycleHomeChart'); if(!el)return;
+  if(_lifecycleHomeChart)_lifecycleHomeChart.destroy();
+  const YEAR = 2026;
+  const evs = LIFECYCLE_DATA.filter(e=>e.y===YEAR && e.type===_lcHomeTab);
+  const hakData = new Array(8).fill(0), wooData = new Array(8).fill(0);
+  evs.forEach(e=>{
+    const idx = e.m-1; if(idx<0||idx>7) return;
+    if(e.src==='학원') hakData[idx]++; else wooData[idx]++;
+  });
+  const totalData = hakData.map((v,i)=>v+wooData[i]);
+  const maxV = Math.max(1, ...totalData);
+  _lifecycleHomeChart = new Chart(el,{
+    data:{labels:MONTH_LABELS.slice(0,8), datasets:[
+      {type:'bar', label:'학원', data:hakData, backgroundColor:'#2f5d50'},
+      {type:'bar', label:'우영', data:wooData, backgroundColor:'#60a5fa'},
+      {type:'line', label:'합계', data:totalData, borderColor:LC_TYPE_COLOR[_lcHomeTab], backgroundColor:LC_TYPE_COLOR[_lcHomeTab],
+        tension:.3, borderWidth:2.5, pointRadius:4, fill:false, order:0}
+    ]},
+    plugins:[barValueLabelPlugin, unitLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:26}},
+      scales:{
+        y:{beginAtZero:true, suggestedMax:maxV*1.25, ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},
+        x:{ticks:{font:{size:11}},grid:{display:false}}
+      },
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}},
+        tooltip:{enabled:false}, unitLabel:{text:'[단위: 건] · 2026년'}}
+    }});
+}
+
+/* --- 전체 현황 > 개설·해지 카드 --- */
+let _lcAcMgr = '전국', _lcAcBr = '', _lcAcStartYear = null, _lcAcEndYear = null, _lcAcDetailTab = 'open';
+function lcAcInitYears(){
+  const ys = lcAllYears();
+  if(_lcAcStartYear===null) _lcAcStartYear = ys[0];
+  if(_lcAcEndYear===null) _lcAcEndYear = ys[ys.length-1];
+}
+function renderLcAllCentersList(){
+  _lcAcMgr = '전국'; _lcAcBr = ''; _lcAcDetailTab = 'open';
+  lcAcInitYears();
+  app.innerHTML = `
+    <button class="back-btn" style="margin:0 0 14px" onclick="go({view:'allcenters'})">‹ 전체 현황으로</button>
+    <h2 class="mgr">🏗️ 개설·명의변경·해지 현황</h2>
+    <div id="lcAcPickerWrap">${renderLcAcPicker()}</div>
+    <div id="lcAcResultWrap"></div>`;
+}
+function renderLcAcPicker(){
+  const mgrNames = ['전국', ...DATA.managers.map(m=>m.name)];
+  const mgrBtns = mgrNames.map(n=>`<button class="lc-toggle-btn ${_lcAcMgr===n?'active':''}" onclick="lcAcMgrChanged('${jsq(n)}')">${n}</button>`).join('');
+  let brBlock = '';
+  if(_lcAcMgr !== '전국'){
+    const m = DATA.managers.find(x=>x.name===_lcAcMgr);
+    const brNames = m ? m.branches.map(b=>b.name) : [];
+    const brBtns = ['<button class="lc-toggle-btn '+(_lcAcBr===''?'active':'')+'" onclick="lcAcBrChanged(\'\')">전체</button>']
+      .concat(brNames.map(n=>`<button class="lc-toggle-btn ${_lcAcBr===n?'active':''}" onclick="lcAcBrChanged('${jsq(n)}')">${n}</button>`)).join('');
+    brBlock = `<div class="lc-toggle-row"><label>본부</label><div class="lc-toggle-group">${brBtns}</div></div>`;
+  }
+  const years = lcAllYears();
+  const startOpts = years.map(y=>`<option value="${y}" ${y===_lcAcStartYear?'selected':''}>${y}</option>`).join('');
+  const endYears = years.filter(y=>y>=_lcAcStartYear);
+  const endOpts = endYears.map(y=>`<option value="${y}" ${y===_lcAcEndYear?'selected':''}>${y}</option>`).join('');
+  return `
+    <div class="lc-toggle-row"><label>매니저</label><div class="lc-toggle-group">${mgrBtns}</div></div>
+    ${brBlock}
+    <div class="lc-filter-bar" style="margin-top:12px">
+      <label>시작연도</label><select onchange="lcAcStartYearChanged(this.value)">${startOpts}</select>
+      <label>종료연도</label><select onchange="lcAcEndYearChanged(this.value)">${endOpts}</select>
+      <button class="ac-search-btn" onclick="lcAcSearch()">🔍 조회</button>
+    </div>`;
+}
+function lcAcRefreshPicker(){
+  const wrap = document.getElementById('lcAcPickerWrap');
+  if(wrap) wrap.innerHTML = renderLcAcPicker();
+}
+function lcAcMgrChanged(v){ _lcAcMgr = v; _lcAcBr=''; lcAcRefreshPicker(); lcAcClearResult(); }
+function lcAcBrChanged(v){ _lcAcBr = v; lcAcRefreshPicker(); lcAcClearResult(); }
+function lcAcStartYearChanged(v){ _lcAcStartYear = +v; if(_lcAcEndYear<_lcAcStartYear) _lcAcEndYear=_lcAcStartYear; lcAcRefreshPicker(); lcAcClearResult(); }
+function lcAcEndYearChanged(v){ _lcAcEndYear = +v; lcAcClearResult(); }
+function lcAcClearResult(){ const w=document.getElementById('lcAcResultWrap'); if(w) w.innerHTML=''; }
+function lcAcSearch(){
+  const wrap = document.getElementById('lcAcResultWrap');
+  if(!wrap) return;
+  if(_lcAcBr){
+    _lcAcDetailTab = 'open';
+    wrap.innerHTML = renderLcBranchDetail();
+  } else {
+    wrap.innerHTML = renderLcCompareTable();
+  }
+  wrap.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function lcFilteredEventsAc(){
+  return LIFECYCLE_DATA.filter(e=>e.y>=_lcAcStartYear && e.y<=_lcAcEndYear && (_lcAcMgr==='전국' || e.mgr===_lcAcMgr));
+}
+function renderLcCompareTable(){
+  const evs = lcFilteredEventsAc();
+  const byBr = {};
+  evs.forEach(e=>{
+    if(!byBr[e.br]) byBr[e.br] = {
+      open_h:0, open_w:0, transfer_h:0, transfer_w:0, close_h:0, close_w:0
+    };
+    const key = e.type + (e.src==='학원' ? '_h' : '_w');
+    byBr[e.br][key]++;
+  });
+  let rows = Object.entries(byBr).map(([br,v])=>{
+    const open = v.open_h+v.open_w, transfer = v.transfer_h+v.transfer_w, close = v.close_h+v.close_w;
+    return {br, ...v, open, transfer, close, net: open-close};
+  });
+  rows.sort((a,b)=>b.open-a.open);
+  const totalOpen = evs.filter(e=>e.type==='open').length;
+  const totalClose = evs.filter(e=>e.type==='close').length;
+  const totalTransfer = evs.filter(e=>e.type==='transfer').length;
+  const cell = (h,w,tot) => `<td class="num">${h}</td><td class="num">${w}</td><td class="num"><b>${tot}</b></td>`;
+  const body = rows.map(r=>`<tr onclick="lcAcJumpToBranch('${jsq(r.br)}')" style="cursor:pointer">
+    <td>${eschtml(r.br)}</td>
+    ${cell(r.open_h, r.open_w, r.open)}
+    ${cell(r.transfer_h, r.transfer_w, r.transfer)}
+    ${cell(r.close_h, r.close_w, r.close)}
+    <td class="num"><b class="${r.net>0?'delta-up':r.net<0?'delta-down':'delta-flat'}">${r.net>0?'+':''}${r.net}</b></td>
+  </tr>`).join('');
+  return `<div class="card-box section-gap">
+    <h4>${_lcAcMgr==='전국'?'전국':eschtml(_lcAcMgr)} 본부별 비교 <span style="font-size:12px;font-weight:400;color:var(--muted)">— ${_lcAcStartYear}~${_lcAcEndYear}년</span></h4>
+    <div class="lc-summary">
+      <span>개설 <b style="color:${LC_TYPE_COLOR.open}">${fmtNum(totalOpen)}건</b></span>
+      <span>해지 <b style="color:${LC_TYPE_COLOR.close}">${fmtNum(totalClose)}건</b></span>
+      <span>명의변경 <b style="color:${LC_TYPE_COLOR.transfer}">${fmtNum(totalTransfer)}건</b></span>
+      <span>순증감 <b class="${totalOpen-totalClose>0?'delta-up':totalOpen-totalClose<0?'delta-down':'delta-flat'}">${totalOpen-totalClose>0?'+':''}${totalOpen-totalClose}개</b></span>
+    </div>
+    <table class="lc-table" style="margin-top:12px">
+      <thead>
+        <tr><th rowspan="2">본부</th><th colspan="3">개설</th><th colspan="3">명의변경</th><th colspan="3">해지</th><th rowspan="2">순증감</th></tr>
+        <tr><th class="num">학원</th><th class="num">우영</th><th class="num">합계</th><th class="num">학원</th><th class="num">우영</th><th class="num">합계</th><th class="num">학원</th><th class="num">우영</th><th class="num">합계</th></tr>
+      </thead>
+      <tbody>${body || '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">해당 조건에 이벤트가 없습니다.</td></tr>'}</tbody>
+    </table>
+    <p class="hint" style="margin-top:6px">행을 클릭하면 그 본부의 상세 내역을 볼 수 있습니다.</p>
+  </div>`;
+}
+function lcAcJumpToBranch(br){
+  if(br==='기타/해지된 본부'){ _lcAcMgr='전국'; _lcAcBr=br; }
+  else {
+    const m = DATA.managers.find(x=>x.branches.some(b=>b.name===br));
+    if(m){ _lcAcMgr = m.name; _lcAcBr = br; }
+  }
+  lcAcRefreshPicker();
+  _lcAcDetailTab = 'open';
+  const wrap = document.getElementById('lcAcResultWrap');
+  if(wrap){ wrap.innerHTML = renderLcBranchDetail(); wrap.scrollIntoView({behavior:'smooth', block:'start'}); }
+}
+function renderLcBranchDetail(){
+  const br = _lcAcBr;
+  const evs = LIFECYCLE_DATA.filter(e=>e.br===br && e.y>=_lcAcStartYear && e.y<=_lcAcEndYear);
+  const tabs = ['open','transfer','close'];
+  const tabBtns = tabs.map(t=>{
+    const cnt = evs.filter(e=>e.type===t).length;
+    return `<button class="lc-tab-btn ${_lcAcDetailTab===t?'active':''}" onclick="lcAcDetailTabChanged('${t}')">${LC_TYPE_LABEL[t]} (${cnt})</button>`;
+  }).join('');
+  return `<div class="card-box section-gap" id="lcBrDetailWrap">
+    <h4>${eschtml(br)} <span style="font-size:12px;font-weight:400;color:var(--muted)">— ${_lcAcStartYear}~${_lcAcEndYear}년 상세</span></h4>
+    <div class="lc-tab-bar">${tabBtns}</div>
+    <div id="lcBrDetailListWrap">${lcBuildDetailList(br, _lcAcDetailTab)}</div>
+  </div>`;
+}
+function lcAcDetailTabChanged(tab){
+  _lcAcDetailTab = tab;
+  const wrap = document.getElementById('lcBrDetailWrap');
+  if(wrap) wrap.outerHTML = renderLcBranchDetail();
+}
+function lcBuildDetailList(br, tab){
+  const evs = LIFECYCLE_DATA.filter(e=>e.br===br && e.type===tab && e.y>=_lcAcStartYear && e.y<=_lcAcEndYear)
+    .sort((a,b)=>(b.y-a.y)||(b.m-a.m));
+  if(!evs.length) return `<p class="hint" style="margin-top:10px">해당 기간에 내역이 없습니다.</p>`;
+  const rows = evs.map(e=>{
+    const clickable = tab!=='close';
+    let onclickAttr='', cls='';
+    if(clickable){
+      const found = lcFindActiveCenter(e.code);
+      if(found) onclickAttr = `onclick="openCenterDetail(${found.mi},${found.bi},${found.ci})" style="cursor:pointer"`;
+      else cls = 'lc-row-disabled';
+    } else cls = 'lc-row-disabled';
+    return `<tr class="${cls}" ${onclickAttr}>
+      <td>${e.y}.${String(e.m).padStart(2,'0')}</td>
+      <td>${eschtml(e.name)}</td>
+      <td>${e.src}</td>
+    </tr>`;
+  }).join('');
+  return `<table class="lc-table" style="margin-top:10px">
+    <thead><tr><th>연월</th><th>센터명</th><th>구분</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
 function renderHome(){
   if(!_homeRange) _homeRange = weekRange();
   const r = _homeRange;
@@ -6478,7 +7708,7 @@ function renderHome(){
   </div>`;
 
   const curiAll = curiSeriesForScope({mgr:null,br:null});
-  const curiMem8 = curiAll.mem[7], curiWb8 = curiAll.workbook[7], curiTb8 = curiAll.textbook[7];
+  const curiMem9 = curiAll.mem[8], curiWb9 = curiAll.workbook[8], curiTb9 = curiAll.textbook[8];
 
   app.innerHTML = `
     ${renderHomeQuickNav()}
@@ -6486,32 +7716,18 @@ function renderHome(){
     ${renderUnifiedKpiGrid()}
 
     <div class="card-box section-gap" id="sec-mem">
-      <h4>📈 [영어] 실회원 추이</h4>
-      <div class="trend-wrap" style="height:280px"><canvas id="homeBmChart"></canvas></div>
+      <h4 id="homeEngTitle">${HOME_ENG_TAB_META[_homeEngTab].title.replace(/^(\S+) /, '$1 [영어] ')}</h4>
+      ${renderHomeEngSection()}
     </div>
 
-    <div class="card-box section-gap" id="sec-engrev">
-      <h4>💰 [영어] 매출 추이</h4>
-      <div class="trend-wrap" style="height:280px"><canvas id="engRevChart"></canvas></div>
-    </div>
-
-    <div class="card-box section-gap" id="sec-new">
-      <h4>🆕 [영어] 신규회원 추이</h4>
-      <div class="trend-wrap" style="height:280px"><canvas id="newMemChart"></canvas></div>
+    <div class="card-box section-gap" id="sec-network">
+      <h4>🏗️ [영어] 개설·해지 현황</h4>
+      ${renderLifecycleHomeSection()}
     </div>
 
     <div class="card-box section-gap" id="sec-curi">
-      <h4>🧮 [수학] 큐리매쓰 현황</h4>
-      <div class="dash-grid2b" style="margin-top:10px">
-        <div>
-          <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">실회원 추이</div>
-          <div class="trend-wrap" style="height:220px"><canvas id="curiMemberChart"></canvas></div>
-        </div>
-        <div>
-          <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">매출 추이 — 문제은행 / 교재매출</div>
-          <div class="trend-wrap" style="height:220px"><canvas id="curiRevenueChart"></canvas></div>
-        </div>
-      </div>
+      <h4 id="homeCuriTitle">🧮 [큐리매쓰] ${HOME_CURI_TAB_META[_homeCuriTab].title.replace(/^\S+ /,'')}</h4>
+      ${renderHomeCuriSection()}
     </div>
 
     <div class="home-week-bar" id="sec-weekly">
@@ -6528,10 +7744,9 @@ function renderHome(){
     <div class="home-grid">${cards}${hqCard}</div>
     <p class="hint" style="margin-top:16px">매니저 카드를 클릭하면 해당 매니저의 본부 목록으로 이동합니다. 왼쪽 사이드바에서 특정 매니저로 바로 이동할 수도 있습니다.</p>`;
 
-  drawHomeBmChart();
-  drawEngRevChart();
-  drawNewMemChart();
+  drawHomeEngActiveChart();
   drawCuriCharts();
+  drawLifecycleHomeChart();
 }
 function homeShiftWeek(n){
   const f = new Date(_homeRange.from+'T00:00:00');
@@ -6925,25 +8140,33 @@ async function submitDashAuth(){
     return;
   }
   errEl.textContent = '';
-  if(btnEl){ btnEl.disabled = true; btnEl.textContent = '확인 중…'; }
-  try{
-    const res = await fetch(CLOUD_URL, {method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action:'login', password: pwEl.value})});
-    const data = await res.json();
-    if(data.ok){
-      try { sessionStorage.setItem(AUTH_SESSION_KEY, '1'); } catch(e){}
-      startDashApp();
-    } else {
-      errEl.textContent = data.error || '비밀번호가 올바르지 않습니다.';
-      pwEl.value = '';
-      pwEl.focus();
+  const MAX_RETRY = 5;
+  for(let attempt=1; attempt<=MAX_RETRY; attempt++){
+    if(btnEl){ btnEl.disabled = true; btnEl.textContent = attempt===1 ? '확인 중…' : `재시도 중… (${attempt}/${MAX_RETRY})`; }
+    try{
+      const res = await fetch(CLOUD_URL, {method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({action:'login', password: pwEl.value})});
+      const data = await res.json();
+      if(data.ok){
+        try { sessionStorage.setItem(AUTH_SESSION_KEY, '1'); } catch(e){}
+        startDashApp();
+      } else {
+        errEl.textContent = data.error || '비밀번호가 올바르지 않습니다.';
+        pwEl.value = '';
+        pwEl.focus();
+      }
+      break; // 서버 응답을 정상적으로 받았으면(맞든 틀리든) 재시도 없이 종료
+    } catch(e){
+      // 서버 연결 자체가 안 되는 경우(네트워크 오류)만 재시도
+      if(attempt===MAX_RETRY){
+        errEl.textContent = `서버에 연결할 수 없습니다. (${MAX_RETRY}회 재시도 실패) 잠시 후 다시 시도해 주세요.`;
+      } else {
+        await new Promise(r=>setTimeout(r, 800));
+      }
     }
-  } catch(e){
-    errEl.textContent = '서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.';
-  } finally {
-    if(btnEl){ btnEl.disabled = false; btnEl.textContent = '확인'; }
   }
+  if(btnEl){ btnEl.disabled = false; btnEl.textContent = '확인'; }
 }
 
 if(isDashAuthed()){

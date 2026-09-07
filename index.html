@@ -42,6 +42,16 @@ header.top .period{font-size:12.5px;color:var(--muted)}
 .br-row .stats{font-size:12.5px;color:var(--muted)}
 .br-row .stats b.warn{color:var(--alert)}
 .br-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.gs-wrap{position:relative;max-width:520px}
+.gs-input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:8px;padding:11px 14px;font-size:14px;font-family:inherit;color:var(--ink)}
+.gs-input:focus{outline:none;border-color:var(--pine)}
+.gs-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.1);max-height:340px;overflow-y:auto;z-index:50}
+.gs-item{padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.gs-item:last-child{border-bottom:none}
+.gs-item:hover{background:var(--pine-soft)}
+.gs-name{font-weight:700;color:var(--ink);font-size:13.5px;white-space:nowrap}
+.gs-sub{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.gs-empty{padding:12px 14px;color:var(--muted);font-size:13px}
 .br-card{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--pine);border-radius:8px;padding:16px 16px;cursor:pointer;transition:transform .12s, box-shadow .12s}
 .br-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(28,36,49,.10)}
 .br-card .bc-name{font-size:15px;font-weight:800}
@@ -7196,7 +7206,12 @@ function renderAllCenters(){
   app.innerHTML = `
     <h2 class="mgr">📋 전체 현황</h2>
     <p class="hint" style="margin:10px 0 16px">항목을 선택한 뒤 매니저·본부·센터를 순서대로 골라 조회합니다.</p>
-    <div class="br-grid">
+    <div class="gs-wrap">
+      <input type="text" id="globalSearchInput" class="gs-input" placeholder="🔍 센터명으로 바로 찾기 (일부만 입력해도 됩니다)"
+        oninput="globalSearchInput(this.value)" onkeydown="if(event.key==='Escape'){this.value='';globalSearchInput('');}">
+      <div id="globalSearchResults" class="gs-results" style="display:none"></div>
+    </div>
+    <div class="br-grid" style="margin-top:18px">
       <div class="br-card" onclick="go({view:'allcenterslist',brand:'eng'})">
         <div class="bc-name">🔤 영어 (학원·우영)</div>
         <div class="bc-meta">센터 ${fmtNum(engTotal)}개</div>
@@ -7210,6 +7225,54 @@ function renderAllCenters(){
         <div class="bc-meta">2026년 ${fmtNum(lcTotal)}건</div>
       </div>
     </div>`;
+}
+// ── 전체 현황 통합 검색: 센터명 일부만 입력해도 영어·수학 센터 전체에서 찾아 바로 이동 ──
+let _globalSearchIndex = null;
+function buildGlobalSearchIndex(){
+  const idx = [];
+  DATA.managers.forEach(m=>m.branches.forEach(b=>b.centers.forEach(c=>{
+    if(c.closed) return;
+    idx.push({type:'eng', name:c.name, mgr:m.name, br:b.name, sub:`${m.name} · ${b.name} · 영어`});
+  })));
+  CURI_DATA.forEach(r=>{
+    if(r.center.includes('(해지)')) return;
+    idx.push({type:'math', name:r.center, mgr:r.mgr, br:r.region, sub:`${r.mgr==='본사'?'본사 직영':r.mgr} · ${r.region} · 큐리매쓰`});
+  });
+  return idx;
+}
+function globalSearchInput(v){
+  if(!_globalSearchIndex) _globalSearchIndex = buildGlobalSearchIndex();
+  const box = document.getElementById('globalSearchResults');
+  if(!box) return;
+  const q = v.trim().toLowerCase();
+  if(!q){ box.innerHTML=''; box.style.display='none'; return; }
+  const matches = _globalSearchIndex.filter(x=>x.name.toLowerCase().includes(q)).slice(0,15);
+  if(!matches.length){
+    box.innerHTML = '<div class="gs-empty">일치하는 센터가 없습니다.</div>';
+    box.style.display='';
+    return;
+  }
+  box.innerHTML = matches.map((x,i)=>`<div class="gs-item" onclick="globalSearchJump(${i})">
+    <span class="gs-name">${eschtml(x.name)}</span>
+    <span class="gs-sub">${eschtml(x.sub)}</span>
+  </div>`).join('');
+  box._matches = matches;
+  box.style.display='';
+}
+let _acJumpTarget = null;
+function globalSearchJump(i){
+  const box = document.getElementById('globalSearchResults');
+  const x = box._matches[i];
+  box.innerHTML=''; box.style.display='none';
+  const inputEl = document.getElementById('globalSearchInput'); if(inputEl) inputEl.value='';
+  const brand = x.type==='eng' ? 'eng' : 'math';
+  _acJumpTarget = {mgr:x.mgr, br:x.br, center:x.name};
+  route = {view:'allcenterslist', brand};
+  const hash = '#'+stringifyRoute(route);
+  if(typeof history!=='undefined' && history.replaceState) history.replaceState(null,'',hash);
+  else location.hash = hash;
+  render();
+  window.scrollTo(0,0);
 }
 
 // ── 전체 센터 현황: 매니저→본부(영어)/지역(수학)→센터 드릴다운 ──
@@ -7235,12 +7298,20 @@ function acCenterOptions(mgrName, brName){
 function renderAllCentersList(){
   const brand = route.brand;
   if(brand==='lc'){ renderLcAllCentersList(); return; }
-  _acScope = {mgr:'', br:'', center:''};
+  if(_acJumpTarget){
+    _acScope = {..._acJumpTarget};
+    _acJumpTarget = null;
+  } else {
+    _acScope = {mgr:'', br:'', center:''};
+  }
   app.innerHTML = `
     <button class="back-btn" style="margin:0 0 14px" onclick="go({view:'allcenters'})">‹ 전체 현황으로</button>
     <h2 class="mgr">${brand==='eng'?'🔤 영어':'🧮 수학'} 전체 센터 현황</h2>
     <div id="acPickerWrap">${acPickerHtml()}</div>
-    <div id="acDetailWrap"></div>`;
+    <div id="acDetailWrap">${_acScope.center ? (brand==='eng' ? acEngDetailHtml() : acMathDetailHtml()) : ''}</div>`;
+  if(_acScope.center){
+    if(brand==='eng') acDrawEngDetailCharts(); else acDrawMathDetailCharts();
+  }
 }
 function acPickerHtml(){
   const brand = route.brand;

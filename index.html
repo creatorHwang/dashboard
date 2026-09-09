@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>가맹본부 투트랙 캔버스</title>
+<title>가맹지역본부 투트랙 캔버스</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
@@ -403,7 +403,7 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .dir-duration{margin-top:8px;font-size:13px;padding-top:8px;border-top:1px dashed var(--line)}
 .dir-duration b{color:var(--pine)}
 
-/* ===== 본부 상세: 매니저명·가맹본부명 스크롤 고정 ===== */
+/* ===== 본부 상세: 매니저명·가맹지역본부명 스크롤 고정 ===== */
 .branch-head-sticky{position:sticky;top:0;z-index:30;background:var(--paper);padding-top:4px;margin:0 0 14px;border-bottom:1px solid var(--line)}
 .center-quick-pick{display:flex;align-items:center;gap:8px;padding:8px 0 12px;font-size:12.5px}
 .center-quick-pick label{font-weight:700;color:var(--amber)}
@@ -6159,7 +6159,7 @@ const DOC_LINKS = [
     url:'https://docs.google.com/spreadsheets/d/1dscT58KQfQSvXHTaB-Q1KGyK9PYwKw_aoAaUEbLU-dc/edit#gid=1476437962' },
   { id:'formMgr',  label:'계약서식(매니저용)', kind:'gdrive',
     url:'https://drive.google.com/drive/folders/1ZX-cYcm1kt2U7ehGAqp5t_pBConqL_v0' },
-  { id:'formHq',   label:'계약서식(가맹본부용)', kind:'gdrive',
+  { id:'formHq',   label:'계약서식(가맹지역본부용)', kind:'gdrive',
     url:'https://drive.google.com/drive/folders/1qZLOmTlPwTAL9wB0vrIP8J0ARh7LzBO6' },
 ];
 function docEmbedUrl(d){
@@ -6250,7 +6250,7 @@ function renderSidebar(){
   const sb = document.getElementById('sidebar');
   const activeMgrName = (route.view==='mgr'||route.view==='br') ? DATA.managers[route.mgr].name : null;
   const activeVocName = route.view==='voc' ? DATA.managers[route.mgr].name : null;
-  let html = `<div class="sb-brand">가맹본부 통합 보드</div>`;
+  let html = `<div class="sb-brand">가맹지역본부 통합 보드</div>`;
   MENU.forEach(item=>{
     if(item.type==='single'){
       const active = route.view===item.id ? 'active' : '';
@@ -7968,7 +7968,7 @@ function renderBranch(){
       <div class="branch-head-sticky">
         <button class="back-btn" style="margin:0 0 14px" onclick='go({view:"mgr",mgr:${route.mgr}})'>‹ 본부 목록으로</button>
         <h2 class="mgr">👤 매니저: ${m.name}</h2>
-        <h3 class="hb">🏢 가맹본부: ${b.name} 가맹지역본부 <span class="pill">보고서 대기</span></h3>
+        <h3 class="hb">🏢 가맹지역본부: ${b.name} <span class="pill">보고서 대기</span></h3>
         ${b.centers && b.centers.length ? `<div class="center-quick-pick">
           <label>🔒 센터 정보 바로보기</label>
           <select onchange="if(this.value!=='') openCenterDetail(${route.mgr},${route.br},+this.value); this.value=''">
@@ -8049,7 +8049,7 @@ function renderBranch(){
     <div class="branch-head-sticky">
       <button class="back-btn" style="margin:0 0 14px" onclick='go({view:"mgr",mgr:${route.mgr}})'>‹ 본부 목록으로</button>
       <h2 class="mgr">👤 매니저: ${m.name}</h2>
-      <h3 class="hb">🏢 가맹본부: ${b.name} 가맹지역본부</h3>
+      <h3 class="hb">🏢 가맹지역본부: ${b.name}</h3>
       <div class="center-quick-pick">
         <label>🔒 센터 정보 바로보기</label>
         <select onchange="if(this.value!=='') openCenterDetail(${route.mgr},${route.br},+this.value); this.value=''">

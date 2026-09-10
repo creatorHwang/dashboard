@@ -2336,11 +2336,11 @@ async function cloudPush(action,key,item){
    센터 정보(원장명·연락처·주소·개설일) 조회
    - 인증 없이 바로 조회(요청에 따라 비밀번호 절차 제거).
    ============================================================ */
-async function fetchDirectorInfo(centerName){
+async function fetchDirectorInfo(centerName, centerCode){
   try{
     const res = await fetch(CLOUD_URL, {method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action:'getDirectorInfo', centerName})});
+      body: JSON.stringify({action:'getDirectorInfo', centerName, centerCode})});
     const data = await res.json();
     if(!data.ok){ return {ok:false, error:data.error}; }
     return {ok:true, info:data.info};
@@ -2377,7 +2377,7 @@ async function loadDirectorInfo(){
   if(!_modalCtx) return;
   const body = document.getElementById('dirBody');
   if(body) body.innerHTML = '불러오는 중…';
-  const r = await fetchDirectorInfo(_modalCtx.c);
+  const r = await fetchDirectorInfo(_modalCtx.c, _modalCtx.code);
   if(!r.ok){
     if(body) body.innerHTML = `<span class="dir-err">${eschtml(r.error||'조회 실패')}</span>`;
     return;
@@ -2391,9 +2391,10 @@ async function loadDirectorInfo(){
   const mapUrl = info.주소 ? `https://map.naver.com/v5/search/${encodeURIComponent(info.주소)}` : null;
   const telNum = info.연락처 ? info.연락처.replace(/[^0-9+]/g,'') : null;
   if(!body) return;
+  const ageTxt = !isBlankVal(info.만나이) ? `${info.만나이}세` : null;
   body.innerHTML = `
     <table class="dir-table">
-      <tr><th>원장명</th><td>${eschtml(info.원장명||'-')}</td></tr>
+      <tr><th>원장명</th><td>${eschtml(info.원장명||'-')}${ageTxt?` <span class="dir-sub">(만 ${ageTxt})</span>`:''}</td></tr>
       <tr><th>연락처</th><td>${info.연락처 && telNum ? `<a href="tel:${telNum}" class="dir-tel">📞 ${eschtml(info.연락처)}</a>` : eschtml(info.연락처||'-')}</td></tr>
       <tr><th>주소</th><td>${info.주소? `<a href="${mapUrl}" target="_blank" rel="noopener">${eschtml(info.주소)} <span class="dir-map">📍네이버맵</span></a>` : '-'}</td></tr>
       <tr><th>최초개설일</th><td>${eschtml(info.최초개설일||'-')}</td></tr>
@@ -2658,7 +2659,7 @@ let _modalCtx=null, _detailChart=null;
 function openCenterDetail(mgrIdx,brIdx,cIdx){
   const m=DATA.managers[mgrIdx], b=m.branches[brIdx], c=b.centers[cIdx];
   if(c.closed) return; // 해지 센터는 상세 팝업 대상 아님
-  _modalCtx={mgr:m.name,br:b.name,c:c.name,mgrIdx,brIdx,cIdx};
+  _modalCtx={mgr:m.name,br:b.name,c:c.name,code:c.code,mgrIdx,brIdx,cIdx};
   const ov=document.getElementById('centerModal');
   document.getElementById('modalBody').innerHTML=renderCenterDetail(m,b,c);
   ov.classList.add('show');
@@ -7417,7 +7418,7 @@ function acDrawEngDetailCharts(){
   const m = DATA.managers.find(x=>x.name===_acScope.mgr);
   const b = m.branches.find(x=>x.name===_acScope.br);
   const c = b.centers.find(x=>x.name===_acScope.center);
-  _modalCtx = {mgr:m.name, br:b.name, c:c.name, mgrIdx:DATA.managers.indexOf(m), brIdx:m.branches.indexOf(b), cIdx:b.centers.indexOf(c)};
+  _modalCtx = {mgr:m.name, br:b.name, c:c.name, code:c.code, mgrIdx:DATA.managers.indexOf(m), brIdx:m.branches.indexOf(b), cIdx:b.centers.indexOf(c)};
   const elM=document.getElementById('acEngMemChart');
   if(_acEngMemChart)_acEngMemChart.destroy();
   const memMax = Math.max(1, ...c.mem.filter(v=>v!==null&&v!==undefined));

@@ -14,6 +14,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
 .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px}
+.wrap.wrap-full{max-width:none}
 header.top{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px}
 header.top h1{font-size:21px;letter-spacing:-.3px}
 header.top h1 .tag{display:inline-block;background:var(--pine);color:#fff;font-size:11px;padding:3px 8px;border-radius:3px;vertical-align:3px;margin-left:8px;letter-spacing:.5px}
@@ -6260,7 +6261,8 @@ const MENU = [
   { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
     children: () => DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name })) },
   { id:'doc',  label:'🔗 외부 문서', type:'group', expanded:true,
-    children: () => DOC_LINKS.map(d => ({ id:'doc:'+d.id, label:d.label })) }
+    children: () => DOC_LINKS.map(d => ({ id:'doc:'+d.id, label:d.label })) },
+  { id:'map',  label:'🗺️ 가맹지역본부 지도', type:'single' }
   /* ▼ 새 메뉴는 이 배열에 한 항목만 추가하면 사이드바에 자동 반영됨
   ,{ id:'report', label:'📋 리포트', type:'single' }
   */
@@ -6330,6 +6332,10 @@ function renderCrumbs(){
     crumbs.innerHTML = h + `<span class="sep">›</span><b style="color:var(--ink)">${d?d.label:''}</b>`;
     return;
   }
+  if(route.view==='map'){
+    crumbs.innerHTML = h + `<span class="sep">›</span><b style="color:var(--ink)">🗺️ 가맹지역본부 지도</b>`;
+    return;
+  }
   if(route.view==='voc'){
     const m = DATA.managers[route.mgr];
     crumbs.innerHTML = h + `<span class="sep">›</span>📞 VOC<span class="sep">›</span><b style="color:var(--ink)">${m.name}</b>`;
@@ -6364,6 +6370,7 @@ function renderCrumbs(){
 }
 
 function render(){
+  document.querySelector('.wrap').classList.toggle('wrap-full', route.view==='map'); // 지도 메뉴만 폭 제한을 풀어준다
   renderSidebar();
   renderCrumbs();
   if(route.view==='home'){
@@ -6379,10 +6386,23 @@ function render(){
   if(route.view==='allcenters') return renderAllCenters();
   if(route.view==='allcenterslist') return renderAllCentersList();
   if(route.view==='doc') return renderDoc();
+  if(route.view==='map') return renderMapView();
   if(route.view==='voc') return renderVoc();
   if(route.view==='main') return renderMain();
   if(route.view==='mgr') return renderMgr();
   if(route.view==='br') return renderBranch();
+}
+
+/* ===== 가맹지역본부 지도(카카오맵) — 별도 사이트를 iframe으로 삽입 ===== */
+const MAP_EMBED_URL = 'https://creatorhwang.github.io/yoons-map/'; // 실제 배포 주소로 바꿔주세요
+function renderMapView(){
+  app.innerHTML = `
+    <h2 class="mgr">🗺️ 가맹지역본부 지도</h2>
+    <p class="hint" style="margin:2px 0 16px">전국 센터 위치를 지도에서 검색·필터링하고, 거리·면적·반경도 잴 수 있습니다.</p>
+    <div class="doc-frame-wrap">
+      <iframe class="doc-frame" style="height:78vh" src="${MAP_EMBED_URL}" loading="lazy"></iframe>
+    </div>
+    <p class="hint" style="margin-top:8px">화면이 비어 있으면 <a href="${MAP_EMBED_URL}" target="_blank" rel="noopener">새 창에서 열기</a>를 이용하세요.</p>`;
 }
 
 /* ===== VOC (사이드바 전용 — 구글시트 연동 예정, 현재는 틀만) ===== */

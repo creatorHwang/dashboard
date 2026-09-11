@@ -3166,12 +3166,17 @@ function parseHash(){
     const mi = DATA.managers.findIndex(m=>m.name===decodeURIComponent(mMgr[1]));
     if(mi>=0) return {view:'mgr', mgr:mi, br:null};
   }
-  const mBr = h.match(/^mgr:([^/]+)\/br:(.+)$/);
+  const mBr = h.match(/^mgr:([^/]+)\/br:([^/]+)(?:\/merged:([^/]+))?(?:\/mlabel:(.+))?$/);
   if(mBr){
     const mi = DATA.managers.findIndex(m=>m.name===decodeURIComponent(mBr[1]));
     if(mi>=0){
       const bi = DATA.managers[mi].branches.findIndex(b=>b.name===decodeURIComponent(mBr[2]));
-      if(bi>=0) return {view:'br', mgr:mi, br:bi};
+      if(bi>=0){
+        const r = {view:'br', mgr:mi, br:bi};
+        if(mBr[3]) r.mergedBrs = mBr[3].split(',').map(s=>decodeURIComponent(s));
+        if(mBr[4]) r.mergedLabel = decodeURIComponent(mBr[4]);
+        return r;
+      }
     }
   }
   return {view:'home'};
@@ -3185,7 +3190,14 @@ function stringifyRoute(r){
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
   if(r.view==='voc') return `voc:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
   if(r.view==='mgr') return `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
-  if(r.view==='br') return `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}/br:${encodeURIComponent(DATA.managers[r.mgr].branches[r.br].name)}`;
+  if(r.view==='br'){
+    let s = `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}/br:${encodeURIComponent(DATA.managers[r.mgr].branches[r.br].name)}`;
+    if(r.mergedBrs && r.mergedBrs.length){
+      s += `/merged:${r.mergedBrs.map(n=>encodeURIComponent(n)).join(',')}`;
+      if(r.mergedLabel) s += `/mlabel:${encodeURIComponent(r.mergedLabel)}`;
+    }
+    return s;
+  }
 }
 let route = parseHash();
 
@@ -7873,10 +7885,30 @@ function renderMain(){
     <p class="hint">매니저 이름을 클릭하면 담당 가맹지역본부 목록이 표시됩니다. 데이터 추가는 스크립트 상단 DATA 객체에 매니저/본부를 붙이면 자동 반영됩니다.</p>`;
 }
 
+// 매니저 화면에서 여러 본부를 카드 1개로 합쳐서 보여줄 그룹(현재는 황지애 직영 3곳)
+const MGR_MERGE_GROUPS = [
+  {mgr:'황지애', brs:['직영학원','우영직영본부','울산(직영우본)'], label:'황지애(직영, 울산)'}
+];
 function renderMgr(){
   const m = DATA.managers[route.mgr];
   _mgrDeclineFilter = '';
-  const rows = m.branches.map((b,i)=>{
+  const group = MGR_MERGE_GROUPS.find(g=>g.mgr===m.name);
+  const mergedIdxSet = new Set();
+  let mergedCardHtml = '';
+  if(group){
+    const idxs = group.brs.map(n=>m.branches.findIndex(b=>b.name===n)).filter(i=>i>=0);
+    idxs.forEach(i=>mergedIdxSet.add(i));
+    if(idxs.length){
+      let activeCenters = [];
+      idxs.forEach(i=>{ activeCenters = activeCenters.concat(m.branches[i].centers.filter(c=>!c.closed)); });
+      const low = activeCenters.filter(isLowCenter).length;
+      mergedCardHtml = `<div class="br-card" onclick='go(${JSON.stringify({view:'br',mgr:route.mgr,br:idxs[0],mergedBrs:group.brs,mergedLabel:group.label})})'>
+        <div class="bc-name">🏢 ${group.label}</div>
+        <div class="bc-meta">센터 ${activeCenters.length}개 · 저실적 <b class="warn">${low}개</b></div></div>`;
+    }
+  }
+  const rows = mergedCardHtml + m.branches.map((b,i)=>{
+    if(mergedIdxSet.has(i)) return ''; // 병합된 카드로 이미 표시됨 — 개별 카드 생략
     if(b.placeholder){
       return `<div class="br-card placeholder" onclick='go({view:"br",mgr:${route.mgr},br:${i}})'>
         <div class="bc-name">🏢 ${b.name} <span class="pill">대기</span></div>

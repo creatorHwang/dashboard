@@ -6229,6 +6229,7 @@ function docEmbedUrl(d){
 function renderDoc(){
   const d = DOC_LINKS.find(x=>x.id===route.doc);
   if(!d){ app.innerHTML = '<p class="hint">문서를 찾을 수 없습니다.</p>'; return; }
+  if(d.kind==='gdrive') return renderDriveFileList(d); // 계약서식 폴더는 파일 목록(다운로드·전달) 화면으로
   const noteMap = {
     gsheet: '구글 계정으로 로그인되어 있으면 이 안에서 바로 편집·저장됩니다.',
     gdrive: '보기·미리보기·다운로드만 지원합니다. 편집이 필요하면 새 창에서 여세요.',
@@ -6246,6 +6247,128 @@ function renderDoc(){
         referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
     <p class="hint" style="margin-top:8px">화면이 비어 있거나 로그인 요청이 뜨면, 소속 계정으로 로그인 후 새로고침하거나 위 "새 창에서 열기"를 이용하세요.</p>`;
+}
+
+/* ===== 계약서식 폴더 — 파일 목록(다운로드·전달하기·이메일 발송) =====
+   구글드라이브 폴더를 통째로 iframe에 넣는 대신, Apps Script가 폴더 안 파일 목록만
+   가벼운 형태로 가져와서 여기서 직접 표로 그린다. */
+function _driveFolderId(d){
+  const m = d.url.match(/folders\/([^/?]+)/);
+  return m ? m[1] : null;
+}
+function _jsonpGet(url){
+  return new Promise((resolve, reject)=>{
+    const cbName = '__jsonpCb' + Date.now() + Math.floor(Math.random()*10000);
+    let timeoutId;
+    window[cbName] = function(data){
+      clearTimeout(timeoutId); delete window[cbName]; script.remove();
+      if(!data.ok) return reject(new Error(data.error || '요청이 실패했습니다.'));
+      resolve(data);
+    };
+    const script = document.createElement('script');
+    script.src = url + (url.includes('?')?'&':'?') + 'callback=' + cbName + '&_=' + Date.now();
+    script.onerror = ()=>{ clearTimeout(timeoutId); delete window[cbName]; script.remove(); reject(new Error('서버에 연결할 수 없습니다.')); };
+    timeoutId = setTimeout(()=>{ delete window[cbName]; script.remove(); reject(new Error('서버 응답이 너무 오래 걸립니다.')); }, 20000);
+    document.head.appendChild(script);
+  });
+}
+function _fmtFileSize(bytes){
+  if(bytes < 1024) return bytes + 'B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + 'KB';
+  return (bytes/1024/1024).toFixed(1) + 'MB';
+}
+function renderDriveFileList(d){
+  const folderId = _driveFolderId(d);
+  app.innerHTML = `
+    <div class="doc-bar">
+      <b>${d.label}</b>
+      <span class="doc-note">파일별로 다운로드하거나, 카톡·문자 등으로 바로 전달할 수 있습니다.</span>
+      <span style="flex:1"></span>
+      <a class="rp-btn ghost" href="${d.url}" target="_blank" rel="noopener">↗ 드라이브에서 새 창으로 열기</a>
+    </div>
+    <div id="driveFileListWrap" style="margin-top:14px">불러오는 중…</div>`;
+  if(!folderId){
+    document.getElementById('driveFileListWrap').innerHTML = '<p class="hint">폴더 주소를 확인하지 못했습니다.</p>';
+    return;
+  }
+  _jsonpGet(CLOUD_URL + '?action=listDriveFiles&folderId=' + encodeURIComponent(folderId))
+    .then(data=>{
+      const wrap = document.getElementById('driveFileListWrap');
+      if(!wrap) return;
+      if(!data.files || !data.files.length){
+        wrap.innerHTML = '<p class="hint">폴더에 파일이 없습니다.</p>';
+        return;
+      }
+      wrap.innerHTML = `<table class="lc-table">
+        <thead><tr><th>파일명</th><th>크기</th><th>수정일</th><th style="width:220px">동작</th></tr></thead>
+        <tbody>${data.files.map(f=>`
+          <tr>
+            <td>${eschtml(f.name)}</td>
+            <td class="num">${_fmtFileSize(f.size)}</td>
+            <td class="num">${f.updated.slice(0,10)}</td>
+            <td>
+              <button class="map-capture-btn" style="padding:5px 10px;font-size:12px" onclick="downloadDriveFile('${f.id}','${jsq(f.name)}')">📥 다운로드</button>
+              <button class="map-capture-btn" style="padding:5px 10px;font-size:12px" onclick="shareDriveFile('${f.id}','${jsq(f.name)}')">📱 전달하기</button>
+              <button class="map-capture-btn" style="padding:5px 10px;font-size:12px" onclick="emailDriveFilePrompt('${f.id}','${jsq(f.name)}')">✉️ 이메일</button>
+            </td>
+          </tr>`).join('')}</tbody>
+      </table>`;
+    })
+    .catch(e=>{
+      const wrap = document.getElementById('driveFileListWrap');
+      if(wrap) wrap.innerHTML = `<p class="hint">⚠️ 파일 목록을 불러오지 못했습니다: ${eschtml(e.message)}</p>`;
+    });
+}
+function _base64ToBlob(base64, mimeType){
+  const byteChars = atob(base64);
+  const byteNumbers = new Array(byteChars.length);
+  for(let i=0;i<byteChars.length;i++) byteNumbers[i] = byteChars.charCodeAt(i);
+  return new Blob([new Uint8Array(byteNumbers)], {type: mimeType});
+}
+async function downloadDriveFile(fileId, name){
+  try{
+    const data = await _jsonpGet(CLOUD_URL + '?action=getDriveFileContent&fileId=' + encodeURIComponent(fileId));
+    const blob = _base64ToBlob(data.base64, data.mimeType);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = data.name || name;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }catch(e){
+    alert('다운로드에 실패했습니다: ' + e.message);
+  }
+}
+async function shareDriveFile(fileId, name){
+  try{
+    const data = await _jsonpGet(CLOUD_URL + '?action=getDriveFileContent&fileId=' + encodeURIComponent(fileId));
+    const blob = _base64ToBlob(data.base64, data.mimeType);
+    const file = new File([blob], data.name || name, {type: data.mimeType});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({ files:[file], title: data.name || name });
+    } else {
+      alert('이 브라우저(주로 PC)는 파일 공유를 지원하지 않아 대신 다운로드합니다. 다운로드된 파일을 카톡 등에 직접 첨부해 주세요.');
+      await downloadDriveFile(fileId, name);
+    }
+  }catch(e){
+    if(e.name !== 'AbortError') alert('전달에 실패했습니다: ' + e.message);
+  }
+}
+function emailDriveFilePrompt(fileId, name){
+  const to = prompt(`"${name}" 파일을 보낼 받는 사람 이메일을 입력해 주세요.`);
+  if(!to) return;
+  emailDriveFile(fileId, to);
+}
+async function emailDriveFile(fileId, to){
+  try{
+    const res = await fetch(CLOUD_URL, {method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'emailDriveFile', fileId, to})});
+    const data = await res.json();
+    if(data.ok) alert('이메일을 발송했습니다.');
+    else alert('발송 실패: ' + (data.error||''));
+  }catch(e){
+    alert('발송 중 오류가 발생했습니다: ' + e.message);
+  }
 }
 
 /* ===== 사이드바 메뉴 ===== */
@@ -6269,12 +6392,21 @@ const MENU = [
       {id:'allcenters:math', label:'🧮 수학'},
       {id:'allcenters:lc', label:'🏗️ 개설·해지'}
     ]},
-  { id:'map',  label:'🗺️ 가맹지역본부 지도', type:'single' },
-  { id:'restore', label:'🔄 중단 복원 업무', type:'single' },
+  { id:'archive', label:'🗺️ 가맹지역본부 아카이브', type:'group', expanded:false,
+    children: () => [
+      {id:'archive:map', label:'Maps'},
+      {id:'archive:formHq', label:'계약서식(가맹지역본부용)'}
+    ]},
+  { id:'office', label:'🏢 사무실 업무', type:'group', expanded:false,
+    children: () => [
+      {id:'office:restore', label:'중단 복원 업무'},
+      {id:'office:opendash', label:'개설대쉬보드'},
+      {id:'office:formMgr', label:'계약서식(매니저용)'}
+    ]},
   { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
     children: () => DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name })) },
   { id:'doc',  label:'🔗 외부 문서', type:'group', expanded:true,
-    children: () => DOC_LINKS.map(d => ({ id:'doc:'+d.id, label:d.label })) }
+    children: () => DOC_LINKS.filter(d=>d.id==='schedule'||d.id==='weekly').map(d => ({ id:'doc:'+d.id, label:d.label })) }
   /* ▼ 새 메뉴는 이 배열에 한 항목만 추가하면 사이드바에 자동 반영됨
   ,{ id:'report', label:'📋 리포트', type:'single' }
   */
@@ -6301,6 +6433,11 @@ function menuItemRoute(id){
   }
   if(id.startsWith('doc:')) return {view:'doc', doc:id.slice(4)};
   if(id.startsWith('allcenters:')) return {view:'allcenterslist', brand:id.slice(11)};
+  if(id==='archive:map') return {view:'map'};
+  if(id==='archive:formHq') return {view:'doc', doc:'formHq'};
+  if(id==='office:restore') return {view:'restore'};
+  if(id==='office:opendash') return {view:'doc', doc:'opendash'};
+  if(id==='office:formMgr') return {view:'doc', doc:'formMgr'};
   return {view:'home'};
 }
 function renderSidebar(){
@@ -6327,6 +6464,11 @@ function renderSidebar(){
                         : k.id.startsWith('mgr:') ? (activeMgrName===k.id.slice(4))
                         : k.id.startsWith('voc:') ? (activeVocName===k.id.slice(4))
                         : k.id.startsWith('doc:') ? (route.view==='doc' && route.doc===k.id.slice(4))
+                        : k.id==='archive:map' ? (route.view==='map')
+                        : k.id==='archive:formHq' ? (route.view==='doc' && route.doc==='formHq')
+                        : k.id==='office:restore' ? (route.view==='restore')
+                        : k.id==='office:opendash' ? (route.view==='doc' && route.doc==='opendash')
+                        : k.id==='office:formMgr' ? (route.view==='doc' && route.doc==='formMgr')
                         : false;
         html += `<div class="submenu-item ${isActive?'active':''}" onclick='go(${JSON.stringify(menuItemRoute(k.id))})'>${k.label}</div>`;
       });
@@ -6386,7 +6528,7 @@ function renderCrumbs(){
 }
 
 function render(){
-  document.querySelector('.wrap').classList.toggle('wrap-full', route.view==='map' || route.view==='restore'); // 지도·협조전 메뉴만 폭 제한을 풀어준다
+  document.querySelector('.wrap').classList.toggle('wrap-full', route.view==='map' || route.view==='restore' || (route.view==='doc' && route.doc==='opendash')); // 지도·협조전·개설대쉬보드는 폭 제한을 풀어준다
   renderSidebar();
   renderCrumbs();
   if(route.view==='home'){

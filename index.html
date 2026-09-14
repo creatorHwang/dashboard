@@ -84,6 +84,11 @@ tr.low-row td:first-child{border-left:4px solid var(--alert)}
 .back-btn{display:inline-block;margin-top:6px;background:none;border:1px solid var(--line);border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--ink)}
 .map-capture-btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;white-space:nowrap}
 .map-capture-btn:hover{border-color:var(--pine);color:var(--pine)}
+.restore-copy-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000}
+.restore-copy-modal{background:#fff;border-radius:10px;padding:24px 28px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.25);max-width:320px}
+.restore-copy-modal p{margin:0 0 16px;font-size:14px;color:var(--ink);line-height:1.5}
+.restore-copy-modal button{background:var(--pine);color:#fff;border:none;border-radius:6px;padding:8px 28px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.restore-copy-modal button:hover{background:#1c3d34}
 .back-btn:hover{border-color:var(--pine);color:var(--pine)}
 .br-row.placeholder{border-style:dashed;background:#fbfaf6}
 .br-row.placeholder:hover{border-color:var(--amber)}
@@ -3153,6 +3158,7 @@ function parseHash(){
   if(mHqCuri) return {view:'hqcuri', mgr:decodeURIComponent(mHqCuri[1]), region:decodeURIComponent(mHqCuri[2])};
   if(h==='allcenters') return {view:'allcenters'};
   if(h==='map') return {view:'map'};
+  if(h==='restore') return {view:'restore'};
   const mAllList = h.match(/^allcenters:(eng|math|lc)$/);
   if(mAllList) return {view:'allcenterslist', brand:mAllList[1]};
   const mDoc = h.match(/^doc:(.+)$/);
@@ -3191,6 +3197,7 @@ function stringifyRoute(r){
   if(r.view==='hqcuri') return `hqcuri:${encodeURIComponent(r.mgr)}/${encodeURIComponent(r.region)}`;
   if(r.view==='allcenters') return 'allcenters';
   if(r.view==='map') return 'map';
+  if(r.view==='restore') return 'restore';
   if(r.view==='allcenterslist') return `allcenters:${r.brand}`;
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
   if(r.view==='voc') return `voc:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
@@ -6262,11 +6269,12 @@ const MENU = [
       {id:'allcenters:math', label:'🧮 수학'},
       {id:'allcenters:lc', label:'🏗️ 개설·해지'}
     ]},
+  { id:'map',  label:'🗺️ 가맹지역본부 지도', type:'single' },
+  { id:'restore', label:'🔄 중단 복원 업무', type:'single' },
   { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
     children: () => DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name })) },
   { id:'doc',  label:'🔗 외부 문서', type:'group', expanded:true,
-    children: () => DOC_LINKS.map(d => ({ id:'doc:'+d.id, label:d.label })) },
-  { id:'map',  label:'🗺️ 가맹지역본부 지도', type:'single' }
+    children: () => DOC_LINKS.map(d => ({ id:'doc:'+d.id, label:d.label })) }
   /* ▼ 새 메뉴는 이 배열에 한 항목만 추가하면 사이드바에 자동 반영됨
   ,{ id:'report', label:'📋 리포트', type:'single' }
   */
@@ -6340,6 +6348,10 @@ function renderCrumbs(){
     crumbs.innerHTML = h + `<span class="sep">›</span><b style="color:var(--ink)">🗺️ 가맹지역본부 지도</b>`;
     return;
   }
+  if(route.view==='restore'){
+    crumbs.innerHTML = h + `<span class="sep">›</span><b style="color:var(--ink)">🔄 중단 복원 업무</b>`;
+    return;
+  }
   if(route.view==='voc'){
     const m = DATA.managers[route.mgr];
     crumbs.innerHTML = h + `<span class="sep">›</span>📞 VOC<span class="sep">›</span><b style="color:var(--ink)">${m.name}</b>`;
@@ -6374,7 +6386,7 @@ function renderCrumbs(){
 }
 
 function render(){
-  document.querySelector('.wrap').classList.toggle('wrap-full', route.view==='map'); // 지도 메뉴만 폭 제한을 풀어준다
+  document.querySelector('.wrap').classList.toggle('wrap-full', route.view==='map' || route.view==='restore'); // 지도·협조전 메뉴만 폭 제한을 풀어준다
   renderSidebar();
   renderCrumbs();
   if(route.view==='home'){
@@ -6391,6 +6403,7 @@ function render(){
   if(route.view==='allcenterslist') return renderAllCentersList();
   if(route.view==='doc') return renderDoc();
   if(route.view==='map') return renderMapView();
+  if(route.view==='restore') return renderRestoreView();
   if(route.view==='voc') return renderVoc();
   if(route.view==='main') return renderMain();
   if(route.view==='mgr') return renderMgr();
@@ -6497,6 +6510,66 @@ async function captureMapScreen(mode){
     else { showStatus('⚠️ 캡처 중 오류가 발생했습니다: ' + e.message); }
     if(stream){ stream.getTracks().forEach(t=>t.stop()); }
   }
+}
+
+/* ===== 중단 복원 업무 — 구글시트(뷰 전용) 임베드 + URL 전달 버튼 ===== */
+const RESTORE_SHEET_EMBED_URL = 'https://docs.google.com/spreadsheets/d/15AWn5Ucm78UyA6_l1DnIloGqJjX-ADF9tY_1kqPwNKA/preview'; // 뷰(읽기 전용) 형태로 임베드 — 실제 수정 가능 여부는 시트 자체의 공유 권한(뷰어/편집자)에 달려 있음
+const RESTORE_FORM_URL = 'https://yoons-restore.pages.dev/';
+function renderRestoreView(){
+  app.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <h2 class="mgr" style="margin:0">🔄 중단 복원 업무</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="map-capture-btn" onclick="shareRestoreUrl()">📱 공유하기</button>
+        <button class="map-capture-btn" onclick="copyRestoreUrl()">🔗 중단 복원 협조전 URL 전달</button>
+      </div>
+    </div>
+    <p class="hint" style="margin:8px 0 16px">가맹지역본부장·센터에 전달할 협조전 작성 링크를 복사합니다. 아래 표는 접수 현황(구글시트 연동, 조회·필터만 가능하며 수정은 되지 않습니다)입니다.</p>
+    ${RESTORE_SHEET_EMBED_URL
+      ? `<div class="doc-frame-wrap"><iframe class="doc-frame" style="height:78vh" src="${RESTORE_SHEET_EMBED_URL}" loading="lazy"></iframe></div>`
+      : `<div class="doc-frame-wrap" style="display:flex;align-items:center;justify-content:center;height:300px;color:var(--muted)">구글시트 링크가 아직 설정되지 않았습니다 — 코드 상단의 RESTORE_SHEET_EMBED_URL 값을 채워주세요.</div>`}
+  `;
+}
+// 모바일에서는 navigator.share()가 OS의 공유창(카카오톡·문자·이메일 등 설치된 앱이 자동으로 나열됨)을 띄운다.
+// 지원 안 하는 환경(주로 데스크톱)에서는 클립보드 복사로 자동 대체한다.
+async function shareRestoreUrl(){
+  const url = RESTORE_FORM_URL + (RESTORE_FORM_URL.includes('?') ? '&' : '?') + 'from=canvas';
+  if(navigator.share){
+    try{
+      await navigator.share({ title:'중단 복원 협조전', text:'중단 복원 협조전 작성 링크입니다.', url });
+    }catch(e){
+      if(e.name !== 'AbortError'){ // 사용자가 공유창을 취소한 경우는 조용히 무시
+        await copyRestoreUrl();
+      }
+    }
+  } else {
+    await copyRestoreUrl(); // 이 브라우저는 공유 기능을 지원하지 않음 — 클립보드 복사로 대체
+  }
+}
+async function copyRestoreUrl(){
+  // 이 링크로 접수되면 캔버스를 통해 전달됐다는 걸 구분할 수 있도록 추적용 파라미터를 붙입니다.
+  // (yoons-restore 사이트 쪽에서 이 파라미터를 받아 기록해야 실제로 구분됩니다 — 별도 확인 필요)
+  const url = RESTORE_FORM_URL + (RESTORE_FORM_URL.includes('?') ? '&' : '?') + 'from=canvas';
+  try{
+    await navigator.clipboard.writeText(url);
+  }catch(e){
+    // 클립보드 API가 막힌 환경 대비 — 임시 텍스트 영역으로 폴백
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(e2){}
+    ta.remove();
+  }
+  showRestoreCopyModal();
+}
+function showRestoreCopyModal(){
+  const modal = document.createElement('div');
+  modal.className = 'restore-copy-modal-overlay';
+  modal.innerHTML = `
+    <div class="restore-copy-modal">
+      <p>URL이 복사되었어요. 원하는 곳에 붙여 넣기 하세요.</p>
+      <button onclick="this.closest('.restore-copy-modal-overlay').remove()">OK</button>
+    </div>`;
+  document.body.appendChild(modal);
 }
 
 /* ===== VOC (사이드바 전용 — 구글시트 연동 예정, 현재는 틀만) ===== */

@@ -82,6 +82,8 @@ tr.low-row td:first-child{border-left:4px solid var(--alert)}
 .legend{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6}
 .note{font-size:12px;color:var(--amber);margin-top:8px}
 .back-btn{display:inline-block;margin-top:6px;background:none;border:1px solid var(--line);border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--ink)}
+.map-capture-btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;white-space:nowrap}
+.map-capture-btn:hover{border-color:var(--pine);color:var(--pine)}
 .back-btn:hover{border-color:var(--pine);color:var(--pine)}
 .br-row.placeholder{border-style:dashed;background:#fbfaf6}
 .br-row.placeholder:hover{border-color:var(--amber)}
@@ -3150,6 +3152,7 @@ function parseHash(){
   const mHqCuri = h.match(/^hqcuri:([^/]+)\/(.+)$/);
   if(mHqCuri) return {view:'hqcuri', mgr:decodeURIComponent(mHqCuri[1]), region:decodeURIComponent(mHqCuri[2])};
   if(h==='allcenters') return {view:'allcenters'};
+  if(h==='map') return {view:'map'};
   const mAllList = h.match(/^allcenters:(eng|math|lc)$/);
   if(mAllList) return {view:'allcenterslist', brand:mAllList[1]};
   const mDoc = h.match(/^doc:(.+)$/);
@@ -3187,6 +3190,7 @@ function stringifyRoute(r){
   if(r.view==='hq') return `hq:${r.section}`;
   if(r.view==='hqcuri') return `hqcuri:${encodeURIComponent(r.mgr)}/${encodeURIComponent(r.region)}`;
   if(r.view==='allcenters') return 'allcenters';
+  if(r.view==='map') return 'map';
   if(r.view==='allcenterslist') return `allcenters:${r.brand}`;
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
   if(r.view==='voc') return `voc:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
@@ -6397,12 +6401,102 @@ function render(){
 const MAP_EMBED_URL = 'https://creatorhwang.github.io/yoons-map/'; // 실제 배포 주소로 바꿔주세요
 function renderMapView(){
   app.innerHTML = `
-    <h2 class="mgr">🗺️ 가맹지역본부 지도</h2>
-    <p class="hint" style="margin:2px 0 16px">전국 센터 위치를 지도에서 검색·필터링하고, 거리·면적·반경도 잴 수 있습니다.</p>
-    <div class="doc-frame-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <h2 class="mgr" style="margin:0">🗺️ 가맹지역본부 지도</h2>
+      <div style="display:flex;gap:8px">
+        <button class="map-capture-btn" onclick="captureMapScreen('save')">📥 화면 캡처 후 저장</button>
+        <button class="map-capture-btn" onclick="captureMapScreen('copy')">📋 화면 캡처</button>
+      </div>
+    </div>
+    <p class="hint" style="margin:8px 0 16px">전국 센터 위치를 지도에서 검색·필터링하고, 거리·면적·반경도 잴 수 있습니다. 지도 이미지 자체는 외부 서버에서 오기 때문에, 일반적인 방식으로는 캡처가 안 되어 버튼을 눌러 브라우저의 화면 공유 기능으로 캡처합니다(공유 대상 선택 팝업이 뜹니다 — "이 탭"을 선택해 주세요).</p>
+    <div class="doc-frame-wrap" id="mapCaptureTarget">
       <iframe class="doc-frame" style="height:78vh" src="${MAP_EMBED_URL}" loading="lazy"></iframe>
     </div>
-    <p class="hint" style="margin-top:8px">화면이 비어 있으면 <a href="${MAP_EMBED_URL}" target="_blank" rel="noopener">새 창에서 열기</a>를 이용하세요.</p>`;
+    <p class="hint" style="margin-top:8px">화면이 비어 있으면 <a href="${MAP_EMBED_URL}" target="_blank" rel="noopener">새 창에서 열기</a>를 이용하세요.</p>
+    <div id="mapCaptureStatus" class="hint" style="margin-top:6px;color:var(--pine);display:none"></div>`;
+}
+
+// 지도 영역 화면 캡처 — mode: 'save'(다른 이름으로 저장 팝업) | 'copy'(클립보드로 복사)
+async function captureMapScreen(mode){
+  const statusEl = document.getElementById('mapCaptureStatus');
+  const showStatus = (msg)=>{ if(statusEl){ statusEl.style.display=''; statusEl.textContent = msg; } };
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){
+    showStatus('⚠️ 이 브라우저는 화면 캡처 기능을 지원하지 않습니다. 최신 크롬·엣지를 이용해 주세요.');
+    return;
+  }
+  let stream = null;
+  try{
+    showStatus('화면 공유 승인 창이 뜹니다 — "이 탭"을 선택해 주세요…');
+    stream = await navigator.mediaDevices.getDisplayMedia({ video:{ displaySurface:'browser' }, audio:false, preferCurrentTab:true });
+
+    const track = stream.getVideoTracks()[0];
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    await video.play();
+    // 트랙이 실제 프레임을 그리기 시작할 때까지 살짝 대기
+    await new Promise(r=>setTimeout(r, 200));
+
+    const fullCanvas = document.createElement('canvas');
+    fullCanvas.width = video.videoWidth;
+    fullCanvas.height = video.videoHeight;
+    fullCanvas.getContext('2d').drawImage(video, 0, 0);
+    track.stop();
+
+    // 지도 영역만 잘라내기 — 화면 좌표(CSS px)를 캡처 해상도 비율로 환산
+    const target = document.getElementById('mapCaptureTarget');
+    const rect = target.getBoundingClientRect();
+    const scaleX = fullCanvas.width / window.innerWidth;
+    const scaleY = fullCanvas.height / window.innerHeight;
+    const cropCanvas = document.createElement('canvas');
+    const cw = Math.max(1, Math.round(rect.width * scaleX));
+    const ch = Math.max(1, Math.round(rect.height * scaleY));
+    cropCanvas.width = cw; cropCanvas.height = ch;
+    cropCanvas.getContext('2d').drawImage(
+      fullCanvas,
+      Math.round(rect.left*scaleX), Math.round(rect.top*scaleY), cw, ch,
+      0, 0, cw, ch
+    );
+
+    cropCanvas.toBlob(async (blob)=>{
+      if(!blob){ showStatus('⚠️ 캡처된 이미지를 만들지 못했습니다. 다시 시도해 주세요.'); return; }
+      if(mode==='save'){
+        if(window.showSaveFilePicker){
+          try{
+            const handle = await window.showSaveFilePicker({
+              suggestedName: `가맹지역본부지도_${todayStr()}.png`,
+              types: [{ description:'PNG 이미지', accept:{'image/png':['.png']} }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            showStatus('✅ 저장되었습니다.');
+          }catch(e){
+            if(e.name==='AbortError'){ showStatus(''); statusEl.style.display='none'; }
+            else showStatus('⚠️ 저장 중 문제가 발생했습니다: ' + e.message);
+          }
+        } else {
+          // 저장 위치 선택 팝업을 지원하지 않는 브라우저(파이어폭스 등) — 다운로드 폴더로 자동 저장
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `가맹지역본부지도_${todayStr()}.png`;
+          document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+          showStatus('✅ 다운로드 폴더에 저장되었습니다(이 브라우저는 저장 위치 선택을 지원하지 않습니다).');
+        }
+      } else {
+        try{
+          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+          showStatus('✅ 클립보드에 복사되었습니다. Ctrl+V로 붙여넣으세요.');
+        }catch(e){
+          showStatus('⚠️ 클립보드 복사에 실패했습니다: ' + e.message);
+        }
+      }
+    }, 'image/png');
+  }catch(e){
+    if(e.name==='NotAllowedError'){ showStatus('화면 공유가 취소되었습니다.'); }
+    else { showStatus('⚠️ 캡처 중 오류가 발생했습니다: ' + e.message); }
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); }
+  }
 }
 
 /* ===== VOC (사이드바 전용 — 구글시트 연동 예정, 현재는 틀만) ===== */

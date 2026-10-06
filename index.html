@@ -471,7 +471,7 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .ic-sec-h .ic-grp{font-size:11.5px;font-weight:700;color:var(--muted)}
 .ic-row{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line)}
 .ic-row:first-of-type{border-top:none}
-.ic-team{flex:none;width:118px;font-size:13px;font-weight:700;color:var(--pine);padding-top:7px}
+.ic-team{flex:none;width:140px;font-size:13px;font-weight:700;color:var(--pine);padding-top:7px}
 .ic-btns{display:flex;flex-wrap:wrap;gap:6px}
 .ic-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:13.5px;transition:background .12s,border-color .12s}
 .ic-btn:hover{background:var(--pine-soft);border-color:var(--pine)}
@@ -481,6 +481,9 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .ic-btn mark{background:#fff1b8;color:inherit;padding:0}
 .ic-empty{padding:30px;text-align:center;color:var(--muted)}
 @media(max-width:640px){.ic-row{flex-direction:column;gap:4px}.ic-team{width:auto;padding-top:0}}
+.ic-sub{margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--pine);border-radius:8px;background:var(--paper)}
+.ic-sub-h{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:4px}
+.ic-sub .ic-btn{background:var(--card)}
 
 </style>
 </head>
@@ -6624,6 +6627,8 @@ async function renderIntercomView(force){
   }
   if(route.view==='intercom') _icDraw();
 }
+// 부문 아래에 본부를 묶어서 보여줄 부문 목록 (시트 '부문' 열 값과 같아야 함)
+const IC_NESTED_GROUPS = ['경영관리','업무지원','사업'];
 function _icDraw(){
   const body = document.getElementById('icBody'); if(!body || !_icList) return;
   const q = _icQuery.toLowerCase();
@@ -6631,22 +6636,33 @@ function _icDraw(){
   const list = _icList.filter(hit);
   document.getElementById('icCount').textContent = `${list.length}건`;
   if(!list.length){ body.innerHTML = `<div class="ic-empty">검색 결과가 없습니다.</div>`; return; }
-  // 섹션 = 본부(없으면 부문), 대표번호는 맨 위
-  const secs = [], idx = {};
+  // 카드 = (묶음 부문이면) 부문, 아니면 본부  /  카드 안 블록 = 본부  /  블록 안 줄 = 팀
+  const cards = [], cIdx = {};
   list.forEach(p=>{
-    const key = p.hq || p.group || '기타';
-    if(!(key in idx)){ idx[key] = secs.length; secs.push({key, group:p.group, heads:[], teams:[], tmap:{}}); }
-    const s = secs[idx[key]];
-    if(!p.team){ s.heads.push(p); return; }
-    if(!(p.team in s.tmap)){ s.tmap[p.team] = s.teams.length; s.teams.push({name:p.team, people:[]}); }
-    s.teams[s.tmap[p.team]].people.push(p);
+    const nested = IC_NESTED_GROUPS.includes(p.group);
+    const cKey = nested ? p.group : (p.hq || p.group || '기타');
+    if(!(cKey in cIdx)){ cIdx[cKey] = cards.length; cards.push({key:cKey, group:p.group, nested, heads:[], blocks:[], bIdx:{}}); }
+    const c = cards[cIdx[cKey]];
+    const bKey = nested ? p.hq : cKey;
+    if(nested && !bKey){ c.heads.push(p); return; }           // 부문 담당 임원
+    if(!(bKey in c.bIdx)){ c.bIdx[bKey] = c.blocks.length; c.blocks.push({key:bKey, heads:[], teams:[], tIdx:{}}); }
+    const b = c.blocks[c.bIdx[bKey]];
+    if(!p.team){ b.heads.push(p); return; }                      // 본부장
+    if(!(p.team in b.tIdx)){ b.tIdx[p.team] = b.teams.length; b.teams.push({name:p.team, people:[]}); }
+    b.teams[b.tIdx[p.team]].people.push(p);
   });
-  secs.sort((a,b)=> (a.group==='대표번호'?-1:0) - (b.group==='대표번호'?-1:0));
-  body.innerHTML = secs.map(s=>{
-    const grp = (s.group && s.group!==s.key) ? `<span class="ic-grp">${_icEsc(s.group)}</span>` : '';
-    const heads = s.heads.length ? `<div class="ic-row"><div class="ic-btns">${s.heads.map(_icBtn).join('')}</div></div>` : '';
-    const teams = s.teams.map(t=>`<div class="ic-row"><div class="ic-team">${_icMark(t.name)}</div><div class="ic-btns">${t.people.map(_icBtn).join('')}</div></div>`).join('');
-    return `<div class="ic-sec"><div class="ic-sec-h">${grp}${_icEsc(s.key==='대표번호'?'📞 대표·공용번호':s.key)}</div>${heads}${teams}</div>`;
+  cards.sort((a,b)=> (a.group==='대표번호'?-1:0) - (b.group==='대표번호'?-1:0));
+  const headRow = arr => arr.length ? `<div class="ic-row"><div class="ic-btns">${arr.map(_icBtn).join('')}</div></div>` : '';
+  const teamRows = b => b.teams.map(t=>`<div class="ic-row"><div class="ic-team">${_icMark(t.name)}</div><div class="ic-btns">${t.people.map(_icBtn).join('')}</div></div>`).join('');
+  body.innerHTML = cards.map(c=>{
+    if(c.key==='대표번호') return `<div class="ic-sec"><div class="ic-sec-h">📞 대표·공용번호</div>${c.blocks.map(b=>headRow(b.heads)).join('')}</div>`;
+    if(c.nested){
+      const blocks = c.blocks.map(b=>`<div class="ic-sub"><div class="ic-sub-h">${_icMark(b.key)}</div>${headRow(b.heads)}${teamRows(b)}</div>`).join('');
+      return `<div class="ic-sec"><div class="ic-sec-h">${_icEsc(c.key)}</div>${headRow(c.heads)}${blocks}</div>`;
+    }
+    const grp = (c.group && c.group!==c.key) ? `<span class="ic-grp">${_icEsc(c.group)}</span>` : '';
+    const b = c.blocks[0] || {heads:[],teams:[]};
+    return `<div class="ic-sec"><div class="ic-sec-h">${grp}${_icMark(c.key)}</div>${headRow(b.heads)}${teamRows(b)}</div>`;
   }).join('');
 }
 

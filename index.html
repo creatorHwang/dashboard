@@ -6312,7 +6312,7 @@ function _driveFolderId(d){
   const m = d.url.match(/folders\/([^/?]+)/);
   return m ? m[1] : null;
 }
-function _jsonpGet(url){
+function _jsonpGet(url, timeoutMs){
   return new Promise((resolve, reject)=>{
     const cbName = '__jsonpCb' + Date.now() + Math.floor(Math.random()*10000);
     let timeoutId;
@@ -6324,7 +6324,7 @@ function _jsonpGet(url){
     const script = document.createElement('script');
     script.src = url + (url.includes('?')?'&':'?') + 'callback=' + cbName + '&_=' + Date.now();
     script.onerror = ()=>{ clearTimeout(timeoutId); delete window[cbName]; script.remove(); reject(new Error('서버에 연결할 수 없습니다.')); };
-    timeoutId = setTimeout(()=>{ delete window[cbName]; script.remove(); reject(new Error('서버 응답이 너무 오래 걸립니다.')); }, 20000);
+    timeoutId = setTimeout(()=>{ delete window[cbName]; script.remove(); reject(new Error('서버 응답이 너무 오래 걸립니다.')); }, timeoutMs||20000);
     document.head.appendChild(script);
   });
 }
@@ -6869,7 +6869,7 @@ let _vocData=null, _vocLoading=false, _vocErr='', _vocYear=null, _vocBr='', _voc
 async function vocLoad(force){
   _vocLoading=true; _vocErr='';
   if(route.view==='voc' && force) renderVoc();
-  try{ _vocData = await _jsonpGet(CLOUD_URL+'?action=getVoc'+(force?'&nocache=1':'')); }
+  try{ _vocData = await _jsonpGet(CLOUD_URL+'?action=getVoc'+(force?'&nocache=1':''), 60000); }
   catch(e){ _vocErr = e.message; if(force) _vocData=null; }
   _vocLoading=false; _vocBrMap={};
   if(route.view==='voc') renderVoc();
@@ -6907,7 +6907,12 @@ function renderVoc(){
   const title = route.mgr<0 ? '📊 개설 VOC 현황 — 전사 요약' : `👤 ${DATA.managers[route.mgr].name} — 개설 VOC 현황`;
   if(!_vocData){
     app.innerHTML = `<h2 class="mgr">${title}</h2><div class="ic-empty">${_vocErr
-      ? `VOC 데이터를 불러오지 못했습니다: ${eschtml(_vocErr)}<br>Apps Script에 getVoc 추가 후 "새 버전"으로 배포했는지 확인해 주세요.<br><br><button class="ic-refresh" onclick="vocLoad(true)">↻ 다시 시도</button>`
+      ? `VOC 데이터를 불러오지 못했습니다: <b>${eschtml(_vocErr)}</b>
+        <div style="text-align:left;max-width:640px;margin:14px auto 0;font-size:13px;line-height:1.7">
+        <b>원인 확인 방법</b> — 아래 링크를 새 창에서 열어 보세요.<br>
+        ① <a href="${CLOUD_URL}?action=ping" target="_blank" rel="noopener">배포 버전 확인</a> → <code>"version":"voc-v3"</code>가 보이면 정상 배포, 메모 목록(<code>"store"</code>)이 보이면 <b>새 버전 배포가 안 된 것</b><br>
+        ② <a href="${CLOUD_URL}?action=getVoc&nocache=1" target="_blank" rel="noopener">VOC 직접 조회</a> → 오류 문구가 보이면 그 내용이 원인, 한참 뒤에 결과가 나오면 <b>데이터 계산이 느린 것</b>(캐시 트리거 설정으로 해결)
+        </div><br><button class="ic-refresh" onclick="vocLoad(true)">↻ 다시 시도</button>`
       : 'VOC 데이터를 불러오는 중…'}</div>`;
     if(!_vocLoading && !_vocErr) vocLoad(false);
     return;
@@ -6950,7 +6955,7 @@ function renderVoc(){
       <label>연도</label><select onchange="vocSet('year',this.value)">${years.map(y=>`<option ${y===_vocYear?'selected':''}>${y}</option>`).join('')}</select>
       <label>본부</label><select onchange="vocSet('br',this.value)">${brOpts}</select>
       <button class="ic-refresh" onclick="vocLoad(true)">↻ 새로고침</button>
-      <span class="voc-upd">${_vocLoading?'불러오는 중…':`기준 ${eschtml(D.updated||'')}${D.cached?' (5분 캐시)':''}`}</span>
+      <span class="voc-upd">${_vocLoading?'불러오는 중…':`기준 ${eschtml(D.updated||'')}${D.cached?' (캐시)':''}${D.ms?` · 계산 ${(D.ms/1000).toFixed(1)}초`:''}`}</span>
     </div>
     ${warn}
     <div class="kpi-row voc-kpi">

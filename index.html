@@ -485,6 +485,32 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .ic-sub-h{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:4px}
 .ic-sub .ic-btn{background:var(--card)}
 
+/* ===== 개설 VOC 현황 ===== */
+.voc-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--pine-soft);border-radius:8px;padding:9px 12px;margin:10px 0 14px}
+.voc-bar label{font-size:12px;font-weight:700;color:var(--pine)}
+.voc-bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
+.voc-bar .voc-upd{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.voc-kpi{grid-template-columns:repeat(5,1fr)}
+@media(max-width:760px){ .voc-kpi{grid-template-columns:repeat(2,1fr)} }
+.voc-warn{background:#fdf2e0;border-left:4px solid var(--amber);border-radius:0 6px 6px 0;padding:9px 12px;font-size:12.5px;margin-bottom:12px;line-height:1.55}
+.voc-st{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.voc-st.s-open{background:#e4f3ec;color:#1f7a52}
+.voc-st.s-talk{background:#e9f0f7;color:#2b6cb0}
+.voc-st.s-hold{background:#fdf2e0;color:#a5670f}
+.voc-st.s-no{background:#eef0ea;color:#6b7280}
+.voc-st.s-wait{background:var(--alert-bg);color:var(--alert)}
+.voc-mx td,.voc-mx th{font-size:12px;padding:6px 7px;white-space:nowrap}
+.voc-mx td.num{text-align:center}
+.voc-mx .vo{display:block;font-size:10.5px;color:#1f7a52;font-weight:800}
+.voc-mx tr.voc-tot td{background:var(--pine-soft);font-weight:800}
+.voc-mx td.voc-brlink{cursor:pointer;font-weight:800;color:var(--pine)}
+.voc-mx td.voc-brlink:hover{text-decoration:underline}
+.voc-list tbody tr{cursor:pointer}
+.voc-list tbody tr:hover{background:var(--pine-soft)}
+.voc-late{color:var(--alert);font-weight:800;font-size:11px}
+.voc-tl{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.voc-tl-item{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--pine);border-radius:7px;padding:9px 11px;font-size:13px;line-height:1.55}
+.voc-tl-item .h{font-size:12px;font-weight:800;color:var(--pine);margin-bottom:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 </style>
 </head>
 <body>
@@ -564,7 +590,7 @@ const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9
 //                        "그 작업을 한 날짜"로 반드시 함께 갱신한다.
 // ============================================================================
 const DATA_AS_OF_LABEL = '2026년 9월 30일';
-const LAST_UPDATED_LABEL = '2026년 10월 2일';
+const LAST_UPDATED_LABEL = '2026년 10월 6일';
 
 const DATA = {
   managers: [
@@ -3195,7 +3221,9 @@ function parseHash(){
   }
   const mVoc = h.match(/^voc:(.+)$/);
   if(mVoc){
-    const mi = DATA.managers.findIndex(m=>m.name===decodeURIComponent(mVoc[1]));
+    const vn = decodeURIComponent(mVoc[1]);
+    if(vn==='전체') return {view:'voc', mgr:-1};
+    const mi = DATA.managers.findIndex(m=>m.name===vn);
     if(mi>=0) return {view:'voc', mgr:mi};
   }
   const mMgr = h.match(/^mgr:([^/]+)$/);
@@ -3228,7 +3256,7 @@ function stringifyRoute(r){
   if(r.view==='intercom') return 'intercom';
   if(r.view==='allcenterslist') return `allcenters:${r.brand}`;
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
-  if(r.view==='voc') return `voc:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
+  if(r.view==='voc') return `voc:${encodeURIComponent(r.mgr<0?'전체':DATA.managers[r.mgr].name)}`;
   if(r.view==='mgr') return `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
   if(r.view==='br'){
     let s = `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}/br:${encodeURIComponent(DATA.managers[r.mgr].branches[r.br].name)}`;
@@ -6429,8 +6457,8 @@ const MENU = [
       {id:'office:formMgr', label:'계약서식(매니저용)'},
       {id:'office:intercom', label:'☎️ 인터폰 번호표'}
     ]},
-  { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
-    children: () => DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name })) },
+  { id:'voc',  label:'📞 개설 VOC', type:'group', expanded:false,
+    children: () => [{id:'voc:전체', label:'📊 전사 요약'}].concat(DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name }))) },
   { id:'doc',  label:'🔗 외부 문서', type:'group', expanded:true,
     children: () => DOC_LINKS.filter(d=>d.id==='schedule'||d.id==='weekly').map(d => ({ id:'doc:'+d.id, label:d.label })) }
   /* ▼ 새 메뉴는 이 배열에 한 항목만 추가하면 사이드바에 자동 반영됨
@@ -6455,6 +6483,7 @@ function menuItemRoute(id){
   }
   if(id.startsWith('voc:')){
     const name = id.slice(4);
+    if(name==='전체') return {view:'voc', mgr:-1};
     return {view:'voc', mgr:DATA.managers.findIndex(m=>m.name===name)};
   }
   if(id.startsWith('doc:')) return {view:'doc', doc:id.slice(4)};
@@ -6470,7 +6499,7 @@ function menuItemRoute(id){
 function renderSidebar(){
   const sb = document.getElementById('sidebar');
   const activeMgrName = (route.view==='mgr'||route.view==='br') ? DATA.managers[route.mgr].name : null;
-  const activeVocName = route.view==='voc' ? DATA.managers[route.mgr].name : null;
+  const activeVocName = route.view==='voc' ? (route.mgr<0 ? '전체' : DATA.managers[route.mgr].name) : null;
   let html = `<div class="sb-brand" style="cursor:pointer" onclick="go({view:'home'})">통합 캔버스</div>`;
   MENU.forEach(item=>{
     if(item.type==='single'){
@@ -6527,8 +6556,8 @@ function renderCrumbs(){
     return;
   }
   if(route.view==='voc'){
-    const m = DATA.managers[route.mgr];
-    crumbs.innerHTML = h + `<span class="sep">›</span>📞 VOC<span class="sep">›</span><b style="color:var(--ink)">${m.name}</b>`;
+    const vLabel = route.mgr<0 ? '전사 요약' : DATA.managers[route.mgr].name;
+    crumbs.innerHTML = h + `<span class="sep">›</span>📞 개설 VOC<span class="sep">›</span><b style="color:var(--ink)">${vLabel}</b>`;
     return;
   }
   if(route.view==='hq'){
@@ -6828,22 +6857,248 @@ function showRestoreCopyModal(){
   document.body.appendChild(modal);
 }
 
-/* ===== VOC (사이드바 전용 — 구글시트 연동 예정, 현재는 틀만) ===== */
+/* ============================================================
+   개설 VOC 현황 — 메모DB 'voc' 탭 + 본부 회신 시트 (Apps Script getVoc)
+   - 개설율 = 해당 연도 개설 건수 ÷ 해당 연도 접수 건수
+   - 2026년 이전 자료는 연도별 접수 건수만 표시
+   - 개인정보: 이름 · 연락처 뒤 4자리 · 희망지역 · 유형만 표시
+   ============================================================ */
+const VOC_NOREPLY_DAYS = 7;   // 전달 후 이 일수가 지나도 회신이 없으면 '미회신'
+let _vocData=null, _vocLoading=false, _vocErr='', _vocYear=null, _vocBr='', _vocStatus='', _vocCharts=[], _vocBrMap={};
+
+async function vocLoad(force){
+  _vocLoading=true; _vocErr='';
+  if(route.view==='voc' && force) renderVoc();
+  try{ _vocData = await _jsonpGet(CLOUD_URL+'?action=getVoc'+(force?'&nocache=1':'')); }
+  catch(e){ _vocErr = e.message; if(force) _vocData=null; }
+  _vocLoading=false; _vocBrMap={};
+  if(route.view==='voc') renderVoc();
+}
+// 전달본부 이름 → 대시보드 본부(매니저) 연결. '안양본부'·'경기안양' 같은 표기 차이를 흡수
+function vocNorm(s){ return String(s||'').replace(/\(.*?\)|본부|가맹|지역|\s/g,''); }
+function vocBranchOwner(name){
+  if(name in _vocBrMap) return _vocBrMap[name];
+  const n=vocNorm(name), all=[];
+  DATA.managers.forEach((m,mi)=>m.branches.forEach(b=>all.push({mi, br:b.name, n:vocNorm(b.name)})));
+  let hit = n ? (all.find(x=>x.n===n)||null) : null;
+  if(!hit && n.length>=2){ const c=all.filter(x=>x.n.includes(n)||n.includes(x.n)); if(c.length===1) hit=c[0]; }
+  return _vocBrMap[name]=hit;
+}
+function vocInScope(brName){ if(route.mgr<0) return true; const o=vocBranchOwner(brName); return !!o && o.mi===route.mgr; }
+function vocDays(ymd){ return Math.floor((Date.now()-new Date(ymd+'T00:00:00').getTime())/864e5); }
+function vocIsNoReply(x){ return !x.openDate && !x.replies.length && vocDays(x.date)>=VOC_NOREPLY_DAYS; }
+// 상태 글자는 회신 시트 '상담진행여부' 값을 그대로 쓰고, 색만 성격별로 구분
+function vocStClass(st){
+  const t=String(st||'');
+  if(t==='개설완료') return 's-open';
+  if(t==='회신대기') return 's-wait';
+  if(/불가|포기|거절|중단|취소/.test(t)) return 's-no';
+  if(/부재|두절|보류|대기|연기/.test(t)) return 's-hold';
+  return 's-talk';
+}
+function vocStBadge(st){
+  const c=vocStClass(st);
+  return `<span class="voc-st ${c}">${eschtml(st)}</span>`;
+}
+function vocPct(a,b){ return b? Math.round(a/b*1000)/10 : 0; }
+function vocSet(k,v){ if(k==='year') _vocYear=+v; if(k==='br') _vocBr=v; if(k==='st') _vocStatus=v; renderVoc(); }
+
 function renderVoc(){
-  const m = DATA.managers[route.mgr];
-  const rows = m.branches.map(b=>`
-    <div class="voc-branch">
-      <div class="voc-branch-t">▸ ${b.name}</div>
-      <table class="rp-tb">
-        <thead><tr><th style="width:100px">접수일</th><th style="width:110px">소스</th><th style="width:90px">진행상태</th><th>메모</th></tr></thead>
-        <tbody><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:12px">VOC 데이터 연동 예정 — 구글시트 연결 후 이곳에 표시됩니다.</td></tr></tbody>
-      </table>
-    </div>`).join('');
+  const title = route.mgr<0 ? '📊 개설 VOC 현황 — 전사 요약' : `👤 ${DATA.managers[route.mgr].name} — 개설 VOC 현황`;
+  if(!_vocData){
+    app.innerHTML = `<h2 class="mgr">${title}</h2><div class="ic-empty">${_vocErr
+      ? `VOC 데이터를 불러오지 못했습니다: ${eschtml(_vocErr)}<br>Apps Script에 getVoc 추가 후 "새 버전"으로 배포했는지 확인해 주세요.<br><br><button class="ic-refresh" onclick="vocLoad(true)">↻ 다시 시도</button>`
+      : 'VOC 데이터를 불러오는 중…'}</div>`;
+    if(!_vocLoading && !_vocErr) vocLoad(false);
+    return;
+  }
+  const D=_vocData;
+  const years = Array.from(new Set(D.items.map(x=>+x.date.slice(0,4)))).sort((a,b)=>b-a);
+  if(!years.length) years.push(D.detailFrom);
+  if(!_vocYear || !years.includes(_vocYear)) _vocYear = years[0];
+  const Y = String(_vocYear);
+  const scoped = D.items.filter(x=>vocInScope(x.branch));
+  const brAll = Array.from(new Set(scoped.map(x=>x.branch))).sort((a,b)=>a.localeCompare(b,'ko'));
+  if(_vocBr && !brAll.includes(_vocBr)) _vocBr='';
+  const inBr = x => !_vocBr || x.branch===_vocBr;
+  const recv   = scoped.filter(x=>x.date.startsWith(Y) && inBr(x));
+  const opened = scoped.filter(x=>x.openDate && x.openDate.startsWith(Y) && inBr(x));
+  const replied = recv.filter(x=>x.replies.length || x.openDate).length;
+  const noReply = recv.filter(vocIsNoReply);
+
+  // 안내: 회신 시트 미연결 / 매니저와 연결 안 된 본부명
+  let warn='';
+  if(D.reply && !D.reply.linked) warn += `<div class="voc-warn">🔗 본부 회신 시트 미연결 — ${eschtml(D.reply.msg||'')}<br>연결 전까지 모든 건이 '회신대기'로 표시됩니다.</div>`;
+  const um = (D.reply && D.reply.unmatched) || [];
+  if(route.mgr<0 && um.length) warn += `<div class="voc-warn">🔗 VOC 건과 연결하지 못한 본부 회신 ${um.length}건 — voc 시트의 이름·전달본부가 회신 시트와 같은지 확인해 주세요.<br>${um.slice(0,10).map(u=>`${u.date} ${eschtml(u.name)} (${eschtml(u.by)})`).join(' · ')}${um.length>10?' …':''}</div>`;
+  const dupRecv = recv.filter(x=>x.dups&&x.dups.length);
+  if(dupRecv.length) warn += `<div class="voc-warn">🔁 같은 전화번호로 다시 문의한 건 ${dupRecv.length}건 — 중복 접수인지, 다른 본부에 이미 전달됐는지 확인해 주세요.<br>${dupRecv.slice(0,10).map(x=>`${x.date} ${eschtml(x.name)} (${eschtml(x.branch)}) ← 이전 ${x.dups.map(d=>d.date+' '+eschtml(d.branch)).join(', ')}`).join('<br>')}${dupRecv.length>10?'<br>…':''}<br><a style="color:var(--pine);font-weight:700;cursor:pointer" onclick="vocSet('st','재문의')">재문의 건만 보기 ›</a></div>`;
+  if(route.mgr<0){
+    const un = Array.from(new Set(D.items.map(x=>x.branch).filter(b=>!vocBranchOwner(b))));
+    if(un.length) warn += `<div class="voc-warn">⚠️ 매니저와 연결되지 않은 전달본부명 ${un.length}개: <b>${un.map(eschtml).join(', ')}</b><br>voc 시트의 본부명을 대시보드 본부명(예: 경기안양)과 같게 맞추면 매니저 화면에도 집계됩니다.</div>`;
+  }
+
+  const kpi=(label,val,sub,color)=>`<div class="kpi" style="border-top-color:${color}"><div class="k-label">${label}</div><div class="k-val">${val}</div><div class="k-delta delta-flat">${sub}</div></div>`;
+  const brOpts = ['<option value="">전체 본부</option>'].concat(brAll.map(b=>`<option value="${eschtml(b)}" ${_vocBr===b?'selected':''}>${eschtml(b)}</option>`)).join('');
+  const stList = ['', ...Array.from(new Set(recv.map(x=>x.status))).sort((a,b)=>a.localeCompare(b,'ko')), '미회신', '재문의'];
+  if(_vocStatus && !stList.includes(_vocStatus)) _vocStatus='';
+  const stOpts = stList.map(s=>`<option value="${s}" ${_vocStatus===s?'selected':''}>${s||'전체 상태'}</option>`).join('');
+
   app.innerHTML = `
-    <h2 class="mgr">👤 매니저: ${m.name}</h2>
-    <h3 class="hb">📞 VOC 소스 접수 현황 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 본부별</span></h3>
-    <p class="hint" style="margin:6px 0 16px">고객 문의(VOC) 접수·진행 상태를 본부별로 확인합니다. 아직 데이터 소스가 연결되지 않아 틀만 표시됩니다.</p>
-    ${rows}`;
+    <h2 class="mgr">${title}</h2>
+    <div class="voc-bar">
+      <label>연도</label><select onchange="vocSet('year',this.value)">${years.map(y=>`<option ${y===_vocYear?'selected':''}>${y}</option>`).join('')}</select>
+      <label>본부</label><select onchange="vocSet('br',this.value)">${brOpts}</select>
+      <button class="ic-refresh" onclick="vocLoad(true)">↻ 새로고침</button>
+      <span class="voc-upd">${_vocLoading?'불러오는 중…':`기준 ${eschtml(D.updated||'')}${D.cached?' (5분 캐시)':''}`}</span>
+    </div>
+    ${warn}
+    <div class="kpi-row voc-kpi">
+      ${kpi(`${Y}년 접수`, fmtNum(recv.length)+'건', _vocBr||'범위 전체', 'var(--pine)')}
+      ${kpi(`${Y}년 개설완료`, fmtNum(opened.length)+'건', '개설일자 기준', '#1f7a52')}
+      ${kpi('개설율', vocPct(opened.length,recv.length)+'%', '개설 ÷ 접수', 'var(--amber)')}
+      ${kpi('본부 회신율', vocPct(replied,recv.length)+'%', `${fmtNum(replied)}건 회신`, '#2b6cb0')}
+      ${kpi('⚠️ 미회신', fmtNum(noReply.length)+'건', `${VOC_NOREPLY_DAYS}일 이상 경과`, 'var(--alert)')}
+    </div>
+    <div class="dash-grid2b">
+      <div class="card-box"><h4>📅 연도별 접수 추이</h4><div class="trend-wrap"><canvas id="vocYearChart"></canvas></div>
+        <p class="hint" style="margin-top:6px">${D.detailFrom}년 이전 자료는 접수 건수만 집계합니다.</p></div>
+      <div class="card-box"><h4>📈 ${Y}년 월별 접수 · 개설 · 누적 개설율</h4><div class="trend-wrap"><canvas id="vocMonthChart"></canvas></div></div>
+    </div>
+    <div class="card-box section-gap">
+      <h4>🏢 본부별 월별 현황 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 칸 숫자 = 접수, 초록 = 개설 · 본부명 클릭 시 해당 본부만 보기</span></h4>
+      <div class="uni-kpi-wrap">${vocMatrixHtml(scoped, Y)}</div>
+    </div>
+    <div class="dash-grid2b">
+      <div class="card-box"><h4>📣 신청경로별 효과</h4>${vocRouteHtml(recv, opened)}</div>
+      <div class="card-box"><h4>📊 진행 상태 분포</h4>${vocStatusHtml(recv)}</div>
+    </div>
+    <div class="card-box section-gap">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <h4 style="margin:0;border:none">📋 건별 목록 <span style="font-size:12px;font-weight:400;color:var(--muted)">— 행 클릭 시 회신 이력</span></h4>
+        <div class="voc-bar" style="margin:0;padding:6px 10px"><label>상태</label><select onchange="vocSet('st',this.value)">${stOpts}</select></div>
+      </div>
+      ${vocListHtml(recv)}
+    </div>`;
+  vocDrawCharts(scoped, Y);
+}
+
+function vocMatrixHtml(scoped, Y){
+  // 본부 목록: 매니저 화면이면 담당 본부 전부, 전사면 자료가 있는 본부
+  let brs = Array.from(new Set(scoped.filter(x=>x.date.startsWith(Y)||(x.openDate||'').startsWith(Y)).map(x=>x.branch)));
+  if(route.mgr>=0) DATA.managers[route.mgr].branches.forEach(b=>{ if(!brs.some(n=>vocBranchOwner(n)&&vocBranchOwner(n).br===b.name)) brs.push(b.name); });
+  if(_vocBr) brs = brs.filter(b=>b===_vocBr);
+  const tot = {r:new Array(12).fill(0), o:new Array(12).fill(0), R:0, O:0, rep:0, nr:0};
+  const rows = brs.map(br=>{
+    const r=new Array(12).fill(0), o=new Array(12).fill(0);
+    const rv = scoped.filter(x=>x.branch===br && x.date.startsWith(Y));
+    const op = scoped.filter(x=>x.branch===br && (x.openDate||'').startsWith(Y));
+    rv.forEach(x=>r[+x.date.slice(5,7)-1]++);
+    op.forEach(x=>o[+x.openDate.slice(5,7)-1]++);
+    const rep = rv.filter(x=>x.replies.length||x.openDate).length, nr = rv.filter(vocIsNoReply).length;
+    r.forEach((v,i)=>{tot.r[i]+=v; tot.o[i]+=o[i];}); tot.R+=rv.length; tot.O+=op.length; tot.rep+=rep; tot.nr+=nr;
+    const own = vocBranchOwner(br);
+    return {br, mgr: own? DATA.managers[own.mi].name : '-', r, o, R:rv.length, O:op.length, rep, nr};
+  }).sort((a,b)=>b.R-a.R || a.br.localeCompare(b.br,'ko'));
+  const cells=(r,o)=>r.map((v,i)=>`<td class="num">${v||'·'}${o[i]?`<span class="vo">개설${o[i]}</span>`:''}</td>`).join('');
+  const showMgr = route.mgr<0;
+  const body = rows.map(x=>`<tr>
+    <td class="voc-brlink" onclick="vocSet('br','${jsq(x.br)}')">${eschtml(x.br)}</td>${showMgr?`<td>${x.mgr}</td>`:''}
+    ${cells(x.r,x.o)}<td class="num"><b>${x.R}</b></td><td class="num"><b style="color:#1f7a52">${x.O}</b></td>
+    <td class="num">${vocPct(x.O,x.R)}%</td><td class="num">${vocPct(x.rep,x.R)}%</td>
+    <td class="num">${x.nr?`<span class="voc-late">${x.nr}</span>`:'0'}</td></tr>`).join('');
+  return `<table class="voc-mx"><thead><tr><th>본부</th>${showMgr?'<th>매니저</th>':''}
+    ${MONTH_LABELS.concat(['10월','11월','12월']).slice(0,12).map(l=>`<th>${l}</th>`).join('')}
+    <th>접수</th><th>개설</th><th>개설율</th><th>회신율</th><th>미회신</th></tr></thead>
+    <tbody>${body || `<tr><td colspan="${showMgr?19:18}" style="text-align:center;color:var(--muted);padding:16px">${Y}년 자료가 없습니다.</td></tr>`}
+    ${rows.length>1?`<tr class="voc-tot"><td>합계</td>${showMgr?'<td></td>':''}${cells(tot.r,tot.o)}<td class="num">${tot.R}</td><td class="num">${tot.O}</td><td class="num">${vocPct(tot.O,tot.R)}%</td><td class="num">${vocPct(tot.rep,tot.R)}%</td><td class="num">${tot.nr}</td></tr>`:''}
+    </tbody></table>`;
+}
+function vocRouteHtml(recv, opened){
+  const m={};
+  recv.forEach(x=>{ (m[x.route]=m[x.route]||{r:0,o:0}).r++; });
+  opened.forEach(x=>{ (m[x.route]=m[x.route]||{r:0,o:0}).o++; });
+  const rows=Object.entries(m).sort((a,b)=>b[1].r-a[1].r);
+  if(!rows.length) return '<p class="hint">자료가 없습니다.</p>';
+  return `<table class="voc-mx"><thead><tr><th>신청경로</th><th>접수</th><th>개설</th><th>개설율</th></tr></thead><tbody>
+    ${rows.map(([k,v])=>`<tr><td>${eschtml(k)}</td><td class="num">${v.r}</td><td class="num">${v.o}</td><td class="num">${vocPct(v.o,v.r)}%</td></tr>`).join('')}</tbody></table>`;
+}
+function vocStatusHtml(recv){
+  const c={};
+  recv.forEach(x=>c[x.status]=(c[x.status]||0)+1);
+  const order=Object.keys(c).sort((a,b)=>c[b]-c[a]);
+  if(!order.length) return '<p class="hint">자료가 없습니다.</p>';
+  const n=recv.length||1;
+  return `<table class="voc-mx"><thead><tr><th>상태</th><th>건수</th><th>비율</th></tr></thead><tbody>
+    ${order.map(s=>`<tr><td>${vocStBadge(s)}</td><td class="num">${c[s]||0}</td><td class="num">${vocPct(c[s]||0,n)}%</td></tr>`).join('')}</tbody></table>`;
+}
+function vocListHtml(recv){
+  let list = recv;
+  if(_vocStatus==='미회신') list = list.filter(vocIsNoReply);
+  else if(_vocStatus==='재문의') list = list.filter(x=>x.dups&&x.dups.length);
+  else if(_vocStatus) list = list.filter(x=>x.status===_vocStatus);
+  if(!list.length) return '<p class="hint" style="margin-top:10px">해당하는 건이 없습니다.</p>';
+  return `<div class="uni-kpi-wrap" style="margin-top:10px"><table class="voc-mx voc-list"><thead><tr>
+    <th>접수일</th><th>이름</th><th>연락처</th><th>희망지역</th><th>희망유형</th><th>신청경로</th><th>전달본부</th><th>상태</th><th>최근 회신 / 개설</th></tr></thead><tbody>
+    ${list.map(x=>`<tr onclick="vocOpenDetail('${x.id}')">
+      <td>${x.date}</td><td><b>${eschtml(x.name)}</b>${x.dups&&x.dups.length?` <span class="voc-late" title="같은 번호 문의 ${x.dups.length}건">🔁재문의</span>`:''}</td><td>${x.phone4?'***-'+eschtml(x.phone4):'-'}</td>
+      <td>${eschtml(x.region)}</td><td>${eschtml(x.type)}</td><td>${eschtml(x.route)}</td><td>${eschtml(x.branch)}</td>
+      <td>${vocStBadge(x.status)}${vocIsNoReply(x)?` <span class="voc-late">${vocDays(x.date)}일 경과</span>`:''}</td>
+      <td>${x.openDate?`<b style="color:#1f7a52">${x.openDate} ${eschtml(x.center)}</b>`:(x.lastReply||'-')}</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+function vocOpenDetail(id){
+  const x = _vocData && _vocData.items.find(i=>i.id===id); if(!x) return;
+  const tl = x.replies.length ? x.replies.map(r=>`<div class="voc-tl-item"><div class="h">${r.date||'-'} ${r.by?'· '+eschtml(r.by):''} ${vocStBadge(r.status)}</div>${eschtml(r.text||'(내용 없음)')}</div>`).join('')
+    : '<div class="memo-empty">아직 본부 회신이 없습니다.</div>';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="dm-head"><div><div class="dm-name">${eschtml(x.name)} <span style="font-size:13px;color:var(--muted)">${x.phone4?'***-'+eschtml(x.phone4):''}</span></div>
+      <div class="dm-sub">접수 ${x.date} · ${eschtml(x.route)} · 전달본부 ${eschtml(x.branch)}</div></div>
+      <div class="dm-tags">${vocStBadge(x.status)}</div></div>
+    <table class="dir-table" style="margin-bottom:14px">
+      <tr><th>희망지역</th><td>${eschtml(x.region||'-')}</td></tr>
+      <tr><th>희망유형</th><td>${eschtml(x.type||'-')}</td></tr>
+      ${x.dups&&x.dups.length?`<tr><th>🔁 재문의</th><td><span class="voc-late">같은 번호로 ${x.dups.length}건 더 있음</span><br>${x.dups.map(d=>`${d.date} · ${eschtml(d.name)} · ${eschtml(d.branch)}`).join('<br>')}</td></tr>`:''}
+      ${x.openDate?`<tr><th>개설</th><td><b style="color:#1f7a52">${x.openDate} · ${eschtml(x.center||'-')} (${eschtml(x.openType||'-')})</b> <span class="dir-sub">접수 후 ${Math.max(0,Math.round((new Date(x.openDate)-new Date(x.date))/864e5))}일</span></td></tr>`:''}
+    </table>
+    <div class="dm-memo-title">💬 본부 회신 이력 <span>(${x.replies.length}건)</span></div>
+    <div class="voc-tl">${tl}</div>`;
+  document.getElementById('centerModal').classList.add('show');
+}
+function vocDrawCharts(scoped, Y){
+  if(typeof Chart==='undefined') return;
+  _vocCharts.forEach(c=>c.destroy()); _vocCharts=[];
+  // ① 연도별 접수(과거 연도 포함, 현재 범위·본부 필터 반영)
+  const D=_vocData, ys=Object.keys(D.yearly).sort();
+  const yv = ys.map(y=>Object.entries(D.yearly[y].byBranch).reduce((s,[b,n])=>s+((vocInScope(b)&&(!_vocBr||b===_vocBr))?n:0),0));
+  const e1=document.getElementById('vocYearChart');
+  if(e1) _vocCharts.push(new Chart(e1,{type:'bar',
+    data:{labels:ys.map(y=>y+'년'),datasets:[{label:'접수',data:yv,backgroundColor:ys.map(y=>y===Y?'#2f5d50':'#9fbfb4')}]},
+    plugins:[barValueLabelPlugin, unitLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:26}},
+      scales:{y:{beginAtZero:true,suggestedMax:Math.max(1,...yv)*1.2,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'}},x:{grid:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{enabled:false},unitLabel:{text:'[단위: 건]'}}}}));
+  // ② 선택 연도 월별 접수·개설 + 누적 개설율
+  const inBr = x=>!_vocBr||x.branch===_vocBr;
+  const r=new Array(12).fill(0), o=new Array(12).fill(0);
+  scoped.filter(x=>x.date.startsWith(Y)&&inBr(x)).forEach(x=>r[+x.date.slice(5,7)-1]++);
+  scoped.filter(x=>(x.openDate||'').startsWith(Y)&&inBr(x)).forEach(x=>o[+x.openDate.slice(5,7)-1]++);
+  let cr=0, co=0; const cum = r.map((v,i)=>{ cr+=v; co+=o[i]; return cr? Math.round(co/cr*1000)/10 : null; });
+  const lastM = String(new Date().getFullYear())===Y ? new Date().getMonth()+1 : 12;
+  const labels = Array.from({length:12},(_,i)=>(i+1)+'월').slice(0,lastM);
+  const e2=document.getElementById('vocMonthChart');
+  if(e2) _vocCharts.push(new Chart(e2,{
+    data:{labels,datasets:[
+      {type:'bar',label:'접수',data:r.slice(0,lastM),backgroundColor:'#9fbfb4',yAxisID:'y'},
+      {type:'bar',label:'개설',data:o.slice(0,lastM),backgroundColor:'#1f7a52',yAxisID:'y'},
+      {type:'line',label:'누적 개설율',data:cum.slice(0,lastM),borderColor:'#b4762a',backgroundColor:'#b4762a',tension:.3,borderWidth:2,pointRadius:3,yAxisID:'y1',valueSuffix:'%',spanGaps:true}
+    ]},
+    plugins:[barValueLabelPlugin],
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:26}},
+      scales:{y:{beginAtZero:true,suggestedMax:Math.max(1,...r)*1.25,ticks:{precision:0,font:{size:10}},grid:{color:'#eef0ea'},title:{display:true,text:'건'}},
+        y1:{position:'right',beginAtZero:true,suggestedMax:Math.max(10,...cum.filter(v=>v!==null))*1.3,ticks:{callback:v=>v+'%',font:{size:10}},grid:{display:false}},
+        x:{grid:{display:false}}},
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{enabled:false}}}}));
 }
 
 /* ===== 홈 화면 집계 유틸 (실회원 · BM · 큐리매쓰) ===== */

@@ -459,6 +459,29 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .ac-search-btn:disabled{background:#c4c9be;cursor:not-allowed}
 .branch-head-sticky .back-btn{margin:0 0 10px !important}
 .branch-head-sticky h3.hb{padding-bottom:10px}
+/* ===== 인터폰 번호표 ===== */
+.ic-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 16px}
+.ic-search{flex:1;min-width:200px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--card);color:var(--ink)}
+.ic-search:focus{outline:2px solid var(--pine-soft);border-color:var(--pine)}
+.ic-refresh{padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px;color:var(--ink)}
+.ic-refresh:hover{background:var(--pine-soft)}
+.ic-count{font-size:12.5px;color:var(--muted)}
+.ic-sec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.ic-sec-h{font-size:15px;font-weight:800;margin-bottom:10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.ic-sec-h .ic-grp{font-size:11.5px;font-weight:700;color:var(--muted)}
+.ic-row{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line)}
+.ic-row:first-of-type{border-top:none}
+.ic-team{flex:none;width:118px;font-size:13px;font-weight:700;color:var(--pine);padding-top:7px}
+.ic-btns{display:flex;flex-wrap:wrap;gap:6px}
+.ic-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:13.5px;transition:background .12s,border-color .12s}
+.ic-btn:hover{background:var(--pine-soft);border-color:var(--pine)}
+.ic-btn b{font-variant-numeric:tabular-nums;color:var(--pine);font-weight:800}
+.ic-btn .ic-role{font-size:11px;color:#fff;background:var(--pine);border-radius:3px;padding:1px 4px}
+.ic-btn.ic-head{border-color:var(--pine)}
+.ic-btn mark{background:#fff1b8;color:inherit;padding:0}
+.ic-empty{padding:30px;text-align:center;color:var(--muted)}
+@media(max-width:640px){.ic-row{flex-direction:column;gap:4px}.ic-team{width:auto;padding-top:0}}
+
 </style>
 </head>
 <body>
@@ -3159,6 +3182,7 @@ function parseHash(){
   if(h==='allcenters') return {view:'allcenters'};
   if(h==='map') return {view:'map'};
   if(h==='restore') return {view:'restore'};
+  if(h==='intercom') return {view:'intercom'};
   const mAllList = h.match(/^allcenters:(eng|math|lc)$/);
   if(mAllList) return {view:'allcenterslist', brand:mAllList[1]};
   const mDoc = h.match(/^doc:(.+)$/);
@@ -3198,6 +3222,7 @@ function stringifyRoute(r){
   if(r.view==='allcenters') return 'allcenters';
   if(r.view==='map') return 'map';
   if(r.view==='restore') return 'restore';
+  if(r.view==='intercom') return 'intercom';
   if(r.view==='allcenterslist') return `allcenters:${r.brand}`;
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
   if(r.view==='voc') return `voc:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
@@ -6398,7 +6423,8 @@ const MENU = [
     children: () => [
       {id:'office:restore', label:'중단 복원 업무'},
       {id:'office:opendash', label:'개설대쉬보드'},
-      {id:'office:formMgr', label:'계약서식(매니저용)'}
+      {id:'office:formMgr', label:'계약서식(매니저용)'},
+      {id:'office:intercom', label:'☎️ 인터폰 번호표'}
     ]},
   { id:'voc',  label:'📞 VOC', type:'group', expanded:false,
     children: () => DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name })) },
@@ -6435,6 +6461,7 @@ function menuItemRoute(id){
   if(id==='office:restore') return {view:'restore'};
   if(id==='office:opendash') return {view:'doc', doc:'opendash'};
   if(id==='office:formMgr') return {view:'doc', doc:'formMgr'};
+  if(id==='office:intercom') return {view:'intercom'};
   return {view:'home'};
 }
 function renderSidebar(){
@@ -6466,6 +6493,7 @@ function renderSidebar(){
                         : k.id==='office:restore' ? (route.view==='restore')
                         : k.id==='office:opendash' ? (route.view==='doc' && route.doc==='opendash')
                         : k.id==='office:formMgr' ? (route.view==='doc' && route.doc==='formMgr')
+                        : k.id==='office:intercom' ? (route.view==='intercom')
                         : false;
         html += `<div class="submenu-item ${isActive?'active':''}" onclick='go(${JSON.stringify(menuItemRoute(k.id))})'>${k.label}</div>`;
       });
@@ -6485,6 +6513,10 @@ function renderCrumbs(){
   }
   if(route.view==='map'){
     crumbs.innerHTML = h + `<span class="sep">›</span><b style="color:var(--ink)">🗺️ YOONS MAPs</b>`;
+    return;
+  }
+  if(route.view==='intercom'){
+    crumbs.innerHTML = h + `<span class="sep">›</span>🏢 사무실 업무<span class="sep">›</span><b style="color:var(--ink)">☎️ 인터폰 번호표</b>`;
     return;
   }
   if(route.view==='restore'){
@@ -6543,10 +6575,79 @@ function render(){
   if(route.view==='doc') return renderDoc();
   if(route.view==='map') return renderMapView();
   if(route.view==='restore') return renderRestoreView();
+  if(route.view==='intercom') return renderIntercomView();
   if(route.view==='voc') return renderVoc();
   if(route.view==='main') return renderMain();
   if(route.view==='mgr') return renderMgr();
   if(route.view==='br') return renderBranch();
+}
+
+/* ===== 인터폰 번호표 — 메모DB의 'intercom' 탭을 Apps Script(getIntercom)로 불러옴 =====
+   버튼 = "이름 내선4자리", 누르면 전화 연결(tel:). 번호가 바뀌면 시트만 고치면 됨. */
+let _icList = null, _icQuery = '';
+function _icEsc(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function _icMark(text){
+  const t = _icEsc(text); if(!_icQuery) return t;
+  const q = _icEsc(_icQuery).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return t.replace(new RegExp(q,'gi'), m=>`<mark>${m}</mark>`);
+}
+function _icBtn(p){
+  const num = (p.tel||'').replace(/[^0-9+]/g,'');
+  const label = p.ext || p.tel || '';
+  const role = p.role ? `<span class="ic-role">${_icEsc(p.role)}</span>` : '';
+  const inner = `${role}${_icMark(p.name)}${label?` <b>${_icMark(label)}</b>`:''}`;
+  const cls = 'ic-btn' + (p.role && !p.team ? ' ic-head' : '');
+  return num ? `<a class="${cls}" href="tel:${num}" title="${_icEsc(p.tel)}">${inner}</a>`
+             : `<span class="${cls}" title="번호 없음">${inner}</span>`;
+}
+async function renderIntercomView(force){
+  app.innerHTML = `
+    <h2 class="mgr" style="margin:0">☎️ 본사 인터폰 번호표</h2>
+    <p class="hint" style="margin:6px 0 0">버튼을 누르면 전화가 연결됩니다(공통번호 02-2225-내선). 이름·내선·팀으로 검색하세요.</p>
+    <div class="ic-toolbar">
+      <input class="ic-search" id="icSearch" type="search" placeholder="🔍 이름, 내선, 팀 검색 (예: 윤길한, 5740, 거점)" value="${_icEsc(_icQuery)}">
+      <button class="ic-refresh" onclick="renderIntercomView(true)">↻ 새로고침</button>
+      <span class="ic-count" id="icCount"></span>
+    </div>
+    <div id="icBody"><div class="ic-empty">번호표를 불러오는 중…</div></div>`;
+  const inp = document.getElementById('icSearch');
+  inp.addEventListener('input', e=>{ _icQuery = e.target.value.trim(); _icDraw(); });
+  if(!_icList || force){
+    try{
+      const res = await _jsonpGet(CLOUD_URL + '?action=getIntercom');
+      _icList = res.list || [];
+    }catch(err){
+      const b = document.getElementById('icBody');
+      if(b) b.innerHTML = `<div class="ic-empty">번호표를 불러오지 못했습니다: ${_icEsc(err.message)}<br>Apps Script에 getIntercom 추가 후 "새 버전"으로 배포했는지 확인해 주세요.</div>`;
+      return;
+    }
+  }
+  if(route.view==='intercom') _icDraw();
+}
+function _icDraw(){
+  const body = document.getElementById('icBody'); if(!body || !_icList) return;
+  const q = _icQuery.toLowerCase();
+  const hit = p => !q || [p.name,p.ext,p.tel,p.team,p.hq,p.group,p.role].some(v=>String(v||'').toLowerCase().includes(q));
+  const list = _icList.filter(hit);
+  document.getElementById('icCount').textContent = `${list.length}건`;
+  if(!list.length){ body.innerHTML = `<div class="ic-empty">검색 결과가 없습니다.</div>`; return; }
+  // 섹션 = 본부(없으면 부문), 대표번호는 맨 위
+  const secs = [], idx = {};
+  list.forEach(p=>{
+    const key = p.hq || p.group || '기타';
+    if(!(key in idx)){ idx[key] = secs.length; secs.push({key, group:p.group, heads:[], teams:[], tmap:{}}); }
+    const s = secs[idx[key]];
+    if(!p.team){ s.heads.push(p); return; }
+    if(!(p.team in s.tmap)){ s.tmap[p.team] = s.teams.length; s.teams.push({name:p.team, people:[]}); }
+    s.teams[s.tmap[p.team]].people.push(p);
+  });
+  secs.sort((a,b)=> (a.group==='대표번호'?-1:0) - (b.group==='대표번호'?-1:0));
+  body.innerHTML = secs.map(s=>{
+    const grp = (s.group && s.group!==s.key) ? `<span class="ic-grp">${_icEsc(s.group)}</span>` : '';
+    const heads = s.heads.length ? `<div class="ic-row"><div class="ic-btns">${s.heads.map(_icBtn).join('')}</div></div>` : '';
+    const teams = s.teams.map(t=>`<div class="ic-row"><div class="ic-team">${_icMark(t.name)}</div><div class="ic-btns">${t.people.map(_icBtn).join('')}</div></div>`).join('');
+    return `<div class="ic-sec"><div class="ic-sec-h">${grp}${_icEsc(s.key==='대표번호'?'📞 대표·공용번호':s.key)}</div>${heads}${teams}</div>`;
+  }).join('');
 }
 
 /* ===== 가맹지역본부 지도(카카오맵) — 별도 사이트를 iframe으로 삽입 ===== */

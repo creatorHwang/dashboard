@@ -485,6 +485,23 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .ic-sub-h{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:4px}
 .ic-sub .ic-btn{background:var(--card)}
 
+/* ===== 영업구역 찾기 ===== */
+.zn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.zn-card{margin:0}
+.zn-card.biz,.zn-hit.biz{border-left:4px solid var(--amber)}
+.zn-hq{display:inline-block;background:var(--pine);color:#fff;font-weight:800;font-size:13.5px;padding:3px 10px;border-radius:6px}
+.zn-hq.biz{background:var(--amber)}
+.zn-sub{font-size:12.5px;font-weight:400;color:var(--muted);margin-top:3px}
+.zn-sub a{color:var(--pine);font-weight:700}
+.zn-ct{font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.zn-zone{font-size:13px;padding:6px 0;border-top:1px dashed var(--line);line-height:1.5}
+.zn-zone:first-of-type{border-top:none}
+.zn-no{display:inline-block;font-size:11px;font-weight:800;color:var(--pine);background:var(--pine-soft);border-radius:4px;padding:1px 6px;margin-right:6px}
+.zn-hit{display:grid;grid-template-columns:minmax(140px,1fr) 24px 2fr;gap:10px;align-items:start;padding:12px 16px}
+.zn-hit-place{font-size:16px;font-weight:800;color:var(--ink)}
+.zn-hit-place mark{background:#fff1b8;color:inherit;padding:0}
+.zn-hit-arrow{font-size:18px;color:var(--muted);text-align:center}
+@media(max-width:640px){.zn-hit{grid-template-columns:1fr}.zn-hit-arrow{display:none}}
 /* ===== 개설 VOC 현황 ===== */
 .voc-seg{display:inline-flex;border:1px solid var(--pine);border-radius:7px;overflow:hidden;margin-right:6px}
 .voc-seg button{border:0;background:#fff;color:var(--pine);font:inherit;font-size:12.5px;font-weight:700;padding:5px 13px;cursor:pointer}
@@ -3220,6 +3237,7 @@ function parseHash(){
   if(h==='map') return {view:'map'};
   if(h==='restore') return {view:'restore'};
   if(h==='intercom') return {view:'intercom'};
+  if(h==='zone') return {view:'zone'};
   const mAllList = h.match(/^allcenters:(eng|math|lc)$/);
   if(mAllList) return {view:'allcenterslist', brand:mAllList[1]};
   const mDoc = h.match(/^doc:(.+)$/);
@@ -3264,6 +3282,7 @@ function stringifyRoute(r){
   if(r.view==='map') return 'map';
   if(r.view==='restore') return 'restore';
   if(r.view==='intercom') return 'intercom';
+  if(r.view==='zone') return 'zone';
   if(r.view==='allcenterslist') return `allcenters:${r.brand}`;
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
   if(r.view==='voc') return `voc:${encodeURIComponent(vocRouteKey(r))}`;
@@ -6485,10 +6504,11 @@ const MENU = [
     ]},
   { id:'office', label:'🏢 사무실 업무', type:'group', expanded:false,
     children: () => [
-      {id:'office:restore', label:'중단 복원 업무'},
+      {id:'office:intercom', label:'☎️ 인터폰 번호표'},
+      {id:'office:zone', label:'🗺️ 영업구역 찾기'},
       {id:'office:opendash', label:'개설대쉬보드'},
       {id:'office:formMgr', label:'계약서식(매니저용)'},
-      {id:'office:intercom', label:'☎️ 인터폰 번호표'}
+      {id:'office:restore', label:'중단 복원 업무'}
     ]},
   { id:'voc',  label:'📞 개설 VOC', type:'group', expanded:false,
     children: () => [{id:'voc:전체', label:'📊 전사 요약'}, {id:'voc:사업부', label:'🏢 사업부 (직영)', subToggle:'vocBiz'}]
@@ -6531,6 +6551,7 @@ function menuItemRoute(id){
   if(id==='office:opendash') return {view:'doc', doc:'opendash'};
   if(id==='office:formMgr') return {view:'doc', doc:'formMgr'};
   if(id==='office:intercom') return {view:'intercom'};
+  if(id==='office:zone') return {view:'zone'};
   return {view:'home'};
 }
 function renderSidebar(){
@@ -6563,6 +6584,7 @@ function renderSidebar(){
                         : k.id==='office:opendash' ? (route.view==='doc' && route.doc==='opendash')
                         : k.id==='office:formMgr' ? (route.view==='doc' && route.doc==='formMgr')
                         : k.id==='office:intercom' ? (route.view==='intercom')
+                        : k.id==='office:zone' ? (route.view==='zone')
                         : false;
         if(k.subToggle){ // 하위 토글(예: 개설 VOC › 사업부): 클릭 시 이동 + 펼침/접힘
           const open = !!_sbExpanded[k.subToggle];
@@ -6587,6 +6609,10 @@ function renderCrumbs(){
   }
   if(route.view==='map'){
     crumbs.innerHTML = h + `<span class="sep">›</span><b style="color:var(--ink)">🗺️ YOONS MAPs</b>`;
+    return;
+  }
+  if(route.view==='zone'){
+    crumbs.innerHTML = h + `<span class="sep">›</span>🏢 사무실 업무<span class="sep">›</span><b style="color:var(--ink)">🗺️ 영업구역 찾기</b>`;
     return;
   }
   if(route.view==='intercom'){
@@ -6650,6 +6676,7 @@ function render(){
   if(route.view==='map') return renderMapView();
   if(route.view==='restore') return renderRestoreView();
   if(route.view==='intercom') return renderIntercomView();
+  if(route.view==='zone') return renderZoneView();
   if(route.view==='voc') return renderVoc();
   if(route.view==='main') return renderMain();
   if(route.view==='mgr') return renderMgr();
@@ -6735,6 +6762,156 @@ function _icDraw(){
     const b = c.blocks[0] || {heads:[],teams:[]};
     return `<div class="ic-sec"><div class="ic-sec-h">${grp}${_icMark(c.key)}</div>${headRow(b.heads)}${teamRows(b)}</div>`;
   }).join('');
+}
+
+/* ===== 영업구역 찾기 — 메모DB 'Head_Office' 탭(getHeadOffice)
+   영업지역(상세) "1.대전 서구 2.대전 중구,동구" 를 지역 단위로 풀어서 검색.
+   지역명 하나(예: 동탄, 영통구)나 주소 전체를 붙여넣어도 담당 본부를 찾아줌.
+   본부명이 '사업부'인 영업구역은 직영지역으로 표시. ===== */
+let _zoneRows = null, _zonePlaces = [], _zoneQuery = '';
+const ZONE_SIDO_HINT = (()=>{ // 본부명·지역명에 시도가 안 붙은 경우 검색용 보조어
+  const m = {};
+  '종로 중구 용산 성동 광진 동대문 중랑 성북 강북 도봉 노원 은평 서대문 마포 양천 강서 구로 금천 영등포 동작 관악 서초 강남 송파 강동'.split(' ').forEach(k=>m[k]='서울');
+  '수원 성남 의정부 안양 부천 광명 평택 동두천 안산 고양 과천 구리 남양주 오산 시흥 군포 의왕 하남 용인 파주 이천 안성 김포 화성 양주 포천 여주 연천 가평 양평'.split(' ').forEach(k=>m[k]='경기');
+  '순천 여수 광양 목포 나주'.split(' ').forEach(k=>m[k]='전남');
+  return m;
+})();
+function _zoneSplitParts(s){ // 괄호 안 쉼표는 나누지 않음: 남양주(다산,호평,덕소)
+  const out=[]; let cur='', depth=0;
+  for(const ch of s){
+    if(ch==='('||ch==='（') depth++; if(ch===')'||ch==='）') depth=Math.max(0,depth-1);
+    if(ch===',' && depth===0){ out.push(cur); cur=''; } else cur+=ch;
+  }
+  out.push(cur);
+  return out.map(x=>x.trim()).filter(Boolean);
+}
+function _zoneParse(rows){
+  const places=[];
+  rows.forEach(r=>{
+    const txt = String(r.area||'').replace(/[　\s]+/g,' ').trim();
+    if(!txt) return;
+    const zones=[]; const re=/(\d+)\.\s*(.*?)(?=\s+\d+\.|$)/g; let m;
+    while((m=re.exec(txt))) zones.push({no:+m[1], text:m[2].trim()});
+    if(!zones.length) zones.push({no:1, text:txt});
+    r.zones = zones;
+    zones.forEach(z=>{
+      let prefix='';
+      _zoneSplitParts(z.text).forEach(p=>{
+        let full=p;
+        if(p.includes(' ')) prefix = p.slice(0, p.lastIndexOf(' '));
+        else if(prefix && /[구군]$/.test(p)) full = prefix+' '+p;
+        const first = full.split(' ')[0].replace(/(시|군)$/,'').replace(/\(.*$/,'');
+        const hint = ZONE_SIDO_HINT[first] || '';
+        places.push({place:full, zoneNo:z.no, zoneText:z.text, row:r,
+          pkey:_zoneNorm(full+' '+hint), hkey:_zoneNorm(r.hq)});
+      });
+    });
+  });
+  return places;
+}
+function _zoneNorm(s){ return String(s||'').replace(/\s+/g,'').toLowerCase(); }
+// 검색어 → 토큰. '경기도'→'경기', '수원시'→'수원', '서울특별시'→'서울'. 번지·도로명은 버림
+// 동·읍·면·리 단위는 '있으면 좋은' 보조 토큰(opt)으로 취급
+function _zoneTokens(q){
+  return String(q||'').replace(/[(),·\[\]]/g,' ').split(/\s+/).map(t=>t.trim()).filter(Boolean)
+    .map(t=>t.replace(/(특별자치시|특별자치도|특별시|광역시)$/,'').replace(/^(경기|강원|충북|충남|전북|전남|경북|경남|제주)도$/,'$1')
+              .replace(/^충청북도$/,'충북').replace(/^충청남도$/,'충남').replace(/^전라북도$/,'전북').replace(/^전라남도$/,'전남')
+              .replace(/^경상북도$/,'경북').replace(/^경상남도$/,'경남').replace(/^(.{2,})시$/,'$1'))
+    .filter(t=>t && !/^\d/.test(t) && !/(로|길)\d*$/.test(t))
+    .map(_zoneNorm);
+}
+function _zoneTokHit(key, t){
+  if(key.includes(t)) return true;
+  const base = t.replace(/[구군]$/,'');                 // 양천구 → 양천, 분당구 → 분당 (2글자 이상만)
+  return base!==t && base.length>=2 && key.includes(base);
+}
+function _zoneIsOpt(t){ return t.length>=3 && /[동읍면리가]$/.test(t); }
+function _zoneSearch(q){
+  const toks=_zoneTokens(q); if(!toks.length) return {list:[], partial:false};
+  const need=toks.filter(t=>!_zoneIsOpt(t));
+  const sc=_zonePlaces.map(p=>{
+    const pm=toks.filter(t=>_zoneTokHit(p.pkey,t)).length;            // 지역명에서 맞은 수
+    const am=toks.filter(t=>_zoneTokHit(p.pkey,t)||_zoneTokHit(p.hkey,t)).length; // 본부명 포함
+    return {p, pm, am};
+  });
+  // ① 지역명으로 맞은 곳 우선(본부명만 맞은 지역은 뒤로) ② 그중 가장 많이 맞은 곳
+  let pool=sc.filter(x=>x.pm>0);
+  if(!pool.length) pool=sc.filter(x=>x.am>0);                         // 본부명 검색(예: 경기안양)
+  if(!pool.length) return {list:[], partial:false};
+  const maxA=Math.max(...pool.map(x=>x.am)); pool=pool.filter(x=>x.am===maxA);
+  const maxP=Math.max(...pool.map(x=>x.pm)); pool=pool.filter(x=>x.pm===maxP);
+  const best=pool[0];
+  const partial = need.some(t=>!_zoneTokHit(best.p.pkey,t)&&!_zoneTokHit(best.p.hkey,t));
+  return {list:pool.map(x=>x.p), partial};
+}
+function _zoneMark(text){
+  let t=_icEsc(text); const toks=_zoneTokens(_zoneQuery);
+  toks.sort((a,b)=>b.length-a.length).forEach(k=>{
+    const pat=k.split('').map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('\\s*');
+    t=t.replace(new RegExp(pat,'gi'), m=>`<mark>${m}</mark>`);
+  });
+  return t;
+}
+function _zoneIsBiz(r){ return /사업부/.test(r.hq||''); }
+function _zoneHqBadge(r){
+  return `<span class="zn-hq ${_zoneIsBiz(r)?'biz':''}">${_icEsc(r.hq)}${_zoneIsBiz(r)?' · 직영':''}</span>`;
+}
+function _zoneContact(r){
+  const num=(r.phone||'').replace(/[^0-9+]/g,'');
+  return [r.head?`본부장 <b>${_icEsc(r.head)}</b>`:'', num?`<a href="tel:${num}">${_icEsc(r.phone)}</a>`:'', r.contract?`<span class="zn-ct">${_icEsc(r.contract)}</span>`:''].filter(Boolean).join(' · ');
+}
+async function renderZoneView(force){
+  app.innerHTML = `
+    <h2 class="mgr" style="margin:0">🗺️ 영업구역 찾기</h2>
+    <p class="hint" style="margin:6px 0 0">VOC 희망지역을 입력하면 담당 본부를 찾아줍니다. 지역명(예: 동탄, 영통구, 김해) 또는 <b>주소 전체를 붙여넣어도</b> 됩니다. <span class="zn-hq biz" style="font-size:11px">직영</span> = 사업부 관할</p>
+    <div class="ic-toolbar">
+      <input class="ic-search" id="znSearch" type="search" placeholder="🔍 지역·주소·본부명 검색 (예: 수원 영통구, 경기도 화성시 동탄대로 123, 송파)" value="${_icEsc(_zoneQuery)}">
+      <button class="ic-refresh" onclick="renderZoneView(true)">↻ 새로고침</button>
+      <span class="ic-count" id="znCount"></span>
+    </div>
+    <div id="znBody"><div class="ic-empty">영업구역을 불러오는 중…</div></div>`;
+  const inp=document.getElementById('znSearch');
+  inp.addEventListener('input', e=>{ _zoneQuery=e.target.value.trim(); _zoneDraw(); });
+  inp.focus();
+  if(!_zoneRows || force){
+    try{
+      const res=await _jsonpGet(CLOUD_URL+'?action=getHeadOffice');
+      _zoneRows=res.list||[]; _zonePlaces=_zoneParse(_zoneRows);
+    }catch(err){
+      const b=document.getElementById('znBody');
+      if(b) b.innerHTML=`<div class="ic-empty">영업구역을 불러오지 못했습니다: ${_icEsc(err.message)}<br>Apps Script에 getHeadOffice 추가 후 "새 버전"으로 배포했는지 확인해 주세요.</div>`;
+      return;
+    }
+  }
+  if(route.view==='zone') _zoneDraw();
+}
+function _zoneDraw(){
+  const body=document.getElementById('znBody'); if(!body||!_zoneRows) return;
+  const cnt=document.getElementById('znCount');
+  if(!_zoneQuery){ // 검색 전: 본부별 전체 구역표
+    cnt.textContent=`${_zoneRows.length}개 본부 · ${_zonePlaces.length}개 지역`;
+    const rows=[..._zoneRows].sort((a,b)=>(_zoneIsBiz(a)-_zoneIsBiz(b))||a.hq.localeCompare(b.hq,'ko'));
+    body.innerHTML=`<div class="zn-grid">${rows.map(r=>`
+      <div class="ic-sec zn-card ${_zoneIsBiz(r)?'biz':''}">
+        <div class="ic-sec-h">${_zoneHqBadge(r)}<span class="zn-sub">${_zoneContact(r)}</span></div>
+        ${(r.zones||[]).map(z=>`<div class="zn-zone"><span class="zn-no">${z.no}구역</span>${_icEsc(z.text)}</div>`).join('')||'<div class="hint">영업지역 미입력</div>'}
+      </div>`).join('')}</div>`;
+    return;
+  }
+  const {list, partial}=_zoneSearch(_zoneQuery);
+  if(!list.length){ cnt.textContent='0건'; body.innerHTML=`<div class="ic-empty">일치하는 영업구역이 없습니다.<br>시·군·구 이름(예: 화성, 영통구)으로 다시 검색해 보세요. 미배정 지역일 수 있습니다.</div>`; return; }
+  const hqs=new Set(list.map(p=>p.row.hq));
+  cnt.textContent=`${list.length}개 지역 · ${hqs.size}개 본부`;
+  const warn = partial ? `<div class="voc-warn">주소 전체와 정확히 일치하는 구역은 없어서, 가장 많이 겹치는 지역을 보여줍니다. 결과가 여러 본부면 상세 위치를 확인해 주세요.</div>`
+             : (hqs.size>1 ? `<div class="voc-warn">⚠️ 같은 이름의 지역이 ${hqs.size}개 본부에 있습니다(예: '동구'는 여러 광역시에 있음). 시·도까지 함께 입력하면 하나로 좁혀집니다.</div>` : '');
+  body.innerHTML = warn + list.map(p=>`
+    <div class="ic-sec zn-hit ${_zoneIsBiz(p.row)?'biz':''}">
+      <div class="zn-hit-place">${_zoneMark(p.place)}</div>
+      <div class="zn-hit-arrow">→</div>
+      <div class="zn-hit-hq">${_zoneHqBadge(p.row)} <span class="zn-no">${p.zoneNo}구역</span>
+        <div class="zn-sub">${_zoneContact(p.row)}</div>
+        <div class="zn-sub">같은 구역: ${_icEsc(p.zoneText)}</div></div>
+    </div>`).join('');
 }
 
 /* ===== 가맹지역본부 지도(카카오맵) — 별도 사이트를 iframe으로 삽입 ===== */

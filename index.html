@@ -486,6 +486,14 @@ code{background:#eef0ea;padding:1px 5px;border-radius:3px;font-size:12px}
 .ic-sub .ic-btn{background:var(--card)}
 
 /* ===== 개설 VOC 현황 ===== */
+.voc-seg{display:inline-flex;border:1px solid var(--pine);border-radius:7px;overflow:hidden;margin-right:6px}
+.voc-seg button{border:0;background:#fff;color:var(--pine);font:inherit;font-size:12.5px;font-weight:700;padding:5px 13px;cursor:pointer}
+.voc-seg button+button{border-left:1px solid var(--pine)}
+.voc-seg button.on{background:var(--pine);color:#fff}
+.submenu-item.sb-subtoggle{display:flex;align-items:center;justify-content:space-between}
+.submenu-item.sb-subtoggle .chev{transition:transform .2s;font-size:12px;opacity:.7}
+.submenu-item.sb-subtoggle.open .chev{transform:rotate(90deg)}
+.submenu-item.sb-indent{padding-left:40px;font-size:12.5px}
 .voc-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--pine-soft);border-radius:8px;padding:9px 12px;margin:10px 0 14px}
 .voc-bar label{font-size:12px;font-weight:700;color:var(--pine)}
 .voc-bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
@@ -3223,6 +3231,8 @@ function parseHash(){
   if(mVoc){
     const vn = decodeURIComponent(mVoc[1]);
     if(vn==='전체') return {view:'voc', mgr:-1};
+    if(vn==='사업부') return {view:'voc', mgr:-2, biz:''};
+    if(vn.startsWith('사업부:')) return {view:'voc', mgr:-2, biz:vn.slice(4)};
     const mi = DATA.managers.findIndex(m=>m.name===vn);
     if(mi>=0) return {view:'voc', mgr:mi};
   }
@@ -3256,7 +3266,7 @@ function stringifyRoute(r){
   if(r.view==='intercom') return 'intercom';
   if(r.view==='allcenterslist') return `allcenters:${r.brand}`;
   if(r.view==='doc') return `doc:${encodeURIComponent(r.doc)}`;
-  if(r.view==='voc') return `voc:${encodeURIComponent(r.mgr<0?'전체':DATA.managers[r.mgr].name)}`;
+  if(r.view==='voc') return `voc:${encodeURIComponent(vocRouteKey(r))}`;
   if(r.view==='mgr') return `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}`;
   if(r.view==='br'){
     let s = `mgr:${encodeURIComponent(DATA.managers[r.mgr].name)}/br:${encodeURIComponent(DATA.managers[r.mgr].branches[r.br].name)}`;
@@ -6458,7 +6468,9 @@ const MENU = [
       {id:'office:intercom', label:'☎️ 인터폰 번호표'}
     ]},
   { id:'voc',  label:'📞 개설 VOC', type:'group', expanded:false,
-    children: () => [{id:'voc:전체', label:'📊 전사 요약'}].concat(DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name }))) },
+    children: () => [{id:'voc:전체', label:'📊 전사 요약'}, {id:'voc:사업부', label:'🏢 사업부 (직영)', subToggle:'vocBiz'}]
+      .concat(_sbExpanded.vocBiz ? vocBizList().map(n => ({ id:'voc:사업부:'+n, label:n, indent:true })) : [])
+      .concat(DATA.managers.map(m => ({ id:'voc:'+m.name, label:m.name }))) },
   { id:'doc',  label:'🔗 외부 문서', type:'group', expanded:true,
     children: () => DOC_LINKS.filter(d=>d.id==='schedule'||d.id==='weekly').map(d => ({ id:'doc:'+d.id, label:d.label })) }
   /* ▼ 새 메뉴는 이 배열에 한 항목만 추가하면 사이드바에 자동 반영됨
@@ -6484,6 +6496,8 @@ function menuItemRoute(id){
   if(id.startsWith('voc:')){
     const name = id.slice(4);
     if(name==='전체') return {view:'voc', mgr:-1};
+    if(name==='사업부') return {view:'voc', mgr:-2, biz:''};
+    if(name.startsWith('사업부:')) return {view:'voc', mgr:-2, biz:name.slice(4)};
     return {view:'voc', mgr:DATA.managers.findIndex(m=>m.name===name)};
   }
   if(id.startsWith('doc:')) return {view:'doc', doc:id.slice(4)};
@@ -6499,7 +6513,7 @@ function menuItemRoute(id){
 function renderSidebar(){
   const sb = document.getElementById('sidebar');
   const activeMgrName = (route.view==='mgr'||route.view==='br') ? DATA.managers[route.mgr].name : null;
-  const activeVocName = route.view==='voc' ? (route.mgr<0 ? '전체' : DATA.managers[route.mgr].name) : null;
+  const activeVocName = route.view==='voc' ? vocRouteKey(route) : null;
   let html = `<div class="sb-brand" style="cursor:pointer" onclick="go({view:'home'})">통합 캔버스</div>`;
   MENU.forEach(item=>{
     if(item.type==='single'){
@@ -6527,7 +6541,12 @@ function renderSidebar(){
                         : k.id==='office:formMgr' ? (route.view==='doc' && route.doc==='formMgr')
                         : k.id==='office:intercom' ? (route.view==='intercom')
                         : false;
-        html += `<div class="submenu-item ${isActive?'active':''}" onclick='go(${JSON.stringify(menuItemRoute(k.id))})'>${k.label}</div>`;
+        if(k.subToggle){ // 하위 토글(예: 개설 VOC › 사업부): 클릭 시 이동 + 펼침/접힘
+          const open = !!_sbExpanded[k.subToggle];
+          html += `<div class="submenu-item sb-subtoggle ${open?'open':''} ${isActive?'active':''}" onclick='_sbExpanded["${k.subToggle}"]=!_sbExpanded["${k.subToggle}"]; go(${JSON.stringify(menuItemRoute(k.id))}); renderSidebar();'>${k.label}<span class="chev">›</span></div>`;
+        } else {
+          html += `<div class="submenu-item ${k.indent?'sb-indent':''} ${isActive?'active':''}" onclick='go(${JSON.stringify(menuItemRoute(k.id))})'>${k.label}</div>`;
+        }
       });
       html += `</div>`;
     }
@@ -6556,7 +6575,7 @@ function renderCrumbs(){
     return;
   }
   if(route.view==='voc'){
-    const vLabel = route.mgr<0 ? '전사 요약' : DATA.managers[route.mgr].name;
+    const vLabel = route.mgr===-1 ? '전사 요약' : route.mgr===-2 ? ('사업부(직영)'+(route.biz?' › '+eschtml(route.biz):'')) : DATA.managers[route.mgr].name;
     crumbs.innerHTML = h + `<span class="sep">›</span>📞 개설 VOC<span class="sep">›</span><b style="color:var(--ink)">${vLabel}</b>`;
     return;
   }
@@ -6873,6 +6892,7 @@ async function vocLoad(force){
   catch(e){ _vocErr = e.message; if(force) _vocData=null; }
   _vocLoading=false; _vocBrMap={};
   if(route.view==='voc') renderVoc();
+  if(typeof renderSidebar==='function') renderSidebar(); // 사업부 하위 목록 갱신
 }
 // 전달본부 이름 → 대시보드 본부(매니저) 연결. '안양본부'·'경기안양' 같은 표기 차이를 흡수
 function vocNorm(s){ return String(s||'').replace(/\(.*?\)|본부|가맹|지역|\s/g,''); }
@@ -6884,7 +6904,33 @@ function vocBranchOwner(name){
   if(!hit && n.length>=2){ const c=all.filter(x=>x.n.includes(n)||n.includes(x.n)); if(c.length===1) hit=c[0]; }
   return _vocBrMap[name]=hit;
 }
-function vocInScope(brName){ if(route.mgr<0) return true; const o=vocBranchOwner(brName); return !!o && o.mi===route.mgr; }
+// 전달본부명에 '사업부'가 들어가면 직영지역 → 전사 요약·매니저 화면에서 빼고 '사업부' 화면에서 따로 관리
+function vocIsBiz(brName){ return /사업부/.test(String(brName||'')); }
+function vocBizList(){
+  if(!_vocData || !_vocData.items) return [];
+  const set = new Set(_vocData.items.map(x=>x.branch).filter(vocIsBiz));
+  Object.values(_vocData.yearly||{}).forEach(y=>Object.keys(y.byBranch||{}).forEach(b=>{ if(vocIsBiz(b)) set.add(b); }));
+  return Array.from(set).sort((a,b)=>a.localeCompare(b,'ko'));
+}
+function vocRouteKey(r){
+  if(r.mgr===-1) return '전체';
+  if(r.mgr===-2) return r.biz ? '사업부:'+r.biz : '사업부';
+  return DATA.managers[r.mgr].name;
+}
+// 전사 요약 범위 전환: 'fr'=가맹(기본) / 'biz'=사업부 / 'all'=합계
+let _vocMode = 'fr';
+const VOC_MODE_LABEL = {fr:'가맹', biz:'사업부', all:'합계'};
+function vocSetMode(m){ _vocMode = m; _vocBr = ''; renderVoc(); }
+function vocInScope(brName){
+  if(route.mgr===-2) return vocIsBiz(brName) && (!route.biz || brName===route.biz);
+  if(route.mgr===-1){
+    if(_vocMode==='all') return true;
+    if(_vocMode==='biz') return vocIsBiz(brName);
+    return !vocIsBiz(brName);
+  }
+  if(vocIsBiz(brName)) return false;
+  const o=vocBranchOwner(brName); return !!o && o.mi===route.mgr;
+}
 function vocDays(ymd){ return Math.floor((Date.now()-new Date(ymd+'T00:00:00').getTime())/864e5); }
 function vocIsNoReply(x){ return !x.openDate && !x.replies.length && vocDays(x.date)>=VOC_NOREPLY_DAYS; }
 // 상태 글자는 회신 시트 '상담진행여부' 값을 그대로 쓰고, 색만 성격별로 구분
@@ -6904,7 +6950,10 @@ function vocPct(a,b){ return b? Math.round(a/b*1000)/10 : 0; }
 function vocSet(k,v){ if(k==='year') _vocYear=+v; if(k==='br') _vocBr=v; if(k==='st') _vocStatus=v; renderVoc(); }
 
 function renderVoc(){
-  const title = route.mgr<0 ? '📊 개설 VOC 현황 — 전사 요약' : `👤 ${DATA.managers[route.mgr].name} — 개설 VOC 현황`;
+  const modeNote = {fr:'가맹 본부만 · 사업부 제외', biz:'사업부(직영)만', all:'가맹 + 사업부 합계'}[_vocMode];
+  const title = route.mgr===-1 ? `📊 개설 VOC 현황 — 전사 요약 <span style="font-size:13px;font-weight:400;color:var(--muted)">(${modeNote})</span>`
+    : route.mgr===-2 ? `🏢 개설 VOC 현황 — 사업부(직영)${route.biz?' › '+eschtml(route.biz):''}`
+    : `👤 ${DATA.managers[route.mgr].name} — 개설 VOC 현황`;
   if(!_vocData){
     app.innerHTML = `<h2 class="mgr">${title}</h2><div class="ic-empty">${_vocErr
       ? `VOC 데이터를 불러오지 못했습니다: <b>${eschtml(_vocErr)}</b>
@@ -6935,16 +6984,16 @@ function renderVoc(){
   let warn='';
   if(D.reply && !D.reply.linked) warn += `<div class="voc-warn">🔗 본부 회신 시트 미연결 — ${eschtml(D.reply.msg||'')}<br>연결 전까지 모든 건이 '회신대기'로 표시됩니다.</div>`;
   const um = (D.reply && D.reply.unmatched) || [];
-  if(route.mgr<0 && um.length) warn += `<div class="voc-warn">🔗 VOC 건과 연결하지 못한 본부 회신 ${um.length}건 — voc 시트의 이름·전달본부가 회신 시트와 같은지 확인해 주세요.<br>${um.slice(0,10).map(u=>`${u.date} ${eschtml(u.name)} (${eschtml(u.by)})`).join(' · ')}${um.length>10?' …':''}</div>`;
+  if(route.mgr===-1 && um.length) warn += `<div class="voc-warn">🔗 VOC 건과 연결하지 못한 본부 회신 ${um.length}건 — voc 시트의 이름·전달본부가 회신 시트와 같은지 확인해 주세요.<br>${um.slice(0,10).map(u=>`${u.date} ${eschtml(u.name)} (${eschtml(u.by)})`).join(' · ')}${um.length>10?' …':''}</div>`;
   const dupRecv = recv.filter(x=>x.dups&&x.dups.length);
   if(dupRecv.length) warn += `<div class="voc-warn">🔁 같은 전화번호로 다시 문의한 건 ${dupRecv.length}건 — 중복 접수인지, 다른 본부에 이미 전달됐는지 확인해 주세요.<br>${dupRecv.slice(0,10).map(x=>`${x.date} ${eschtml(x.name)} (${eschtml(x.branch)}) ← 이전 ${x.dups.map(d=>d.date+' '+eschtml(d.branch)).join(', ')}`).join('<br>')}${dupRecv.length>10?'<br>…':''}<br><a style="color:var(--pine);font-weight:700;cursor:pointer" onclick="vocSet('st','재문의')">재문의 건만 보기 ›</a></div>`;
-  if(route.mgr<0){
-    const un = Array.from(new Set(D.items.map(x=>x.branch).filter(b=>!vocBranchOwner(b))));
+  if(route.mgr===-1){
+    const un = Array.from(new Set(D.items.map(x=>x.branch).filter(b=>!vocIsBiz(b) && !vocBranchOwner(b))));
     if(un.length) warn += `<div class="voc-warn">⚠️ 매니저와 연결되지 않은 전달본부명 ${un.length}개: <b>${un.map(eschtml).join(', ')}</b><br>voc 시트의 본부명을 대시보드 본부명(예: 경기안양)과 같게 맞추면 매니저 화면에도 집계됩니다.</div>`;
   }
 
   const kpi=(label,val,sub,color)=>`<div class="kpi" style="border-top-color:${color}"><div class="k-label">${label}</div><div class="k-val">${val}</div><div class="k-delta delta-flat">${sub}</div></div>`;
-  const brOpts = ['<option value="">전체 본부</option>'].concat(brAll.map(b=>`<option value="${eschtml(b)}" ${_vocBr===b?'selected':''}>${eschtml(b)}</option>`)).join('');
+  const brOpts = [`<option value="">전체 ${route.mgr===-2||(route.mgr===-1&&_vocMode==='biz')?'사업부':(route.mgr===-1&&_vocMode==='all'?'본부·사업부':'본부')}</option>`].concat(brAll.map(b=>`<option value="${eschtml(b)}" ${_vocBr===b?'selected':''}>${eschtml(b)}</option>`)).join('');
   const stList = ['', ...Array.from(new Set(recv.map(x=>x.status))).sort((a,b)=>a.localeCompare(b,'ko')), '미회신', '재문의'];
   if(_vocStatus && !stList.includes(_vocStatus)) _vocStatus='';
   const stOpts = stList.map(s=>`<option value="${s}" ${_vocStatus===s?'selected':''}>${s||'전체 상태'}</option>`).join('');
@@ -6952,8 +7001,9 @@ function renderVoc(){
   app.innerHTML = `
     <h2 class="mgr">${title}</h2>
     <div class="voc-bar">
+      ${route.mgr===-1?`<div class="voc-seg">${['fr','biz','all'].map(m=>`<button class="${_vocMode===m?'on':''}" onclick="vocSetMode('${m}')">${VOC_MODE_LABEL[m]}</button>`).join('')}</div>`:''}
       <label>연도</label><select onchange="vocSet('year',this.value)">${years.map(y=>`<option ${y===_vocYear?'selected':''}>${y}</option>`).join('')}</select>
-      <label>본부</label><select onchange="vocSet('br',this.value)">${brOpts}</select>
+      <label>${route.mgr===-2||(route.mgr===-1&&_vocMode==='biz')?'사업부':'본부'}</label><select onchange="vocSet('br',this.value)">${brOpts}</select>
       <button class="ic-refresh" onclick="vocLoad(true)">↻ 새로고침</button>
       <span class="voc-upd">${_vocLoading?'불러오는 중…':`기준 ${eschtml(D.updated||'')}${D.cached?' (캐시)':''}${D.ms?` · 계산 ${(D.ms/1000).toFixed(1)}초`:''}`}</span>
     </div>
@@ -7003,10 +7053,10 @@ function vocMatrixHtml(scoped, Y){
     const rep = rv.filter(x=>x.replies.length||x.openDate).length, nr = rv.filter(vocIsNoReply).length;
     r.forEach((v,i)=>{tot.r[i]+=v; tot.o[i]+=o[i];}); tot.R+=rv.length; tot.O+=op.length; tot.rep+=rep; tot.nr+=nr;
     const own = vocBranchOwner(br);
-    return {br, mgr: own? DATA.managers[own.mi].name : '-', r, o, R:rv.length, O:op.length, rep, nr};
+    return {br, mgr: vocIsBiz(br) ? '직영' : (own? DATA.managers[own.mi].name : '-'), r, o, R:rv.length, O:op.length, rep, nr};
   }).sort((a,b)=>b.R-a.R || a.br.localeCompare(b.br,'ko'));
   const cells=(r,o)=>r.map((v,i)=>`<td class="num">${v||'·'}${o[i]?`<span class="vo">개설${o[i]}</span>`:''}</td>`).join('');
-  const showMgr = route.mgr<0;
+  const showMgr = route.mgr===-1;
   const body = rows.map(x=>`<tr>
     <td class="voc-brlink" onclick="vocSet('br','${jsq(x.br)}')">${eschtml(x.br)}</td>${showMgr?`<td>${x.mgr}</td>`:''}
     ${cells(x.r,x.o)}<td class="num"><b>${x.R}</b></td><td class="num"><b style="color:#1f7a52">${x.O}</b></td>
